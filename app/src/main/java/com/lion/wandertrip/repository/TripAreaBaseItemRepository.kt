@@ -63,7 +63,7 @@ class TripAreaBaseItemRepository(private val api: TripAreaBaseItemInterface) {
                 mobileOS = "ETC",
                 mobileApp = "com.lion.wandertrip",
                 type = "json",
-                numOfRows = 3,
+                numOfRows = 50000,
                 pageNo = 1
             )
 
