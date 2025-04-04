@@ -68,6 +68,18 @@ class ScheduleViewModel @Inject constructor(
         val formatter = DateTimeFormatter.ofPattern("yyyy.MM.dd") // ✅ 년-월-일 포맷 적용
         return localDate.format(formatter)
     }
+    // 일정 제거
+    // 일정 가입 인원이 0명인 경우 일정 컬렉션에서 제거
+    fun deleteScheduleIfZeroParty(trip : TripScheduleModel){
+        if(trip.scheduleInviteList.size==1){
+            viewModelScope.launch {
+                val work1 = async(Dispatchers.IO){
+                    tripScheduleService.deleteTripScheduleByDocId(trip.tripScheduleDocId)
+                }
+                work1.join()
+            }
+        }
+    }
 
     // 내 일정 삭제
     fun removeUserSchedule(tripScheduleDocId: String) {

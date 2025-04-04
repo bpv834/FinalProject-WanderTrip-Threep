@@ -181,10 +181,10 @@ class UserInfoViewModel @Inject constructor(
         Log.d("test100", "item: $item")*/
         val backStack = tripApplication.navHostController.currentBackStack
         // 로그인 화면으로 이동한다.
+        tripApplication.selectedItem.value=0
         tripApplication.navHostController.navigate(MainScreenName.MAIN_SCREEN_USER_LOGIN.name){
             Log.d("backStack"," 일반 로그아웃 화면 전환")
             Log.d("backStack"," backStack :${backStack.value}")
-
             popUpTo(BotNavScreenName.BOT_NAV_SCREEN_HOME.name) { inclusive = true }
             launchSingleTop = true
         }
@@ -203,6 +203,7 @@ class UserInfoViewModel @Inject constructor(
          val item = prefItem.getString("recentItemList", null)
          Log.d("test100", "item: $item")
 
+        tripApplication.selectedItem.value=0
         // 로그인 화면으로 이동한다.
         tripApplication.navHostController.navigate(MainScreenName.MAIN_SCREEN_USER_LOGIN.name){
             Log.d("backStack"," 카카오 로그아웃 화면 전환")

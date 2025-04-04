@@ -4,6 +4,8 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.util.Log
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
@@ -28,8 +30,10 @@ import com.lion.wandertrip.util.MainScreenName
 import com.lion.wandertrip.util.Tools
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.text.SimpleDateFormat
@@ -84,6 +88,9 @@ class DetailViewModel @Inject constructor(
 
     // 로딩 상태 변수
     val isLoading = mutableStateOf(false)
+
+    // 토스트 메시지 value
+    val toastMessageValue = mutableStateOf<String>("")
 
     // 상태 변경 메서드
     fun setState(value: Boolean) {
@@ -216,14 +223,21 @@ class DetailViewModel @Inject constructor(
 
     // 일정 리스트 가져오기
     fun getTripSchedule() {
+        tripScheduleList.clear()
         viewModelScope.launch {
             val work1 = async(Dispatchers.IO) {
-                tripScheduleService.gettingMyTripSchedules(tripApplication.loginUserModel.userNickName)
+                userService.gettingTripScheduleItemList(tripApplication.loginUserModel.userDocId)
             }
-            val result = work1.await()
+            // 유저 목록의 일정 서브컬렉션 문서 아이디 리스트
+            val tripDocIdList = work1.await()
+
+            // 일정 모델 리스트
+            val work2 = async(Dispatchers.IO) {
+                tripScheduleService.fetchScheduleList(tripDocIdList)
+            }
+            val result = work2.await()
             tripScheduleList.addAll(result)
             addMap()
-
         }
     }
 
@@ -300,6 +314,11 @@ class DetailViewModel @Inject constructor(
         Tools.addRecentItemList(tripApplication, recentModel)
     }
 
+    // 토스트 메시지 띄우는 메서드
+    fun triggerToast(message: String) {
+        toastMessageValue.value = message
+    }
+
 // --------------------------------------------------------------------------------------------
     // 소개관련
 
@@ -314,6 +333,7 @@ class DetailViewModel @Inject constructor(
 
     // 유저 좋아요 목록에 해당 페이지 있는가를 나타내는 상태변수
     val isLikeContentValue = mutableStateOf(false)
+
 
     // 코드로 지역 이름 가져오기
     fun gettingCityName(areaCode: String, siGunGuCode: String) {
@@ -416,6 +436,8 @@ class DetailViewModel @Inject constructor(
                 )
             }.join()
             isAddScheduleSheetOpen.value = false
+            // 토스트 표시
+            triggerToast("일정에 추가되었습니다.") // 토스트 메시지 보내기
         }
     }
 

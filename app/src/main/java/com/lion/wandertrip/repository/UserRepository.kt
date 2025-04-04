@@ -455,5 +455,23 @@ class UserRepository {
 
         return result
     }
-    
+
+    // 유저컬렉션에서 스케줄 서브컬렉션의 스케줄 문서 삭제
+    suspend fun deleteTripScheduleItem(userDocId: String, tripScheduleDocId: String) {
+        val firestore = FirebaseFirestore.getInstance()
+        val userScheduleRef = firestore.collection("UserData")
+            .document(userDocId)
+            .collection("UserScheduleData")
+
+        // tripScheduleDocId 필드 값이 인자로 받은 값과 같은 문서들 조회
+        val querySnapshot = userScheduleRef
+            .whereEqualTo("tripScheduleDocId", tripScheduleDocId)
+            .get()
+            .await()
+
+        // 조건에 맞는 문서 삭제
+        for (document in querySnapshot.documents) {
+            userScheduleRef.document(document.id).delete().await()
+        }
+    }
 }

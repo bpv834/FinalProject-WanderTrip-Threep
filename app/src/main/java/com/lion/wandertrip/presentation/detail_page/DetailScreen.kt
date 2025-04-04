@@ -1,6 +1,7 @@
 package com.lion.wandertrip.presentation.detail_page
 
 import android.util.Log
+import android.widget.Toast
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -32,7 +33,6 @@ import com.lion.a02_boardcloneproject.component.CustomIconButton
 import com.lion.a02_boardcloneproject.component.CustomTopAppBar
 import com.lion.wandertrip.R
 import com.lion.wandertrip.component.LottieLoadingIndicator
-import com.lion.wandertrip.model.RecentTripItemModel
 import com.lion.wandertrip.presentation.detail_page.components.BasicInfoDescriptionColumn
 import com.lion.wandertrip.presentation.detail_page.components.BottomSheetAddSchedule
 import com.lion.wandertrip.presentation.detail_page.components.BottomSheetReviewFilter
@@ -40,18 +40,27 @@ import com.lion.wandertrip.presentation.detail_page.components.IndicatorButton
 import com.lion.wandertrip.presentation.detail_page.components.IntroColumn
 import com.lion.wandertrip.presentation.detail_page.components.ReviewLazyColumn
 import com.lion.wandertrip.presentation.detail_page.components.ViewGoogleMap
-import com.lion.wandertrip.presentation.start_page.used_dummy_data.RecentDummyData
 import com.lion.wandertrip.util.CustomFont
-import com.lion.wandertrip.util.Tools
 
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 fun DetailScreen(contentID: String, detailViewModel: DetailViewModel = hiltViewModel()) {
     Log.d("test", "contentID : $contentID")
+
+    val toastMessage = detailViewModel.toastMessageValue.value
+
     LaunchedEffect(Unit) {
         detailViewModel.getCommonTripContentModel(contentID)
     }
+
+    // 토스트 내용이 변할때마다 동작하는 런쳐
+    LaunchedEffect(toastMessage) {
+        toastMessage?.let {
+            Toast.makeText(detailViewModel.tripApplication, it, Toast.LENGTH_SHORT).show()
+        }
+    }
+
 
    if(detailViewModel.isLoading.value){
        LottieLoadingIndicator()

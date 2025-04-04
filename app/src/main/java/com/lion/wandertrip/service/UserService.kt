@@ -206,4 +206,9 @@ class UserService (val userRepository: UserRepository) {
         return userRepository.gettingTripScheduleItemList(userDocId)
     }
 
+    // 유저컬렉션에서 스케줄 서브컬렉션의 스케줄 문서 삭제
+    suspend fun deleteTripScheduleItem(userDocId: String, tripScheduleDocId: String) {
+        return userRepository.deleteTripScheduleItem(userDocId,tripScheduleDocId)
+    }
+
 }

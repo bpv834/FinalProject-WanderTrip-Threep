@@ -12,6 +12,7 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.lion.wandertrip.TripApplication
 import com.lion.wandertrip.model.UserModel
 import com.lion.wandertrip.service.TripScheduleService
+import com.lion.wandertrip.service.UserService
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
@@ -23,6 +24,7 @@ import javax.inject.Inject
 class ScheduleDetailFriendsViewModel @Inject constructor(
     @ApplicationContext val context: Context,
     val tripScheduleService: TripScheduleService,
+    val userService: UserService,
 ) : ViewModel() {
     val application = context as TripApplication
 
@@ -82,7 +84,10 @@ class ScheduleDetailFriendsViewModel @Inject constructor(
     fun addFriendByNickName(inviteNickname: String) {
         viewModelScope.launch {
             val work1 = async(Dispatchers.IO) {
-                tripScheduleService.addInviteUserByInviteNickname(scheduleDocId.value, inviteNickname)
+                tripScheduleService.addInviteUserByInviteNickname(
+                    scheduleDocId.value,
+                    inviteNickname
+                )
             }.await()
             if (work1 == "") {
                 Log.d("ScheduleDetailFriendsViewModel", "유저 없음 : $work1")
@@ -92,8 +97,15 @@ class ScheduleDetailFriendsViewModel @Inject constructor(
                 Log.d("ScheduleDetailFriendsViewModel", "유저 있음 : $work1")
                 val work2 = async(Dispatchers.IO) {
                     // 일정 항목의 초대 리스트에 유저 DocId 추가
-                    tripScheduleService.addInviteUserDocIdToScheduleInviteList(scheduleDocId.value, work1)
+                    tripScheduleService.addInviteUserDocIdToScheduleInviteList(
+                        scheduleDocId.value,
+                        work1
+                    )
                 }.await()
+                val work3 = async(Dispatchers.IO) {
+                    userService.addTripScheduleToUserSubCollection(work1, scheduleDocId.value)
+                }
+                work3.join()
                 if (work2) {
                     friendAddError.value = ""
                     // 성공 시 다이얼로그 닫음
@@ -134,6 +146,11 @@ class ScheduleDetailFriendsViewModel @Inject constructor(
                     invitedUser
                 )
             }.await()
+
+            val work3 = async(Dispatchers.IO) {
+                userService.deleteTripScheduleItem(invitedUser, tripScheduleDocId)
+            }
+            work3.join()
         }
     }
 

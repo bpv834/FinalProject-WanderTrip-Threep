@@ -108,7 +108,7 @@ fun TripItem(trip: TripScheduleModel,myTripViewModel: MyTripViewModel,pos : Int)
                 CustomIconButton(icon = ImageVector.vectorResource(R.drawable.ic_calendar_month_24px), iconButtonOnClick = {})
                 // 여행 삭제
                 CustomIconButton(icon = ImageVector.vectorResource(R.drawable.ic_delete_24px), iconButtonOnClick = {
-                    myTripViewModel.onClickIconDeleteTrip(trip.tripScheduleDocId)
+                    myTripViewModel.onClickIconDeleteTrip(trip)
                 })
             }
         }

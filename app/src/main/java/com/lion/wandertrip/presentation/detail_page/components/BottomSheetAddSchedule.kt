@@ -20,12 +20,14 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -48,14 +50,15 @@ fun BottomSheetAddSchedule(
         detailViewModel.tripScheduleList.clear()
         detailViewModel.getTripSchedule()
     }
-
-
     val schedules = detailViewModel.tripScheduleList
     // 시트 사이즈 기억해서 초기화 되지않게 하는 것
     val bottomSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     ModalBottomSheet(
+        // 바텀시트가 닫힐때마다 항상 동작하는 부분
         onDismissRequest = {
             detailViewModel.isAddScheduleSheetOpen.value = false
+            // 시트가 닫힐때 추가 아이콘을 숨긴다.
+            detailViewModel.isShownAddScheduleIconValue.value = false
         },
         sheetState = bottomSheetState // 바텀시트 상태 적용
     ) {
@@ -82,7 +85,7 @@ fun BottomSheetAddSchedule(
                             iconButtonOnClick = {
                                 // 클릭 인덱스
                                 detailViewModel.addSchedule(
-                                    title = schedules[detailViewModel.truedIdx.value].scheduleTitle,
+                                    title = detailViewModel.tripCommonContentModelValue.value.title?:"이름없음",
                                     tripScheduleDocId = schedules[detailViewModel.truedIdx.value].tripScheduleDocId,
                                     contentId = detailViewModel.tripCommonContentModelValue.value.contentId?:"",
                                     date = schedules[detailViewModel.truedIdx.value].scheduleDateList[detailViewModel.scheduleDatePickerTruedIdx.value],

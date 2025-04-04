@@ -76,6 +76,10 @@ fun ScheduleItemList(
                                 dataList[index].tripScheduleDocId,
                                 onDeleteSchedule = { scheduleDocId ->
                                     if (scheduleType == 0) {
+                                        // 참가자가 1명인경우 일정 컬렉션에서도 문서를 삭제/ 그게 아니라면 user 서브컬렉션에서만 삭제
+                                        if(dataList[index].scheduleInviteList.size<2){
+                                            viewModel.deleteScheduleIfZeroParty(dataList[index])
+                                        }
                                         viewModel.removeUserSchedule(scheduleDocId)
                                     } else {
                                         viewModel.removeInvitedSchedule(scheduleDocId)
@@ -98,7 +102,7 @@ fun ScheduleItemList(
                                     .size(12.5.dp)  // ✅ 크기 조절
                             )
 
-                            // 일정  지역
+                            // 참가 인원 수
                             Text(
                                 text = dataList[index].scheduleInviteList.size.toString(),
                                 fontFamily = NanumSquareRound,
