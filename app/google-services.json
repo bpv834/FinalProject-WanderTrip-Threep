@@ -1,14 +1,13 @@
 {
   "project_info": {
-    "project_number": "333120486212",
-    "firebase_url": "https://wandertrip-13b8b-default-rtdb.firebaseio.com",
-    "project_id": "wandertrip-13b8b",
-    "storage_bucket": "wandertrip-13b8b.firebasestorage.app"
+    "project_number": "264243135227",
+    "project_id": "wandertripsole",
+    "storage_bucket": "wandertripsole.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:333120486212:android:cc9f7f9681d842117ff511",
+        "mobilesdk_app_id": "1:264243135227:android:c4f963610581d9e5ba265e",
         "android_client_info": {
           "package_name": "com.lion.wandertrip"
         }
@@ -16,7 +15,7 @@
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyAPpjdxz9dqEfY0o5adTjq83T0zBUjtZLU"
+          "current_key": "AIzaSyAZghD0QnYkRrpq9Cp3aV1RsyhxL2KuQRs"
         }
       ],
       "services": {

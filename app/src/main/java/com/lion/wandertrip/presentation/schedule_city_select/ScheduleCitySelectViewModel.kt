@@ -10,6 +10,7 @@ import com.google.firebase.Timestamp
 import com.lion.wandertrip.TripApplication
 import com.lion.wandertrip.model.TripScheduleModel
 import com.lion.wandertrip.service.TripScheduleService
+import com.lion.wandertrip.service.UserService
 import com.lion.wandertrip.util.AreaCode
 import com.lion.wandertrip.util.BotNavScreenName
 import com.lion.wandertrip.util.RouletteScreenName
@@ -27,7 +28,8 @@ import javax.inject.Inject
 @HiltViewModel
 class ScheduleCitySelectViewModel @Inject constructor(
     @ApplicationContext val context: Context,
-    private val tripScheduleService: TripScheduleService
+    private val tripScheduleService: TripScheduleService,
+    private val userService: UserService,
 ) : ViewModel() {
 
     val application = context as TripApplication
@@ -154,7 +156,7 @@ class ScheduleCitySelectViewModel @Inject constructor(
             Log.d("ScheduleCitySelectViewModel", "tripScheduleModel.userID: ${application.loginUserModel.userId}")
 
             val work2 = async(Dispatchers.IO) {
-                tripScheduleService.addTripDocIdToUserScheduleList(
+                userService.addTripScheduleToUserSubCollection(
                     application.loginUserModel.userDocId,
                     tripScheduleModel.tripScheduleDocId
                 )

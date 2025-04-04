@@ -6,7 +6,6 @@ import com.google.firebase.Timestamp
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.storage.FirebaseStorage
-import com.lion.wandertrip.model.UserModel
 import com.lion.wandertrip.retrofit.ApiResponse
 import com.lion.wandertrip.retrofit.RetrofitClient
 import com.lion.wandertrip.vo.ScheduleItemVO
@@ -306,10 +305,10 @@ class TripScheduleRepository {
     }
 
     // 유저 일정 docId로 일정 항목 가져 오기
-    suspend fun fetchScheduleList(scheduleDocId: List<String>): List<TripScheduleVO> {
+    suspend fun fetchScheduleList(userScheduleDocIdList: List<String>): List<TripScheduleVO> {
         val firestore = FirebaseFirestore.getInstance()
         val scheduleItemList = mutableListOf<TripScheduleVO>()
-        for (docId in scheduleDocId) {
+        for (docId in userScheduleDocIdList) {
             try {
                 val snapshot = firestore.collection("TripSchedule")
                     .document(docId)
@@ -330,16 +329,17 @@ class TripScheduleRepository {
     }
 
     // 유저 일정 리스트에서 일정 삭제
-    suspend fun removeUserScheduleList(userDocId: String, userScheduleDocId: String) {
+    suspend fun removeUserScheduleList(userDocId: String, scheduleDocId: String) {
         val firestore = FirebaseFirestore.getInstance()
         val userDocRef = firestore.collection("UserData").document(userDocId)
+        val subCollectionRef = userDocRef.collection("UserScheduleData")
 
-        val snapshot = userDocRef.get().await()
-        if (!snapshot.exists()) return
+        // tripScheduleDocId 값이 scheduleDocId와 같은 문서 쿼리
+        val querySnapshot = subCollectionRef.whereEqualTo("tripScheduleDocId", scheduleDocId).get().await()
 
-        val scheduleList = snapshot.get("userScheduleList") as? List<String> ?: emptyList()
-        if (scheduleList.contains(userScheduleDocId)) {
-            userDocRef.update("userScheduleList", FieldValue.arrayRemove(userScheduleDocId)).await()
+        for (document in querySnapshot.documents) {
+            // 문서 삭제
+            subCollectionRef.document(document.id).delete().await()
         }
     }
 

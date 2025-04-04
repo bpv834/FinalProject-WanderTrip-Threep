@@ -416,5 +416,44 @@ class UserRepository {
             Log.d("removeLikeCnt", "No document found with contentId: $likeItemContentId")
         }
     }
+
+  /*  suspend fun gettingUserScheduleIdList(userDocId : String): List<String>{
+
+    }*/
+    // 유저 컬렉션에 스케줄 서브리스트에 스케줄 문서 아이디 추가하기
+    suspend fun addTripScheduleToUserSubCollection(userDocId: String, tripScheduleDocId: String) {
+        val firestore = FirebaseFirestore.getInstance()
+        val userScheduleRef = firestore.collection("UserData")
+            .document(userDocId)
+            .collection("UserScheduleData")
+
+        // 새로운 문서를 자동 ID로 추가하고, 필드에는 userDocId와 tripScheduleDocId 저장
+        val scheduleData = mapOf(
+            "userDocId" to userDocId,
+            "tripScheduleDocId" to tripScheduleDocId
+        )
+
+        userScheduleRef.add(scheduleData).await()
+    }
+
+    // 유저컬렉션에서 스케줄 서브컬렉션의 스케줄 문서 아이디 가져오기
+    suspend fun gettingTripScheduleItemList(userDocId: String): List<String> {
+        val result = mutableListOf<String>()
+        val firestore = FirebaseFirestore.getInstance()
+        val userScheduleRef = firestore.collection("UserData")
+            .document(userDocId)
+            .collection("UserScheduleData")
+
+        val snapshot = userScheduleRef.get().await()
+
+        for (document in snapshot.documents) {
+            val tripScheduleDocId = document.getString("tripScheduleDocId")
+            if (tripScheduleDocId != null) {
+                result.add(tripScheduleDocId)
+            }
+        }
+
+        return result
+    }
     
 }

@@ -151,6 +151,7 @@ class UserService (val userRepository: UserRepository) {
         return imageUri
     }
 
+    // 좋아요 목록 가져오기
     suspend fun gettingUserLikeList(userDocId: String): List<String> {
         return userRepository.getUserLikeList(userDocId)
     }
@@ -189,4 +190,20 @@ class UserService (val userRepository: UserRepository) {
 
         return result
     }
+
+ /*   // 사용자의 일정 리스트에서 문서 아이디 리스트 가져오기
+    suspend fun gettingUserScheduleIdList(userDocId: String): List<String> {
+        return userRepository.gettingUserScheduleIdList(userDocId)
+    }*/
+
+    // 유저컬렉션에 스케줄 서브컬렉션 생성 메서드
+    suspend fun addTripScheduleToUserSubCollection(userDocId: String, tripScheduleDocId: String) {
+        userRepository.addTripScheduleToUserSubCollection(userDocId,tripScheduleDocId)
+    }
+
+    // 유저컬렉션에서 스케줄 서브컬렉션의 스케줄 문서 아이디 가져오기
+    suspend fun gettingTripScheduleItemList(userDocId: String): List<String> {
+        return userRepository.gettingTripScheduleItemList(userDocId)
+    }
+
 }

@@ -36,8 +36,8 @@ fun ScheduleScreen(
 
     // 일정 데이터 가져 오는 메소드 호출
     LaunchedEffect(Unit) {
-        viewModel.observeUserScheduleDocIdList()
-        // scheduleViewModel.observeInviteScheduleDocIdList()
+       /* viewModel.observeUserScheduleDocIdList()*/
+        viewModel.fetchUserScheduleList()
     }
 
     // 탭 제목 및 Pager 상태
@@ -111,7 +111,7 @@ fun ScheduleScreen(
                     0 -> {
                         // 첫 번째 페이지: 내 일정
                         ScheduleItemList(
-                            dataList = viewModel.userScheduleList,
+                            dataList = viewModel.myScheduleList,
                             scheduleType = 0,  // 0: 내 일정 1: 초대 받은 일정
                             viewModel = viewModel,
                             onRowClick = { userSchedule ->
@@ -119,7 +119,7 @@ fun ScheduleScreen(
                             }
                         )
                     }
-                    1 -> {
+        /*            1 -> {
                         // 두 번째 페이지: 초대 일정
                         ScheduleItemList(
                             dataList = viewModel.invitedScheduleList,
@@ -129,7 +129,7 @@ fun ScheduleScreen(
                                 viewModel.moveToScheduleDetailScreen(invitedScheduleList)
                             }
                         )
-                    }
+                    }*/
                 }
             }
         }

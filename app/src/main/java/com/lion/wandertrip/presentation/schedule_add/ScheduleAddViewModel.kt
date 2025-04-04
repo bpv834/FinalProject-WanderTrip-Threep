@@ -54,6 +54,7 @@ class ScheduleAddViewModel @Inject constructor(
         return localDate.format(formatter)
     }
 
+    // 도시 선택 화면 이동 리스너
     fun moveToScheduleCitySelectScreen() {
         val formattedTitle = scheduleTitle.value
         val startTimestamp = scheduleStartDate.value.seconds // 🔹 Timestamp -> Long 변환

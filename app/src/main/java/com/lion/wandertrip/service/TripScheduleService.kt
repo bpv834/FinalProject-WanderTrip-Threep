@@ -100,8 +100,8 @@ class TripScheduleService(val tripScheduleRepository: TripScheduleRepository) {
 
 
     // 유저 일정 docId로 일정 항목 가져 오기
-    suspend fun fetchScheduleList(scheduleDocId: List<String>): List<TripScheduleModel> {
-        val scheduleItemList = tripScheduleRepository.fetchScheduleList(scheduleDocId)
+    suspend fun fetchScheduleList(scheduleDocIdList: List<String>): List<TripScheduleModel> {
+        val scheduleItemList = tripScheduleRepository.fetchScheduleList(scheduleDocIdList)
         return scheduleItemList.map { it.toTripScheduleModel() }
     }
 
@@ -135,13 +135,18 @@ class TripScheduleService(val tripScheduleRepository: TripScheduleRepository) {
     // hj
     // 내 스케줄 가져오기
     suspend fun gettingMyTripSchedules(userNickName:String) :MutableList<TripScheduleModel>{
-        Log.d("test100","gettingMyTripSchedules")
+        Log.d("test100","service -> gettingMyTripSchedules")
 
         val voList = tripScheduleRepository.gettingMyTripSchedules(userNickName)
         val result = mutableListOf<TripScheduleModel>()
         voList.forEach {
             result.add(it.toTripScheduleModel())
         }
+        result.forEach {
+            Log.d("test100","service -> result : ${it.scheduleTitle}")
+        }
+
+
         return result
     }
 
