@@ -8,6 +8,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.navigation.NavHostController
 import com.kakao.sdk.common.KakaoSdk
+import com.lion.wandertrip.model.TripItemModel
 import com.lion.wandertrip.model.UserModel
 import dagger.hilt.android.HiltAndroidApp
 
@@ -50,4 +51,6 @@ class TripApplication : Application() {
         screenHeight = metrics.heightPixels
         screenRatio = screenWidth.toFloat() / screenHeight.toFloat()
     }
+
+    val popularTripList: MutableList<TripItemModel> = mutableListOf()
 }

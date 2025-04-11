@@ -82,13 +82,13 @@ fun TripSpotItem(
                 rememberAsyncImagePainter(tripItem.firstImage)
             }
 
-            Image(
+           /* Image(
                 painter = imagePainter,
                 contentDescription = null,
                 modifier = Modifier
                     .size(100.dp)
                     .clip(RoundedCornerShape(8.dp))
-            )
+            )*/
 
             Box(
                 modifier = Modifier

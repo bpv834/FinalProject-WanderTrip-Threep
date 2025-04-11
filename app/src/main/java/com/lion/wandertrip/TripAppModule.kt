@@ -4,14 +4,17 @@ import com.lion.wandertrip.repository.ContentsRepository
 import com.lion.wandertrip.repository.ContentsReviewRepository
 import com.lion.wandertrip.repository.TripAreaBaseItemRepository
 import com.lion.wandertrip.repository.TripCommonItemRepository
+import com.lion.wandertrip.repository.TripKeywordItemRepository
 import com.lion.wandertrip.repository.TripScheduleRepository
 import com.lion.wandertrip.repository.UserRepository
 import com.lion.wandertrip.retrofit_for_practice.TripAreaBaseItemInterface
 import com.lion.wandertrip.retrofit_for_practice.TripCommonItemInterface
+import com.lion.wandertrip.retrofit_for_practice.TripKeywordItemInterface
 import com.lion.wandertrip.service.ContentsReviewService
 import com.lion.wandertrip.service.ContentsService
 import com.lion.wandertrip.service.TripAreaBaseItemService
 import com.lion.wandertrip.service.TripCommonItemService
+import com.lion.wandertrip.service.TripKeywordItemService
 import com.lion.wandertrip.service.TripScheduleService
 import com.lion.wandertrip.service.UserService
 import dagger.Module
@@ -108,6 +111,24 @@ object TripAppModule {
         return TripAreaBaseItemService(repository)
     }
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // tripKeywordProvider
+    @Provides
+    @Singleton
+    fun tripKeywordItemCommonInterfaceProvider(retrofit: Retrofit): TripKeywordItemInterface {
+        return retrofit.create(TripKeywordItemInterface::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun tripKeywordItemRepositoryProvider(api: TripKeywordItemInterface): TripKeywordItemRepository {
+        return TripKeywordItemRepository(api)
+    }
+
+    @Provides
+    @Singleton
+    fun tripKeywordItemServiceProvider(repository: TripKeywordItemRepository): TripKeywordItemService {
+        return TripKeywordItemService(repository)
+    }
 
     // contents
 

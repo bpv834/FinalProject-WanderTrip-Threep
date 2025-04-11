@@ -7,4 +7,7 @@
     <color name="teal_700">#FF018786</color>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+
+    <!-- 아주 옅은 블루 색상 (예: 파스텔 블루) -->
+    <color name="light_blue">#E0F7FA</color>
 </resources>

@@ -25,6 +25,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.lion.a02_boardcloneproject.component.CustomTopAppBar
 import com.lion.wandertrip.component.LottieLoadingIndicator
 import com.lion.wandertrip.model.UserModel
 import com.lion.wandertrip.presentation.bottom.home_page.components.PopularTripItem
@@ -48,9 +49,11 @@ fun HomeScreen(
     val contentsModelMap by viewModel.contentsModelMap.observeAsState(emptyMap())
 
     LaunchedEffect(Unit) {
+        // 트립 노트 가져오기
         viewModel.fetchTripNotes()
+        // 스크랩 높은 여행기 가져오기
         viewModel.getTopScrapedTrips()
-        viewModel.fetchRandomTourItems()
+        /*viewModel.fetchRandomTourItems()*/
     }
 
     val navController = viewModel.tripApplication.navHostController
@@ -87,25 +90,16 @@ fun HomeScreen(
         Scaffold(
             containerColor = Color.White,
             topBar = {
-                TopAppBar(
-                    modifier = Modifier.height(56.dp),
-                    colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-                        containerColor = Color(0xFF0077C2),
-                        titleContentColor = Color.White
-                    ),
-                    title = {},
-                    actions = {
-                        IconButton(
-                            onClick = { viewModel.onClickIconSearch() }
-                        ) {
-                            Icon(
-                                imageVector = Icons.Filled.Search,
-                                contentDescription = "검색",
-                                tint = Color.White
-                            )
-                        }
-                    },
-                )
+                CustomTopAppBar(menuItems = {
+                    IconButton(
+                        onClick = { viewModel.onClickIconSearch() }
+                    ) {
+                        Icon(
+                            imageVector = Icons.Filled.Search,
+                            contentDescription = "검색",
+                        )
+                    }
+                })
             }
         ) { paddingValues ->
             Column(
@@ -127,7 +121,8 @@ fun HomeScreen(
                             modifier = Modifier.padding(bottom = 8.dp)
                         )
                     }
-                    items(tripItems) { tripItem ->
+                    items(viewModel.tripApplication.popularTripList) { tripItem ->
+                        if(tripItem.title!="")
                         TripSpotItem(
                             tripItem = tripItem,
                             onItemClick = { viewModel.onClickTrip(tripItem.contentId) },
@@ -136,7 +131,6 @@ fun HomeScreen(
                             onFavoriteClick = { contentId -> viewModel.toggleFavorite(contentId) }
                         )
                     }
-
                     item {
                         Text(
                             text = "🔥 인기 많은 여행기",
@@ -145,13 +139,13 @@ fun HomeScreen(
                             modifier = Modifier.padding(bottom = 8.dp)
                         )
                     }
-                    items(topTrips) { tripNote ->
+                /*    items(topTrips) { tripNote ->
                         PopularTripItem(
                             tripItem = tripNote,
                             imageUrl = imageUrlMap[tripNote.tripNoteImage.firstOrNull()],
                             onItemClick = { viewModel.onClickTripNote(tripNote.tripNoteDocumentId) }
                         )
-                    }
+                    }*/
                 }
             }
         }

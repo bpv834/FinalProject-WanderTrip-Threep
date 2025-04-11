@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools">
+
+    <style name="Theme.Cleanarchitectureexample" parent="android:Theme.Material.Light.NoActionBar" />
+
+    <!-- 스플래시 스크린 설정 (아주 옅은 블루 계열) -->
+    <style name="Theme.MySplashScreen" parent="Theme.Cleanarchitectureexample">
+        <item name="android:windowBackground">@color/light_blue</item>
+        <item name="android:windowSplashScreenAnimatedIcon" tools:targetApi="s">@color/light_blue</item>
+    </style>
+
+</resources>

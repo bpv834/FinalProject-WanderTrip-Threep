@@ -1,8 +1,10 @@
 package com.lion.wandertrip.presentation.user_login_page
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.content.pm.PackageInfo
 import android.content.pm.PackageManager
+import android.os.Build
 import android.util.Log
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.focus.FocusRequester
@@ -153,6 +155,9 @@ class UserLoginViewModel @Inject constructor(
         // getHashKey()
         // 토큰값 가져오기
 
+        // 릴리즈 해시값 불러오기
+        getReleaseKeyHash()
+
         //viewModelScope는 자동으로 취소됨
         //✔ viewModelScope는 ViewModel이 clear() 될 때 자동으로 취소돼!
         //✔ CoroutineScope(Dispatchers.Main).launch {}로 만든 코루틴은 Activity나 Fragment가 종료되어도 계속 실행될 수 있음 → 메모리 누수 위험 🚨
@@ -262,7 +267,10 @@ class UserLoginViewModel @Inject constructor(
         }
     }
 
-    // 키해시 받아오는 메서드
+
+
+
+    // 디버그 키해시 받아오는 메서드
     @OptIn(ExperimentalEncodingApi::class)
     private fun getHashKey() {
         var packageInfo: PackageInfo? = null
@@ -288,6 +296,40 @@ class UserLoginViewModel @Inject constructor(
             } catch (e: NoSuchAlgorithmException) {
                 Log.d("test100", "Unable to get MessageDigest. signature=$signature")
             }
+        }
+    }
+    @OptIn(ExperimentalEncodingApi::class)
+    private fun getReleaseKeyHash() {
+        try {
+            val packageInfo = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                tripApplication.packageManager.getPackageInfo(
+                    tripApplication.packageName,
+                    PackageManager.GET_SIGNING_CERTIFICATES
+                )
+            } else {
+                tripApplication.packageManager.getPackageInfo(
+                    tripApplication.packageName,
+                    PackageManager.GET_SIGNATURES
+                )
+            }
+
+            val signatures = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                packageInfo.signingInfo?.apkContentsSigners
+            } else {
+                @Suppress("DEPRECATION")
+                packageInfo.signatures
+            }
+
+            if (signatures != null) {
+                for (signature in signatures) {
+                    val md = MessageDigest.getInstance("SHA")
+                    md.update(signature.toByteArray())
+                    val keyHash = Base64.encodeToString(md.digest(), Base64.NO_WRAP)
+                    Log.d("KeyHash", "릴리즈 키 해시: $keyHash")
+                }
+            }
+        } catch (e: Exception) {
+            Log.e("KeyHash", "키 해시 구하는 중 오류 발생", e)
         }
     }
 

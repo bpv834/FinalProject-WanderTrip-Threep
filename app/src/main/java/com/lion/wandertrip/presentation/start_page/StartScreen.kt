@@ -22,6 +22,9 @@ import com.lion.wandertrip.util.Tools
 fun StartScreen(startViewModel: StartViewModel = hiltViewModel()){
 
     LaunchedEffect (Unit){
+        startViewModel.tripApplication.popularTripList.forEach {
+            Log.d("test100","model : ${it.title}")
+        }
         startViewModel.autoLoginProcess()
         Log.d("te","시작화면")
         val navController = startViewModel.tripApplication.navHostController

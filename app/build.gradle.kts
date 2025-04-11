@@ -12,19 +12,33 @@ android {
     namespace = "com.lion.wandertrip"
     compileSdk = 35
 
+    signingConfigs {
+        create("release") {
+            storeFile = file("C:/Users/tnsgh/keystores.jks")
+            storePassword = "c1241316"
+            keyAlias = "key0"
+            keyPassword = "c1241316"
+        }
+    }
+
+
     defaultConfig {
         applicationId = "com.lion.wandertrip"
         minSdk = 26
         targetSdk = 35
         versionCode = 2
-        versionName = "1.0"
+        versionName = "1.0.1"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        signingConfig = signingConfigs.getByName("release")
     }
+
+
+
 
     buildTypes {
         release {
-            isMinifyEnabled = true
+            isMinifyEnabled = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
@@ -41,6 +55,13 @@ android {
     buildFeatures {
         compose = true
     }
+    sourceSets {
+        getByName("main") {
+            assets {
+                srcDirs("src\\main\\assets", "src\\main\\assets")
+            }
+        }
+    }
 }
 
 dependencies {
@@ -54,6 +75,7 @@ dependencies {
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
     implementation(libs.androidx.runtime.livedata)
+    implementation(libs.firebase.auth.ktx)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

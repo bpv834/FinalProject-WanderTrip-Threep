@@ -2,8 +2,10 @@ package com.lion.wandertrip
 
 import android.app.appsearch.SearchResult
 import android.app.appsearch.SearchResults
+import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -18,7 +20,9 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.lion.wandertrip.presentation.bottom.trip_note_page.TripNoteScreen
 import androidx.navigation.navArgument
+import com.google.firebase.Firebase
 import com.google.firebase.Timestamp
+import com.google.firebase.auth.auth
 import com.lion.wandertrip.presentation.detail_page.DetailScreen
 import com.lion.wandertrip.presentation.detail_review_modify_page.DetailReviewModifyScreen
 import com.lion.wandertrip.presentation.detail_review_write_page.DetailReviewWriteScreen
@@ -65,6 +69,17 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+
+        // Firebase Auth 익명 로그인
+        Firebase.auth.signInAnonymously()
+            .addOnCompleteListener { task ->
+                if (task.isSuccessful) {
+                    Log.d("FirebaseAuth", "로그인 성공: ${task.result?.user?.uid}")
+                } else {
+                    Log.e("FirebaseAuth", "로그인 실패", task.exception)
+                }
+            }
+
         setContent {
             WanderTripTheme {
                 MyApp()

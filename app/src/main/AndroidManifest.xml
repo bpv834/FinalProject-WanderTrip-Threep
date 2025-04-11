@@ -22,15 +22,28 @@
         android:usesCleartextTraffic="true">
 
         <activity
+            android:name=".SplashActivity"
+            android:theme="@style/Theme.MySplashScreen"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <activity
             android:name=".MainActivity"
             android:exported="true"
             android:label="@string/app_name"
             android:theme="@style/Theme.WanderTrip">
-            <intent-filter>
+           <!-- <intent-filter>
+           액티비티의 역할
+           android.intent.action.MAIN	이 액티비티는 앱의 진입점이다 (MainActivity 역할).
+           android.intent.category.LAUNCHER	이 액티비티는 앱 서랍(런처)에 앱 아이콘을 통해 실행될 수 있다. 즉, 홈 화면에 아이콘 눌렀을 때 이 액티비티가 열림.
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
+            </intent-filter>-->
         </activity>
         <meta-data android:name="com.google.android.geo.API_KEY"
             android:value="AIzaSyD1L-3uTrLK-Ic3JlNFNc6IybLkIozDVy4"/>
