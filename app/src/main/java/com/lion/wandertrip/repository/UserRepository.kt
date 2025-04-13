@@ -229,24 +229,21 @@ class UserRepository {
     // userDocID로 Firestore에서 userLikeList 필드만 가져오는 함수
     suspend fun getUserLikeList(userDocId: String): List<String> {
         val firestore = FirebaseFirestore.getInstance()
-        val collectionReference = firestore.collection("UserData")
+        val collectionReference = firestore
+            .collection("UserData")
+            .document(userDocId)
+            .collection("UserLikeList")
 
         return try {
-            val documentSnapshot = collectionReference.document(userDocId).get().await()
+            val querySnapshot = collectionReference.get().await()
 
-            if (documentSnapshot.exists()) {
-                Log.d("Firestore", "문서 존재함 - userDocId: $userDocId")
+            // 🔥 각 문서의 "contentId" 필드만 꺼내기
+            val likeList = querySnapshot.documents.mapNotNull { it.getString("contentId") }
 
-                // ✅ userLikeList 필드만 가져오기
-                val userLikeList = documentSnapshot.get("userLikeList") as? List<String> ?: emptyList()
-                Log.d("Firestore", "가져온 userLikeList: $userLikeList")
-                userLikeList
-            } else {
-                Log.d("Firestore", "문서 없음 - userDocId: $userDocId")
-                emptyList()
-            }
+            Log.d("getUserLikeList", "서브컬렉션에서 가져온 contentId 리스트: $likeList")
+            likeList
         } catch (e: Exception) {
-            Log.e("Firestore", "오류 발생 - userDocId: $userDocId", e)
+            Log.e("getUserLikeList", "오류 발생 - userDocId: $userDocId", e)
             e.printStackTrace()
             emptyList()
         }

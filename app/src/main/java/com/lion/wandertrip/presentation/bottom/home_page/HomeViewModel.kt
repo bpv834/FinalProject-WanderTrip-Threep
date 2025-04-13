@@ -1,13 +1,10 @@
 package com.lion.wandertrip.presentation.bottom.home_page
 
 import android.content.Context
-import android.system.Os.remove
 import android.util.Log
-import androidx.compose.runtime.mutableStateListOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.compose.runtime.mutableStateMapOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.google.firebase.firestore.FirebaseFirestore
@@ -20,10 +17,7 @@ import com.lion.wandertrip.model.TripNoteModel
 import com.lion.wandertrip.model.UserModel
 import com.lion.wandertrip.service.ContentsService
 import com.lion.wandertrip.service.TripAreaBaseItemService
-import com.lion.wandertrip.service.TripScheduleService
-import com.lion.wandertrip.util.BotNavScreenName
 import com.lion.wandertrip.service.UserService
-import com.lion.wandertrip.util.AreaCode
 import com.lion.wandertrip.util.MainScreenName
 import com.lion.wandertrip.util.TripNoteScreenName
 import com.lion.wandertrip.vo.TripNoteVO
@@ -31,6 +25,8 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
@@ -44,20 +40,12 @@ class HomeViewModel @Inject constructor(
     val userService: UserService
 ) : ViewModel(){
 
-    val tripApplication = context as TripApplication
 
-    val userLikeList = mutableStateOf(tripApplication.loginUserModel.userLikeList)
+    val tripApplication = context as TripApplication
 
     // ✅ 사용자 정보 (LiveData로 관리하여 UI에서 감지할 수 있도록 변경)
     private val _userModel = MutableLiveData<UserModel>()
     val userModel: LiveData<UserModel> get() = _userModel
-
-    // ✅ 좋아요 리스트 (Compose에서 감지 가능하도록 관리)
-    val userLikeListCompose = mutableStateOf(listOf<String>())
-
-    init {
-        fetchUserData() // ✅ ViewModel 초기화 시 사용자 데이터 로드
-    }
 
     private val _topScrapedTrips = MutableLiveData<List<TripNoteModel>>()
     val topScrapedTrips: LiveData<List<TripNoteModel>> get() = _topScrapedTrips
@@ -76,38 +64,50 @@ class HomeViewModel @Inject constructor(
 
     private var isFetched = false // 🔥 데이터가 로드되었는지 여부를 저장
 
-    private val _contentsModelMap = MutableLiveData<Map<String, ContentsModel>>() // ✅ 여러 개 관리 가능
-    val contentsModelMap: LiveData<Map<String, ContentsModel>> get() = _contentsModelMap
+    private val _contentsModelMap = MutableStateFlow<Map<String, ContentsModel>>(emptyMap())
+    val contentsModelMap: StateFlow<Map<String, ContentsModel>> get() = _contentsModelMap
 
-    fun fetchContentsModel(contentDocId: String) {
+    // 사용자 좋아요 맵 상태변수
+    private val _favoriteMap = MutableStateFlow<Map<String, Boolean>>(emptyMap())
+    // get 변수
+    val favoriteMap: StateFlow<Map<String, Boolean>> = _favoriteMap
+
+    fun loadFavorites() {
+        Log.d("loadFavorites","loadFavorites 메서드 실행")
         viewModelScope.launch {
-            val contentsData = contentsService.getContentByDocId(contentDocId)
-            _contentsModelMap.value = _contentsModelMap.value.orEmpty() + (contentDocId to contentsData)
-            // ✅ 기존 데이터 유지하면서 새로운 값 추가
+            // 좋아요 목록 컨텐츠 아이디 리스트 가져오기
+            val result = userService.gettingUserLikeList(tripApplication.loginUserModel.userDocId) // 서버 통신
+            // associateBy -> key, value 로 맵을 생성
+            _favoriteMap.value = result.associateBy({ it }, { true })
+            result.forEach { Log.d("loadFavorites","contentId: ${it}") }
         }
     }
 
-    // 🔥 Firestore에서 사용자 정보 가져오기
-    private fun fetchUserData() {
+    // 좋아요 버튼 누를 때 리스너
+    fun toggleFavorite(contentId: String) {
         viewModelScope.launch {
-            val userDocId = tripApplication.loginUserModel.userDocId
-            val userLikeListFromFirestore = userService.gettingUserLikeList(userDocId)
+            val current = _favoriteMap.value.toMutableMap()
+            val isFav = current[contentId] == true
+            // t  상태일때 누르면 f로 전환
+            if (isFav) {
+                removeLikeItem(contentId)
+                current[contentId] = false
+            } else {
+                // f  상태일때 누르면 t로 전환
 
-            _userModel.value = UserModel(userDocId = userDocId, userLikeList = userLikeListFromFirestore)
-            userLikeList.value = userLikeListFromFirestore // ✅ 좋아요 리스트 초기화
+                addLikeItem(contentId)
+                current[contentId] = true
+            }
+            _favoriteMap.value = current
         }
     }
 
-    // 🔥 무작위 관광지 데이터를 가져오는 함수
-    fun fetchRandomTourItems() {
-        if (isFetched) return // 이미 데이터가 로드되었다면 다시 호출하지 않음
-
+    fun fetchContentsModel(contentId: String) {
+        Log.d("test100","fetchContentsModel")
         viewModelScope.launch {
-            _isLoading.value = true // ✅ 검색 시작 전 로딩 시작
-            val items = tripAreaBaseItemService.getTripAreaBaseItem()
-            _randomTourItems.value = items ?: emptyList()
-            _isLoading.value = false // ✅ 검색 시작 전 로딩 시작
-            isFetched = true // ✅ 데이터 로드 완료 표시
+            val contentsData = contentsService.getContentByContentsId(contentId)
+            _contentsModelMap.value = _contentsModelMap.value.orEmpty() + (contentId to contentsData)
+            Log.d("test100","map : ${_contentsModelMap.value}")
         }
     }
 
@@ -130,45 +130,16 @@ class HomeViewModel @Inject constructor(
             val work1 = async(Dispatchers.IO) {
                 userService.removeLikeItem(tripApplication.loginUserModel.userDocId, likeItemContentId)
             }
+            work1.join()
 
             val work2 = async(Dispatchers.IO) {
                 userService.removeLikeCnt(likeItemContentId)
             }
+            work2.join()
         }
     }
 
-    fun toggleFavorite(contentId: String) {
-        viewModelScope.launch {
-            val userDocId = _userModel.value?.userDocId ?: return@launch // ✅ userModel이 null이면 실행하지 않음
-
-            val isLiked = userLikeList.value.contains(contentId)
-
-            if (isLiked) {
-                removeLikeItem(contentId) // ✅ 기존 관심 목록에서 제거
-            } else {
-                addLikeItem(contentId) // ✅ 관심 목록에 추가
-            }
-
-            // ✅ UI 상태 즉시 반영 (새로운 리스트 객체 할당)
-            val updatedList = if (isLiked) {
-                userLikeList.value.filter { it != contentId } // ✅ 리스트에서 제거
-            } else {
-                userLikeList.value + contentId // ✅ 리스트에 추가
-            }
-
-            userLikeList.value = updatedList
-
-            // ✅ _userModel의 값을 변경하여 Compose가 감지하도록 설정
-            _userModel.value = _userModel.value?.let { userModel ->
-                UserModel(
-                    userDocId = userModel.userDocId,
-                    userLikeList = updatedList // ✅ 새로운 리스트 객체 할당
-                )
-            }
-        }
-    }
-
-
+    // 여행기 가져오기
     fun fetchTripNotes() {
         viewModelScope.launch {
             try {

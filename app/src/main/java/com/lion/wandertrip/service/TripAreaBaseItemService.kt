@@ -7,7 +7,7 @@ import com.lion.wandertrip.repository.TripAreaBaseItemRepository
 
 class TripAreaBaseItemService(private val repository: TripAreaBaseItemRepository) {
 
-    suspend fun getTripAreaBaseItem(): List<TripItemModel>? {
+/*    suspend fun getTripAreaBaseItem(): List<TripItemModel>? {
         return try {
             val tripItem = repository.gettingAreaBaseTourItems()
             // 데이터를 반환
@@ -17,7 +17,7 @@ class TripAreaBaseItemService(private val repository: TripAreaBaseItemRepository
             Log.e("TripCommonItemService", "Error occurred while getting trip common item", e)
             null
         }
-    }
+    }*/
 
     suspend fun getTripAllItem(): List<TripItemModel>? {
         return try {

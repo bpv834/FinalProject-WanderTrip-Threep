@@ -13,13 +13,12 @@ class TripKeywordItemRepository(private val api: TripKeywordItemInterface) {
     suspend fun gettingTripItemByKeyword(keyword: String): TripItemModel? {
         return try {
             val response = api.getKeywordTripItem(
-                numOfRows = 10,
+                numOfRows = 20,
                 pageNo = 1,
                 mobileOS = "ETC",
                 mobileApp = "WanderTrip",
                 type = "json",
                 listYN = "Y",
-                arrange = "Q",
                 keyword = keyword,
                 serviceKey = myKey
             )
@@ -36,6 +35,7 @@ class TripKeywordItemRepository(private val api: TripKeywordItemInterface) {
                         tel = it.tel ?: "",
                         firstImage = it.firstImage ?: "",
                         areaCode = it.areaCode ?: "",
+                        sigunguCode = it.siGunGuCode?:"",
                         addr1 = it.addr1 ?: "",
                         addr2 = it.addr2 ?: "",
                         mapLat = it.mapLat?.toDouble() ?: 0.0,

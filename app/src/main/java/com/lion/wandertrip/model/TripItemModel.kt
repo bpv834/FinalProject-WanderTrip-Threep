@@ -6,6 +6,7 @@ class TripItemModel(
     var addr1: String = "",          // 주소
     var addr2: String = "",          // 상세주소
     var areaCode: String = "",       // 지역코드
+    var sigunguCode : String = "",   // 시군구 코드
     var contentId: String = "",      // 항목 ID
     var contentTypeId: String = "",  // 12: 관광지, 32: 숙박, 39: 음식점
     var firstImage: String = "",     // 이미지 URi

@@ -14,7 +14,7 @@ interface TripKeywordItemInterface {
         @Query("MobileApp") mobileApp: String = "AppTest",
         @Query("_type") type: String = "json",
         @Query("listYN") listYN: String = "Y",
-        @Query("arrange") arrange: String = "Q",
+        @Query("arrange") arrange: String = "O",
         @Query("keyword") keyword: String,
         @Query("serviceKey") serviceKey: String
     ): Response<TripCommonItemsApiResponse>

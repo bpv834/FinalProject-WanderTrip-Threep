@@ -41,13 +41,15 @@ class SplashViewModel @Inject constructor(
         result
     }
 
-    // 관광지명으로 tripItemModel 를 찾아 module에 저장하기
+    // 관광지명으로 tripItemModel 를 찾는 메서드 -> 찾아 모듈에 리스트 저장
     suspend fun getTripModelList(list: MutableList<String>) = withContext(Dispatchers.IO) {
         val tripList = mutableListOf<TripItemModel>()
         list.forEach {
             val item = tripKeywordItemService.gettingTripItemByKeyword(it)
+            if(item!=null)
             tripList.add(item ?: TripItemModel())
         }
+        // 모듈에 저장한다
         tripApplication.popularTripList.addAll(tripList)
     }
 

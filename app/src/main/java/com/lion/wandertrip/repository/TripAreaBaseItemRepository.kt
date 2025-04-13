@@ -8,7 +8,7 @@ class TripAreaBaseItemRepository(private val api: TripAreaBaseItemInterface) {
     val myKey =
         "qe8EY3d1ixNdu4/lC0aXJXbTH/VndGcoj5DABUigtfSCLIIP48IHXbwMEkG5gkGvVW/wKl1XuuFyqYwwWQZJDg=="
 
-    suspend fun gettingAreaBaseTourItems(): List<TripItemModel>? {
+   /* suspend fun gettingAreaBaseTourItems(): List<TripItemModel>? {
         return try {
             val response = api.getAreaBaseTripItem(
                 serviceKey = myKey,
@@ -36,6 +36,7 @@ class TripAreaBaseItemRepository(private val api: TripAreaBaseItemInterface) {
                             tel = it.tel ?: "",
                             firstImage = it.firstImage ?: "",
                             areaCode = it.areaCode ?: "",
+                            sigunguCode = it.siGunGuCode?:"",
                             addr1 = it.addr1 ?: "",
                             addr2 = it.addr2 ?: "",
                             mapLat = it.mapLat?.toDoubleOrNull() ?: 0.0,
@@ -54,7 +55,7 @@ class TripAreaBaseItemRepository(private val api: TripAreaBaseItemInterface) {
             null
         }
     }
-
+*/
 
     suspend fun gettingAllItem(): List<TripItemModel>? {
         return try {
@@ -79,6 +80,7 @@ class TripAreaBaseItemRepository(private val api: TripAreaBaseItemInterface) {
                             tel = it.tel ?: "",
                             firstImage = it.firstImage ?: "",
                             areaCode = it.areaCode ?: "",
+                            sigunguCode = it.siGunGuCode?:"",
                             addr1 = it.addr1 ?: "",
                             addr2 = it.addr2 ?: "",
                             mapLat = it.mapLat?.toDoubleOrNull() ?: 0.0, // 🔥 문자열을 Double로 변환
