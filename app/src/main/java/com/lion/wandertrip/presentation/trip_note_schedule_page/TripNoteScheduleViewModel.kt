@@ -31,14 +31,14 @@ class TripNoteScheduleViewModel @Inject constructor(
     var tripNoteScheduleList = mutableStateListOf<TripScheduleModel?>()
 
     val tripApplication = context as TripApplication
-    val userNickName = tripApplication.loginUserModel.userNickName
+    val userDocId = tripApplication.loginUserModel.userDocId
 
     // 리사이클러뷰 데이터 리스트 (로그인한 사용자의 일정)
     fun gettingTripNoteScheduleData() {
 
         CoroutineScope(Dispatchers.Main).launch {
             val work1 = async(Dispatchers.IO){
-                tripNoteService.gettingUserScheduleList(userNickName)
+                tripNoteService.getTripSchedulesByUserDocId(userDocId)
             }
             val recyclerViewList  = work1.await()
 

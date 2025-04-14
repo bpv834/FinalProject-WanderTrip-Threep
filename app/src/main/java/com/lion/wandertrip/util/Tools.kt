@@ -136,51 +136,67 @@ class Tools {
         // 여러 사진을 한번에 가져와 담는 메서드 hj
         fun getAlbumDataList(context: Context, previewUris: List<Uri>, previewBitmap: MutableList<Bitmap?>) {
             previewUris.forEach { previewUri ->
+                Log.d("test100", "처리 중인 URI: $previewUri")
+
                 val bitmap: Bitmap? = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                    val source = ImageDecoder.createSource(context.contentResolver, previewUri)
-                    ImageDecoder.decodeBitmap(source)
-                } else {
-                    var resultBitmap: Bitmap? = null
-                    val projection = arrayOf(MediaStore.Images.Media.DATA)
-
-                    context.contentResolver.query(previewUri, projection, null, null, null)?.use { cursor ->
-                        if (cursor.moveToFirst()) {
-                            val columnIndex = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA)
-                            val filePath = cursor.getString(columnIndex)
-                            resultBitmap = BitmapFactory.decodeFile(filePath)
-                        }
+                    // API 29 이상에서는 ImageDecoder 사용
+                    try {
+                        Log.d("test100", "API 29 이상: ImageDecoder 사용")
+                        val source = ImageDecoder.createSource(context.contentResolver, previewUri)
+                        val decodedBitmap = ImageDecoder.decodeBitmap(source)
+                        Log.d("test100", "이미지 디코딩 성공: $decodedBitmap")
+                        decodedBitmap
+                    } catch (e: Exception) {
+                        Log.e("test100", "ImageDecoder 에러: ${e.message}")
+                        null
                     }
-
+                } else {
+                    // API 28 이하에서는 ContentResolver를 통해 InputStream으로 Bitmap 생성
+                    var resultBitmap: Bitmap? = null
+                    try {
+                        val inputStream = context.contentResolver.openInputStream(previewUri)
+                        resultBitmap = BitmapFactory.decodeStream(inputStream)  // InputStream에서 Bitmap 생성
+                        Log.d("test100", "이미지 디코딩 성공: $resultBitmap")
+                    } catch (e: Exception) {
+                        Log.e("test100", "BitmapFactory 에러: ${e.message}")
+                    }
                     resultBitmap
                 }
 
+                // bitmap이 null이 아니면 리스트에 추가
                 bitmap?.let {
                     val resizedBitmap = resizeBitmap(1024, it)
                     previewBitmap.add(resizedBitmap)  // 리스트에 추가
-                }
+                    Log.d("test100", "리사이즈된 이미지 추가됨: $resizedBitmap")
+                } ?: Log.d("test100", "이미지 디코딩 실패")
             }
         }
 
 
 
-
         fun takeAlbumDataList(context: Context, previewUri: Uri?, previewBitmap: MutableList<Bitmap?>) {
-            // 가져온 사진이 있다면
             if (previewUri != null) {
-                val bitmap = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                    val source = ImageDecoder.createSource(context.contentResolver, previewUri)
-                    ImageDecoder.decodeBitmap(source)
-                } else {
-                    val cursor = context.contentResolver.query(previewUri, null, null, null, null)
-                    cursor?.moveToNext()
-                    val idx = cursor?.getColumnIndex(MediaStore.Images.Media.DATA)
-                    val source = cursor?.getString(idx!!)
-
-                    BitmapFactory.decodeFile(source)
+                val bitmap: Bitmap? = try {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) { // P == API 28
+                        val source = ImageDecoder.createSource(context.contentResolver, previewUri)
+                        ImageDecoder.decodeBitmap(source)
+                    } else {
+                        // 이전 버전도 InputStream으로 처리
+                        val inputStream = context.contentResolver.openInputStream(previewUri)
+                        BitmapFactory.decodeStream(inputStream).also {
+                            inputStream?.close()
+                        }
+                    }
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                    null
                 }
 
-                val resizeBitmap = resizeBitmap(1024, bitmap)
-                previewBitmap.add(resizeBitmap)  // 리스트에 추가
+                // 리사이즈하고 리스트에 추가
+                bitmap?.let {
+                    val resizeBitmap = resizeBitmap(1024, it)
+                    previewBitmap.add(resizeBitmap)
+                }
             }
         }
 

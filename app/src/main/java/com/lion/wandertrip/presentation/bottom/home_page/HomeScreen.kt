@@ -48,11 +48,8 @@ fun HomeScreen(
     val favoriteMap by viewModel.favoriteMap.collectAsState()
 
     LaunchedEffect(Unit) {
-        // 트립 노트 가져오기
-        viewModel.fetchTripNotes()
         // 스크랩 높은 여행기 가져오기
         viewModel.getTopScrapedTrips()
-        /*viewModel.fetchRandomTourItems()*/
         // 유저 좋아요 목록 content ID 가져오기
         viewModel.loadFavorites()
     }
@@ -151,7 +148,6 @@ fun HomeScreen(
                     items(topTrips) { tripNote ->
                         PopularTripNoteItem(
                             tripItem = tripNote,
-                            imageUrl = imageUrlMap[tripNote.tripNoteImage.firstOrNull()],
                             onItemClick = { viewModel.onClickTripNote(tripNote.tripNoteDocumentId) }
                         )
                     }

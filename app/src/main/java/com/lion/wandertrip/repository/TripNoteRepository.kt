@@ -8,7 +8,6 @@ import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
 import com.google.firebase.storage.FirebaseStorage
-import com.lion.wandertrip.model.TripNoteModel
 import com.lion.wandertrip.vo.ScheduleItemVO
 import com.lion.wandertrip.vo.TripNoteReplyVO
 import com.lion.wandertrip.vo.TripNoteVO
@@ -145,44 +144,40 @@ class TripNoteRepository@Inject constructor() {
 //        return resultList
 //    }
 
-    // 닉네임을 통해 유저의 일정 리스트를 가져오는 메서드
-    suspend fun gettingUserScheduleList(userNickName: String): MutableList<Map<String, *>>  {
+    // 유저 문서 아이디로 일정 가져오기
+    suspend fun getTripSchedulesByUserDocId(userDocId: String): MutableList<TripScheduleVO> {
         val firestore = FirebaseFirestore.getInstance()
 
-        // 1️⃣ UserData 컬렉션에서 userNickName이 일치하는 문서 찾기
-        val userDocumentSnapshot = firestore.collection("UserData")
-            .whereEqualTo("userNickName", userNickName)
-            .get()
-            .await()
-            .documents
-            .firstOrNull() // 닉네임이 일치하는 첫 번째 문서 가져오기
-
-        // userScheduleList 필드에서 여행 일정 ID 리스트 가져오기
-        val scheduleIdList = userDocumentSnapshot?.get("userScheduleList") as? List<String> ?: emptyList()
-
-        if (scheduleIdList.isEmpty()) return mutableListOf() // 일정이 없으면 빈 리스트 반환
-
-        // 2️⃣ TripSchedule 컬렉션에서 해당 documentId를 가진 문서들 조회
-        val result = firestore.collection("TripSchedule")
-            .whereIn(FieldPath.documentId(), scheduleIdList)
+        // 1️⃣ UserScheduleData 서브컬렉션에서 tripScheduleDocId 리스트 추출
+        val userSchedules = firestore.collection("UserData")
+            .document(userDocId)
+            .collection("UserScheduleData")
             .get()
             .await()
 
+        // tripScheduleDocId 필드만 모아 리스트 생성
+        val tripScheduleIdList = userSchedules.mapNotNull { it.getString("tripScheduleDocId") }
 
+        if (tripScheduleIdList.isEmpty()) return mutableListOf()
 
-        // 반환할 리스트
-        val resultList = mutableListOf<Map<String, *>>()
-        // 데이터의 수 만큼 반환한다.
-        result.forEach {
-            val tripScheduleVO = it.toObject(TripScheduleVO::class.java) // TripNoteVO 객체 가져오기
-            val map = mapOf(
-                // 문서의 id
-                "documentId" to it.id,
-                // 데이터를 가지고 있는 객체
-                "tripScheduleVO" to tripScheduleVO,
-            )
-            resultList.add(map)
+        val resultList = mutableListOf<TripScheduleVO>()
+
+        // 2️⃣ 10개씩 나눠서 whereIn으로 TripSchedule 조회
+        tripScheduleIdList.chunked(10).forEach { idChunk ->
+            val snapshot = firestore.collection("TripSchedule")
+                .whereIn(FieldPath.documentId(), idChunk)
+                .get()
+                .await()
+
+            snapshot.documents.forEach { doc ->
+                val tripScheduleVO = doc.toObject(TripScheduleVO::class.java)
+                resultList.add(tripScheduleVO?:TripScheduleVO())
+            }
+
+            // 3️⃣ 리스트 개수와 일치하면 바로 반환
+            if (resultList.size >= tripScheduleIdList.size) return@forEach
         }
+
         return resultList
     }
 
@@ -481,6 +476,51 @@ class TripNoteRepository@Inject constructor() {
         } catch (e: Exception) {
             Log.e("test100", "닉네임 변경 중 오류 발생: $e", e)
         }
+    }
+
+    // 이미지 데이터를 서버로 업로드 하는 메서드
+    suspend fun uploadTripNoteImageList(
+        sourceFilePath: List<String>, // 업로드할 이미지 파일 경로 목록
+        serverFilePath: List<String>, // 서버에 저장될 파일 이름 목록
+        noteTitle: String // 해당 콘텐츠의 ID
+    ): List<String> { // 반환 타입을 List<String>으로 변경하여 이미지 다운로드 URL을 반환
+        // 업로드된 이미지의 URL들을 저장할 리스트
+        val downloadUrls = mutableListOf<String>()
+
+        // 리스트의 각 파일에 대해 업로드 작업을 순차적으로 수행
+        for (i in sourceFilePath.indices) {
+            val sourceFile = File(sourceFilePath[i])  // 소스 파일 경로
+            val fileUri = Uri.fromFile(sourceFile)
+
+            Log.d("FirebaseStorage", "업로드 중: ${sourceFile.path}, 존재 여부: ${sourceFile.exists()}")
+
+            // Firebase Storage의 경로 설정
+            val firebaseStorage = FirebaseStorage.getInstance()
+            val childReference = firebaseStorage.reference.child("tripNoteImage/$noteTitle/${serverFilePath[i]}")
+
+            try {
+                Log.d("FirebaseStorage", "업로드 시작: ${fileUri.path} -> ${childReference.path}")
+
+                // 파일 업로드
+                val uploadTask = childReference.putFile(fileUri).await()
+
+                Log.d("FirebaseStorage", "업로드 성공: ${fileUri.path}")
+
+                // 업로드 완료 후 다운로드 URL 가져오기
+                val downloadUrl = childReference.downloadUrl.await().toString()
+
+                Log.d("FirebaseStorage", "다운로드 URL: $downloadUrl")
+
+                // 다운로드 URL을 리스트에 추가
+                downloadUrls.add(downloadUrl)
+            } catch (e: Exception) {
+                // 업로드 실패 시 로그 출력
+                Log.e("FirebaseStorage", "파일 업로드 실패: ${sourceFile.path}", e)
+            }
+        }
+
+        // 최종적으로 다운로드 URL 리스트를 반환
+        return downloadUrls
     }
 
 }

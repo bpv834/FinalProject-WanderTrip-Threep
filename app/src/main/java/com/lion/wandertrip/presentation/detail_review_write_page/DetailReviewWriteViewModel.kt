@@ -52,72 +52,98 @@ class DetailReviewWriteViewModel @Inject constructor(
     }
 
     // 리뷰 올리는 메서드
-    fun addContentsReview(contentId: String, title : String) {
-        Log.d("test100"," title $title")
-        viewModelScope.launch {
+    fun addContentsReview(contentId: String, title: String) {
+        Log.d("addContentsReview", "▶ 리뷰 작성 시작 - contentId: $contentId, title: $title")
 
+        viewModelScope.launch {
             val imagePathList = mutableListOf<String>()
             val serverFilePathList = mutableListOf<String>()
             var contentsDocId = ""
             var imageUrlList = listOf<String>()
 
-
             if (isImagePicked.value) {
+                Log.d("addContentsReview", "✔ 이미지가 선택됨 - 비트맵 수: ${mutableBitMapList.size}")
 
-                // 외장 메모리에 bitmap 저장
                 mutableBitMapList.forEachIndexed { index, bitmap ->
                     val name = "image_${index}_${System.currentTimeMillis()}.jpg"
                     serverFilePathList.add(name)
 
-                    val savedFilePath = Tools.saveBitmaps(tripApplication, bitmap!!, name)
-
-                    imagePathList.add(savedFilePath)
+                    try {
+                        val savedFilePath = Tools.saveBitmaps(tripApplication, bitmap!!, name)
+                        imagePathList.add(savedFilePath)
+                        Log.d("addContentsReview", "✔ 이미지 저장 완료 - $savedFilePath")
+                    } catch (e: Exception) {
+                        Log.e("addContentsReview", "❌ 이미지 저장 실패 - index: $index, error: ${e.message}")
+                    }
                 }
+            } else {
+                Log.d("addContentsReview", "✖ 이미지 선택 안됨 - 이미지 업로드 스킵")
             }
 
             if (isImagePicked.value) {
+                Log.d("addContentsReview", "▶ 이미지 업로드 시작 - 파일 수: ${imagePathList.size}")
                 val work1 = async(Dispatchers.IO) {
-                    uploadImage(imagePathList, serverFilePathList, contentId)
+                    try {
+                        uploadImage(imagePathList, serverFilePathList, contentId)
+                    } catch (e: Exception) {
+                        Log.e("addContentsReview", "❌ 이미지 업로드 실패: ${e.message}")
+                        emptyList<String>()
+                    }
                 }
                 imageUrlList = work1.await()
-            } else {
-                Log.d("addContentsReview", "이미지 선택 안 됨, 업로드 스킵")
+                Log.d("addContentsReview", "✔ 이미지 업로드 완료 - URL 리스트: $imageUrlList")
             }
 
-            contentsDocId = contentsService.isContentExists(contentId)
-
-
-            //  업로드가 끝난 후 리뷰 데이터 저장
+            try {
+                contentsDocId = contentsService.isContentExists(contentId)
+                Log.d("addContentsReview", "✔ 콘텐츠 존재 확인 - DocId: $contentsDocId")
+            } catch (e: Exception) {
+                Log.e("addContentsReview", "❌ 콘텐츠 존재 확인 실패: ${e.message}")
+            }
 
             val review = ReviewModel().apply {
                 reviewTitle = title
                 contentsId = contentId
                 reviewContent = reviewContentValue.value
-                reviewImageList = imageUrlList // ✅ 업로드 완료 후 URL 리스트 저장
+                reviewImageList = imageUrlList
                 reviewRatingScore = ratingScoreValue.value
                 reviewWriterNickname = tripApplication.loginUserModel.userNickName
-                reviewWriterProfileImgURl =
-                    userService.gettingImage(tripApplication.loginUserModel.userProfileImageURL)
-                        .toString()
+                reviewWriterProfileImgURl = try {
+                    userService.gettingImage(tripApplication.loginUserModel.userProfileImageURL).toString()
+                } catch (e: Exception) {
+                    Log.e("addContentsReview", "❌ 프로필 이미지 URL 불러오기 실패: ${e.message}")
+                    ""
+                }
             }
 
-            if (contentsDocId.isNotEmpty()) {
-                Log.d("addContentsReview", "기존 콘텐츠 문서 있음 - 리뷰 추가 중")
-                contentsReviewService.addContentsReview(contentId, review)
-            } else {
-                Log.d("addContentsReview", "기존 콘텐츠 문서 없음 - 새 문서 생성 후 리뷰 추가 중")
-                val contents = ContentsModel(contentId = contentId)
-                contentsDocId = contentsService.addContents(contents)
-                contentsReviewService.addContentsReview(contentId, review)
+            try {
+                if (contentsDocId.isNotEmpty()) {
+                    Log.d("addContentsReview", "✔ 기존 콘텐츠 문서 있음 - 리뷰 추가 중")
+                    contentsReviewService.addContentsReview(contentId, review)
+                } else {
+                    Log.d("addContentsReview", "🆕 콘텐츠 문서 없음 - 새 문서 생성 중")
+                    val contents = ContentsModel(contentId = contentId)
+                    contentsDocId = contentsService.addContents(contents)
+                    Log.d("addContentsReview", "✔ 새 콘텐츠 문서 생성 완료 - DocId: $contentsDocId")
+                    contentsReviewService.addContentsReview(contentId, review)
+                }
+            } catch (e: Exception) {
+                Log.e("addContentsReview", "❌ 리뷰 추가 실패: ${e.message}")
             }
-            // 컨텐츠의 별점 부분을 업데이트 한다.
-            val work2 = async(Dispatchers.IO) {
-                addReviewAndUpdateContents(contentsDocId)
+
+            try {
+                val work2 = async(Dispatchers.IO) {
+                    addReviewAndUpdateContents(contentsDocId)
+                }
+                work2.join()
+                Log.d("addContentsReview", "✔ 콘텐츠 별점 업데이트 완료")
+            } catch (e: Exception) {
+                Log.e("addContentsReview", "❌ 별점 업데이트 실패: ${e.message}")
             }
-            work2.join()
 
             tripApplication.navHostController.popBackStack()
-            isLoading.value=false
+            isLoading.value = false
+            Log.d("addContentsReview", "🏁 리뷰 작성 종료")
         }
     }
 

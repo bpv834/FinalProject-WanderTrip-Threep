@@ -76,15 +76,13 @@ class TripNoteService @Inject constructor(val tripNoteRepository: TripNoteReposi
     }
 
     // 내 여행일정 가져오기
-    suspend fun gettingUserScheduleList(userNickName : String) : MutableList<TripScheduleModel>{
+    suspend fun getTripSchedulesByUserDocId(userDocId : String) : MutableList<TripScheduleModel>{
         // 여행기 정보를 가져온다.
         val tripNoteList = mutableListOf<TripScheduleModel>()
-        val resultList = tripNoteRepository.gettingUserScheduleList(userNickName)
+        val resultList = tripNoteRepository.getTripSchedulesByUserDocId(userDocId)
 
         resultList.forEach {
-            val tripNoteVO = it["tripScheduleVO"] as TripScheduleVO
-            // val documentId = it["documentId"] as String
-            val tripNoteModel = tripNoteVO.toTripScheduleModel()
+            val tripNoteModel = it.toTripScheduleModel()
             tripNoteList.add(tripNoteModel)
         }
 
@@ -218,5 +216,10 @@ class TripNoteService @Inject constructor(val tripNoteRepository: TripNoteReposi
     // 등록된 문서 닉네임 바꾸기
     suspend fun changeTripNoteNickname(oldNickName: String, newNickName: String) {
         tripNoteRepository.changeTripNoteNickname(oldNickName,newNickName)
+    }
+
+    // 이미지 데이터를 서버로 업로드 하는 메서드
+    suspend fun uploadTripNoteImageList(sourceFilePath: List<String>, serverFilePath: MutableList<String>, noteTitle: String) :List<String>  {
+        return tripNoteRepository.uploadTripNoteImageList(sourceFilePath,serverFilePath,noteTitle)
     }
 }

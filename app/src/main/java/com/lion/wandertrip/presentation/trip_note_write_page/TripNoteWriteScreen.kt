@@ -67,6 +67,7 @@ fun TripNoteWriteScreen(
     // 앨범용 런처
     val albumLauncher = rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) {
         Tools.takeAlbumDataList(context, it, tripNoteWriteViewModel.tripNotePreviewBitmap)
+        tripNoteWriteViewModel.isImagePicked.value=true
     }
 
     val scheduleTitleState = remember { mutableStateOf(tripScheduleTitle) }

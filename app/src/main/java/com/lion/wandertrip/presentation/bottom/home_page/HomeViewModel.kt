@@ -141,55 +141,19 @@ class HomeViewModel @Inject constructor(
 
     // 여행기 가져오기
     fun fetchTripNotes() {
+        Log.d("test100","fetchTripNotes")
         viewModelScope.launch {
-            try {
-                val firestore = FirebaseFirestore.getInstance()
-                val collectionReference = firestore.collection("TripNoteData")
 
-                val result = collectionReference
-                    .orderBy("tripNoteTimeStamp", Query.Direction.DESCENDING)
-                    .get()
-                    .await()
-
-                val tripNotes = result.documents.mapNotNull { document ->
-                    val tripNoteVO = document.toObject(TripNoteVO::class.java)
-                    tripNoteVO?.toTripNoteModel(document.id)
-                }
-
-                _tripNoteList.value = tripNotes // ✅ Firestore 데이터 업데이트
-                fetchImageUrls() // ✅ 여행기 데이터 가져온 후 이미지 URL도 가져오기
-
-            } catch (e: Exception) {
-                Log.e("Firestore", "Error fetching trip notes", e)
-            }
         }
     }
 
-    fun fetchImageUrls() {
-        val tripNotes = tripNoteList.value ?: return // 🔥 LiveData에서 최신 데이터를 가져옴
-
-        tripNotes.forEach { tripNote ->
-            val fileName = tripNote.tripNoteImage.firstOrNull() ?: return@forEach
-
-            // 이미 로딩 중이거나 가져온 데이터가 있으면 다시 요청하지 않음
-            if (_imageUrlMap.containsKey(fileName)) return@forEach
-
-            // 🔥 초기 로딩 상태를 빈 문자열("")로 설정하여 Compose가 감지할 수 있도록 변경
-            _imageUrlMap[fileName] = ""
-
-            viewModelScope.launch {
-                val imageUrl = tripNoteService.gettingImage(fileName)
-                _imageUrlMap[fileName] = imageUrl?.toString() ?: ""  // 🚀 URL이 null이면 빈 문자열로 처리
-            }
-        }
-    }
-
+    // 상위 여행기 가져오기
     fun getTopScrapedTrips() {
         viewModelScope.launch {
             val tripNotes = tripNoteService.gettingTripNoteListWithScrapCount()
-            val top3List = tripNotes.sortedByDescending { it.tripNoteScrapCount }
-                .take(3) // ✅ 스크랩 수 기준 상위 3개 추출
-            _topScrapedTrips.value = top3List
+            val top7List = tripNotes.sortedByDescending { it.tripNoteScrapCount }
+                .take(7) // ✅ 스크랩 수 기준 상위 3개 추출
+            _topScrapedTrips.value = top7List
         }
     }
 

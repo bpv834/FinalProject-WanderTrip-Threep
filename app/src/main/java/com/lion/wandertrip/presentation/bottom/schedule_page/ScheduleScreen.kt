@@ -33,43 +33,33 @@ import kotlinx.coroutines.launch
 fun ScheduleScreen(
     viewModel: ScheduleViewModel = hiltViewModel(),
 ) {
-
-    // 일정 데이터 가져 오는 메소드 호출
+    // 일정 데이터 가져오기
     LaunchedEffect(Unit) {
-       /* viewModel.observeUserScheduleDocIdList()*/
         viewModel.fetchUserScheduleList()
     }
 
-    // 탭 제목 및 Pager 상태
-    val tabTitles = listOf("내 일정", "초대 일정")
-    val pagerState = rememberPagerState(
-        initialPage = 0,
-        initialPageOffsetFraction = 0f,
-        pageCount = { tabTitles.size }
-    )
-    val coroutineScope = rememberCoroutineScope()
-
     Scaffold(
-        modifier = Modifier,
         containerColor = Color.White
-    ) {
+    ) { innerPadding ->
         Column(
             modifier = Modifier
-                .padding(it)
+                .padding(innerPadding)
                 .fillMaxSize()
         ) {
+            // 상단 제목 + 추가 버튼
             Row(
-                modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 16.dp)
+                modifier = Modifier
+                    .padding(horizontal = 16.dp, vertical = 16.dp)
             ) {
                 Text(
-                    text = "일정화면",
+                    text = "내 일정",
                     fontFamily = NanumSquareRound,
                     fontSize = 22.sp,
-                    modifier = Modifier.padding(end = 5.dp)
+                    modifier = Modifier
                         .weight(1f)
                 )
 
-                // 일정 추가 화면으로 이동하는 아이콘
+                // 일정 추가 버튼
                 ScheduleIconButton(
                     icon = Icons.Filled.Add,
                     size = 30,
@@ -77,61 +67,15 @@ fun ScheduleScreen(
                 )
             }
 
-            // 탭 레이아웃
-            TabRow(
-                selectedTabIndex = pagerState.currentPage,
-                containerColor = Color.White, // 전체 배경색 설정 (필요하면 변경 가능)
-                indicator = { tabPositions ->
-                    TabRowDefaults.Indicator(
-                        modifier = Modifier.tabIndicatorOffset(tabPositions[pagerState.currentPage]),
-                        color = wanderBlueColor // 🔥 선택된 탭의 아래 indicator 색상 변경
-                    )
+            // LazyColumn으로 일정 목록 출력
+            ScheduleItemList(
+                dataList = viewModel.myScheduleList,
+                scheduleType = 0,
+                viewModel = viewModel,
+                onRowClick = { userSchedule ->
+                    viewModel.moveToScheduleDetailScreen(userSchedule)
                 }
-            ) {
-                tabTitles.forEachIndexed { index, title ->
-                    Tab(
-                        selected = pagerState.currentPage == index,
-                        onClick = {
-                            coroutineScope.launch {
-                                pagerState.animateScrollToPage(index)
-                            }
-                        },
-                        text = { Text(text = title) }
-                    )
-                }
-            }
-
-            // HorizontalPager: 스와이프 가능한 페이지 뷰
-            HorizontalPager(
-                state = pagerState,
-                modifier = Modifier.fillMaxSize(),
-                verticalAlignment = Alignment.Top
-            ) { page ->
-                when (page) {
-                    0 -> {
-                        // 첫 번째 페이지: 내 일정
-                        ScheduleItemList(
-                            dataList = viewModel.myScheduleList,
-                            scheduleType = 0,  // 0: 내 일정 1: 초대 받은 일정
-                            viewModel = viewModel,
-                            onRowClick = { userSchedule ->
-                                viewModel.moveToScheduleDetailScreen(userSchedule)
-                            }
-                        )
-                    }
-        /*            1 -> {
-                        // 두 번째 페이지: 초대 일정
-                        ScheduleItemList(
-                            dataList = viewModel.invitedScheduleList,
-                            viewModel = viewModel,
-                            scheduleType = 1,
-                            onRowClick = { invitedScheduleList ->
-                                viewModel.moveToScheduleDetailScreen(invitedScheduleList)
-                            }
-                        )
-                    }*/
-                }
-            }
+            )
         }
     }
 }

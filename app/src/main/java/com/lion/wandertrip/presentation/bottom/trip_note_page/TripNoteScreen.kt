@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -33,6 +34,9 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -50,6 +54,7 @@ import com.bumptech.glide.integration.compose.GlideImage
 import com.google.firebase.Firebase
 import com.google.firebase.storage.storage
 import com.lion.a02_boardcloneproject.component.CustomTopAppBar
+import com.lion.wandertrip.component.LottieLoadingIndicator
 import com.lion.wandertrip.model.TripNoteModel
 import com.lion.wandertrip.presentation.bottom.schedule_page.component.ScheduleIconButton
 import com.lion.wandertrip.ui.theme.Gray0
@@ -61,123 +66,84 @@ import kotlinx.coroutines.launch
 fun TripNoteScreen(
     tripNoteViewModel: TripNoteViewModel = hiltViewModel()
 ) {
+    val isLoading by tripNoteViewModel.isLoading.collectAsState()
+    LaunchedEffect (Unit){
+        // 여행기 초기화
+        tripNoteViewModel.gettingTripNoteData()
+    }
 
-    // 리사이클러뷰 항목 데이터 초기화
-    tripNoteViewModel.gettingTripNoteData()
-
-    tripNoteViewModel.topAppBarTitle.value = "여행기 모아보기"
-
-
-
-    Scaffold(
-        containerColor = Color.White,
-        floatingActionButton = {
-            FloatingActionButton(
-                onClick = { tripNoteViewModel.addButtonOnClick() },
-                modifier = Modifier.padding(bottom = 0.dp).
-                padding(top = 160.dp)
-                    .absoluteOffset(y = 50.dp),
-                content = {
-                    Icon(imageVector = Icons.Default.Add, contentDescription = "+")
-                }
-            )
-        }
-    ) { padding ->
-        Column(
-            modifier = Modifier
-                .padding(top = 16.dp)
-                .fillMaxSize()
-        ) {
-            // 최상단 중앙에 텍스트 배치
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp),
-            ) {
-                Text(
-                    text = tripNoteViewModel.topAppBarTitle.value,
-                    fontFamily = NanumSquareRound,
-                    fontSize = 22.sp,
+    if(isLoading) LottieLoadingIndicator()
+    else{
+        Scaffold(
+            topBar = {
+                CustomTopAppBar(
+                    title = tripNoteViewModel.topAppBarTitle.value,
+                    menuItems = {},
+                    navigationIconOnClick = {}
+                )
+            },
+            containerColor = Color.White,
+            floatingActionButton = {
+                FloatingActionButton(
+                    onClick = { tripNoteViewModel.addButtonOnClick() },
                     modifier = Modifier
-                        .padding(end = 5.dp)
-                        .weight(1f, fill = false) // 가중치 설정
+                        .padding(bottom = 16.dp)
+                        .navigationBarsPadding(), // 시스템 UI 위로 안전하게
+                    content = {
+                        Icon(imageVector = Icons.Default.Add, contentDescription = "+")
+                    }
                 )
             }
-
-//            // 리사이클러뷰
-//            LazyColumn(
-//                modifier = Modifier
-//                    .fillMaxSize()
-//                    .padding(horizontal = 10.dp)
-//            ) {
-//                Log.d("TripNoteScreen", "ImageUrisMap: ${tripNoteViewModel.imageUrisMap}")
-//                itemsIndexed(tripNoteViewModel.tripNoteList) { index,tripNote ->
-//                    // 로그로 각 인덱스의 imageUris 확인
-//                    Log.d("TripNoteScreen", "Index: $index, imageUris: ${tripNoteViewModel.imageUrisMap[index]}")
-//
-//                    TripNoteItem(
-//                        tripNote = tripNote,
-//                        onClick = { tripNoteViewModel.listItemOnClick(tripNote.tripNoteDocumentId) },
-//                        modifier = Modifier
-//                            .fillMaxWidth() // 항목이 화면 너비를 가득 차게
-//                            .padding(vertical = 8.dp) // 항목 사이에 간격 추가
-//                            .background(
-//                                color = Color.White, // 배경색
-//                                shape = RoundedCornerShape(12.dp) // 둥근 모서리
-//                            )
-//                            .padding(0.dp),
-//                        //imageUris = tripNoteViewModel.imageUrisMap[index]?: emptyList()
-//                        imageUris = tripNoteViewModel.imageUrisMap[index]?.filterNotNull() ?: emptyList()
-//
-//                    )
-//                }
-//            }
-
+        ) {
             LazyColumn(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(horizontal = 10.dp)
+                    .padding(it)
+                    .padding(10.dp)
             ) {
                 Log.d("TripNoteScreen", "ImageUrisMap: ${tripNoteViewModel.imageUrisMap}")
 
                 itemsIndexed(tripNoteViewModel.tripNoteList) { index, tripNote ->
-                    // 로그로 각 인덱스의 imageUris 확인
-                    Log.d("TripNoteScreen", "Index: $index, imageUris: ${tripNoteViewModel.imageUrisMap[index]}")
-
+                    Log.d(
+                        "TripNoteScreen",
+                        "Index: $index, imageUris: ${tripNoteViewModel.imageUrisMap[index]}"
+                    )
                     Card(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(vertical = 10.dp), // 항목 사이 간격 추가
-                        shape = RoundedCornerShape(14.dp), // 모서리 둥글게
-                        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp), // 카드의 그림자 설정
+                            .padding(vertical = 10.dp),
+                        shape = RoundedCornerShape(14.dp),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
                         colors = CardDefaults.cardColors(Gray0)
                     ) {
                         TripNoteItem(
                             tripNote = tripNote,
-                            onClick = { tripNoteViewModel.listItemOnClick(tripNote.tripNoteDocumentId) },
+                            onClick = {
+                                tripNoteViewModel.listItemOnClick(tripNote.tripNoteDocumentId)
+                            },
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .background(Color.White, shape = RoundedCornerShape(12.dp))
                                 .padding(0.dp),
-                            imageUris = tripNoteViewModel.imageUrisMap[index]?.filterNotNull() ?: emptyList()
+                            imageUris = tripNoteViewModel.imageUrisMap[index]?.filterNotNull()
+                                ?: emptyList()
                         )
                     }
                 }
             }
-
-
         }
     }
+
 }
-
-
 
 @OptIn(ExperimentalGlideComposeApi::class)
 @Composable
-fun TripNoteItem(tripNote: TripNoteModel,
-                 onClick: () -> Unit,
-                 modifier : Modifier,
-                 imageUris: List<Uri?>) {
+fun TripNoteItem(
+    tripNote: TripNoteModel,
+    onClick: () -> Unit,
+    modifier: Modifier,
+    imageUris: List<Uri?>
+) {
 
     Column(
         modifier = modifier
@@ -209,7 +175,7 @@ fun TripNoteItem(tripNote: TripNoteModel,
                 modifier = Modifier
                     .wrapContentWidth(Alignment.Start) // Row를 왼쪽 정렬로 설정
                     .padding(bottom = 11.dp),
-                 horizontalArrangement = Arrangement.spacedBy(3.dp) // 이미지 간 간격 유지
+                horizontalArrangement = Arrangement.spacedBy(3.dp) // 이미지 간 간격 유지
 
             ) {
 

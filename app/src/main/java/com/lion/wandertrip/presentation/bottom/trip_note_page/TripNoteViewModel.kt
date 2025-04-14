@@ -7,6 +7,7 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.google.firebase.Firebase
 import com.google.firebase.storage.storage
 import com.lion.wandertrip.TripApplication
@@ -19,6 +20,8 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import okhttp3.internal.toImmutableList
@@ -33,15 +36,20 @@ class TripNoteViewModel @Inject constructor(
     val tripApplication = context as TripApplication
 
     // TopAppBar의 타이틀
-    val topAppBarTitle = mutableStateOf("")
+    val topAppBarTitle = mutableStateOf("여행기 모아보기")
 
     // 글 목록을 구성하기 위한 상태 관리 변수
     var tripNoteList = mutableStateListOf<TripNoteModel>()
 
     // 보여줄 이미지의 Uri
     //var showImageUri = mutableStateListOf<Uri?>(null)
-
     val imageUrisMap = mutableStateMapOf<Int, MutableList<Uri?>>()
+
+    // lottie 상태변수
+    private val _isLoading = MutableStateFlow(false)
+    val isLoading: StateFlow<Boolean> get() = _isLoading
+
+
 
     // + 버튼(fab 버튼)을 눌렀을 때
     fun addButtonOnClick(){
@@ -56,47 +64,50 @@ class TripNoteViewModel @Inject constructor(
         tripApplication.navHostController.navigate("${TripNoteScreenName.TRIP_NOTE_DETAIL.name}/${documentId}")
     }
 
-
+    // 여행기 가져오는 메서드
     fun gettingTripNoteData() {
-        CoroutineScope(Dispatchers.Main).launch {
-            val work1 = async(Dispatchers.IO) {
-                tripNoteService.gettingTripNoteList()
-            }
+        viewModelScope.launch {
+            _isLoading.value = true // ✅ 로딩 시작
 
-            val recyclerViewList = work1.await().mapIndexed { index, tripNoteModel ->
-                index to tripNoteModel
-            }
-
-            val storage = Firebase.storage // Firebase Storage 인스턴스 가져오기
-            val storageReference = storage.reference
-
-            recyclerViewList.forEach { (index, tripNoteModel) ->
-                val imagePaths = tripNoteModel.tripNoteImage ?: emptyList() // null일 경우 빈 리스트 처리
-                val imageUris = mutableListOf<Uri?>()
-
-                // Firebase에서 이미지를 동기적으로 다운로드
-                imagePaths.forEach { imagePath ->
-                    val imageRef = storageReference.child("image/$imagePath")
-                    try {
-                        val uri = imageRef.downloadUrl.await() // `await`를 사용해 비동기 작업 완료 대기
-                        imageUris.add(uri)
-                    } catch (e: Exception) {
-                        Log.e("FirebaseStorage", "Failed to get download URL for $imagePath", e)
-                    }
+            try {
+                val work1 = async(Dispatchers.IO) {
+                    tripNoteService.gettingTripNoteList()
                 }
 
-                // 모든 이미지를 로드한 후 map에 추가
-                imageUrisMap[index] = imageUris
+                val recyclerViewList = work1.await().mapIndexed { index, tripNoteModel ->
+                    index to tripNoteModel
+                }
 
-                // 로그로 확인
-                Log.d("TripNoteScreen", "Index: $index, imageUris: ${imageUrisMap[index]}")
+                val storage = Firebase.storage
+                val storageReference = storage.reference
+
+                recyclerViewList.forEach { (index, tripNoteModel) ->
+                    val imagePaths = tripNoteModel.tripNoteImage ?: emptyList()
+                    val imageUris = mutableListOf<Uri?>()
+
+                    imagePaths.forEach { imagePath ->
+                        val imageRef = storageReference.child("image/$imagePath")
+                        try {
+                            val uri = imageRef.downloadUrl.await()
+                            imageUris.add(uri)
+                        } catch (e: Exception) {
+                            Log.e("FirebaseStorage", "Failed to get download URL for $imagePath", e)
+                        }
+                    }
+
+                    imageUrisMap[index] = imageUris
+                    Log.d("TripNoteScreen", "Index: $index, imageUris: ${imageUrisMap[index]}")
+                }
+
+                tripNoteList.clear()
+                tripNoteList.addAll(recyclerViewList.map { it.second })
+
+            } catch (e: Exception) {
+                Log.e("TripNoteError", "Error loading trip notes", e)
+            } finally {
+                _isLoading.value = false // ✅ 로딩 끝
             }
-
-            // 상태 관리 변수에 담아준다.
-            tripNoteList.clear()
-            tripNoteList.addAll(recyclerViewList.map { it.second })
         }
     }
-
 
 }

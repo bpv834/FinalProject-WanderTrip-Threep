@@ -78,32 +78,65 @@ class DetailReviewModifyViewModel @Inject constructor(
     }
 
     // 비트맵 객체로 변환
+    // 비트맵 객체로 변환
     suspend fun convertToBitMap() {
+        Log.d("bitmapLog", "🧹 비트맵 리스트 초기화")
         mutableBitMapList.clear()
+
         val urlList = reviewModelValue.value.reviewImageList
+        Log.d("bitmapLog", "📸 이미지 URL 목록: $urlList")
+
         val bitMapList = mutableListOf<Bitmap>()
 
         // 각 URL에 대해 비트맵을 로드하여 리스트에 추가
         for (url in urlList) {
-            val bitmap = loadImageAsBitmap(url)
-            bitmap?.let {
-                bitMapList.add(it)
+            try {
+                Log.d("bitmapLog", "🌐 비트맵 로드 시작: $url")
+                val bitmap = loadImageAsBitmap(url)
+
+                if (bitmap != null) {
+                    bitMapList.add(bitmap)
+                    Log.d("bitmapLog", "✅ 비트맵 로드 성공: $url")
+                } else {
+                    Log.w("bitmapLog", "⚠️ 비트맵이 null입니다: $url")
+                }
+            } catch (e: Exception) {
+                Log.e("bitmapLog", "❌ 비트맵 로드 실패: $url, 에러: ${e.message}", e)
             }
         }
+
         mutableBitMapList.addAll(bitMapList)
+        Log.d("bitmapLog", "🖼️ 최종 비트맵 리스트 크기: ${mutableBitMapList.size}")
     }
+
 
     // url -> bitmap
     suspend fun loadImageAsBitmap(url: String): Bitmap? {
-        val imageLoader = ImageLoader(tripApplication)
-        val imageRequest = ImageRequest.Builder(tripApplication)
-            .data(url)
-            .build()
+        Log.d("bitmapLoader", "🚀 이미지 로딩 시작: $url")
 
-        // 이미지를 로드하고 결과를 비트맵으로 변환
-        val result = imageLoader.execute(imageRequest)
-        return (result.drawable as? BitmapDrawable)?.bitmap
+        return try {
+            val imageLoader = ImageLoader(tripApplication)
+            val imageRequest = ImageRequest.Builder(tripApplication)
+                .data(url)
+                .build()
+
+            // 이미지를 로드하고 결과를 비트맵으로 변환
+            val result = imageLoader.execute(imageRequest)
+            val bitmap = (result.drawable as? BitmapDrawable)?.bitmap
+
+            if (bitmap != null) {
+                Log.d("bitmapLoader", "✅ 비트맵 변환 성공: $url")
+            } else {
+                Log.w("bitmapLoader", "⚠️ drawable이 BitmapDrawable이 아님 or null: $url")
+            }
+
+            bitmap
+        } catch (e: Exception) {
+            Log.e("bitmapLoader", "❌ 이미지 로딩 실패: $url, 에러: ${e.message}", e)
+            null
+        }
     }
+
 
 
     // 수정 완료하기
@@ -113,16 +146,17 @@ class DetailReviewModifyViewModel @Inject constructor(
         reviewDocID: String,
     ) {
         isLoading.value=true
-        Log.d("DRMVM", "onClickIconCheckModifyReview")
+        Log.d("onClickIconCheckModifyReview", "onClickIconCheckModifyReview")
         viewModelScope.launch {
             val imagePathList = mutableListOf<String>()
             val serverFilePathList = mutableListOf<String>()
-            var imageUrlList = listOf<String>()
 
             val work0 = async(Dispatchers.IO) {
                 contentsReviewService.getContentsReviewByDocId(contentDocID,reviewDocID)
             }
             val gettingReview = work0.await()
+            var imageUrlList = gettingReview.reviewImageList
+
 
             if (isImagePicked.value) {
                 Log.d("addContentsReview", "이미지 선택됨, 저장 시작")
@@ -150,8 +184,6 @@ class DetailReviewModifyViewModel @Inject constructor(
             } else {
                 Log.d("addContentsReview", "이미지 선택 안 됨, 업로드 스킵")
             }
-
-            Log.d("addContentsReview", "리뷰 데이터 생성 시작")
 
             // 📌 업로드가 끝난 후 리뷰 데이터 저장
             Log.d("addContentsReview", "리뷰 데이터 생성 시작")

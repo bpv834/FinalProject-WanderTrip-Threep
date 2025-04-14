@@ -67,12 +67,14 @@ fun DetailReviewWriteScreen(
 
 
     val focusManager = LocalFocusManager.current
-
+    val scrollState = rememberScrollState()
     val tripApplication = detailReviewWriteViewModel.tripApplication
     // 앨범용 런처 (여러 개 선택 가능)
     val albumLauncher =
         rememberLauncherForActivityResult(ActivityResultContracts.GetMultipleContents()) { uriList: List<Uri> ->
             if (uriList.isNotEmpty()) {
+                Log.d("test100","uriList  : ${uriList.joinToString()}")
+
                 Tools.getAlbumDataList(
                     tripApplication,
                     uriList,
@@ -82,7 +84,6 @@ fun DetailReviewWriteScreen(
             }
         }
 
-    val scrollState = rememberScrollState()
    if(detailReviewWriteViewModel.isLoading.value){
        LottieLoadingIndicator()
    }else{
@@ -175,6 +176,7 @@ fun DetailReviewWriteScreen(
                    }
                    // 예제 이미지 리스트
                    detailReviewWriteViewModel.mutableBitMapList.forEachIndexed { idx, imageRes ->
+                       Log.d("test100","imageRes : ${imageRes} ")
                        Box(
                            modifier = Modifier
                                .padding(end = 4.dp)
