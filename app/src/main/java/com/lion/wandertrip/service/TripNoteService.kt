@@ -31,26 +31,23 @@ class TripNoteService @Inject constructor(val tripNoteRepository: TripNoteReposi
 
     // 여행기 댓글을 저장하는 메서드
     // 새롭게 추가된 문서의 id를 반환한다.
-    suspend fun addTripNoteReplyData(tripNoteReplyModel: TripNoteReplyModel) : String{
+    suspend fun addTripNoteReplyData(noteDocId: String,tripNoteReplyModel: TripNoteReplyModel) : String{
         // VO 객체를 생성한다.
         val tripNoteReplyVO = tripNoteReplyModel.toReplyItemVO()
         // 저장한다.
-        val documentId = tripNoteRepository.addTripNoteReplyData(tripNoteReplyVO)
-        return documentId
+        val documentId = tripNoteRepository.addTripNoteReplyData(noteDocId,tripNoteReplyVO)
+        return documentId?:""
     }
 
     // 여행기 댓글 리스트를 가져오는 메서드
     // 여행기 문서 id를 통해 데이터 가져오기
     suspend fun selectReplyDataOneById(documentId:String) : MutableList<TripNoteReplyModel>{
-
         // 데이터를 가져온다
         val tripNoteReplyList = mutableListOf<TripNoteReplyModel>()
         val resultList = tripNoteRepository.selectReplyDataOneById(documentId)
 
         resultList.forEach {
-            val tripNoteReplyVO = it["tripNoteReplyVO"] as TripNoteReplyVO
-            val tripNoteDocumentId = it["tripNoteDocumentId"] as String
-            val tripNoteReplyModel = tripNoteReplyVO.toReplyItemModel(tripNoteDocumentId)
+            val tripNoteReplyModel = it.toReplyItemModel()
             tripNoteReplyList.add(tripNoteReplyModel)
         }
 

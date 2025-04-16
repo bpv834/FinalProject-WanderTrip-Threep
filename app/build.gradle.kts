@@ -137,4 +137,6 @@ dependencies {
     // LazyColumn 순서 변경
     implementation("org.burnoutcrew.composereorderable:reorderable:0.9.6")
 
+    implementation("org.mindrot:jbcrypt:0.4") // 유저 정보 해쉬 암호화
+
 }

@@ -40,54 +40,69 @@ class TripNoteRepository@Inject constructor() {
 
     // 여행기 댓글을 저장하는 메서드
     // 새롭게 추가된 문서의 id를 반환한다.
-    suspend fun addTripNoteReplyData(tripNoteReplyVO: TripNoteReplyVO) : String{
-        val fireStore = FirebaseFirestore.getInstance()
-        val collectionReference = fireStore.collection("TripNoteReplyData")
-        val documentReference = collectionReference.add(tripNoteReplyVO).await()
-        return documentReference.id
+    suspend fun addTripNoteReplyData(noteId: String, tripNoteReplyVO: TripNoteReplyVO): String? {
+        return try {
+            val fireStore = FirebaseFirestore.getInstance()
+            val replyCollection = fireStore
+                .collection("TripNoteData")
+                .document(noteId)
+                .collection("noteReplyData")
+
+            // 문서 ID를 생성 (push처럼 랜덤 ID 생성)
+            val newDocRef = replyCollection.document()
+            val newDocId = newDocRef.id
+
+            // 생성된 ID를 객체에 설정
+            tripNoteReplyVO.tripNoteReplyDocId = newDocId
+
+            // 데이터 저장
+            newDocRef.set(tripNoteReplyVO).await()
+
+            newDocId
+        } catch (e: Exception) {
+            e.printStackTrace()
+            null
+        }
     }
 
     // 댓글 리스트를 가져오는 메서드
-    suspend fun selectReplyDataOneById(documentId: String): MutableList<Map<String, *>> {
-        val firestore = FirebaseFirestore.getInstance()
-        val collectionReference = firestore.collection("TripNoteReplyData")
+    suspend fun selectReplyDataOneById(tripNoteDocumentId: String): MutableList<TripNoteReplyVO> {
+        return try {
+            Log.d("TripNoteReply", "댓글 조회 시작 - 문서 ID: $tripNoteDocumentId")
 
-        // 컬렉션에서 첫 번째 문서를 제한하여 가져온다 (최대 1개 문서)
-        val data = collectionReference.limit(1).get().await()
+            val firestore = FirebaseFirestore.getInstance()
+            val collectionReference = firestore
+                .collection("TripNoteData")
+                .document(tripNoteDocumentId)
+                .collection("noteReplyData")
 
-        // 컬렉션이 비어있다면 빈 리스트를 반환
-        if (data.isEmpty) {
-            val resultList = mutableListOf<Map<String, *>>()
-            return  resultList
-        }
+            val result = collectionReference.get().await()
+            Log.d("TripNoteReply", "댓글 ${result.size()}개 조회됨")
 
-        // 데이터를 가져온다.
-        val result =
-            collectionReference
-                .whereEqualTo("tripNoteDocumentId", documentId)
-                .get()
-                .await()
+            val sortedResult = result.documents.sortedByDescending {
+                it.getTimestamp("replyTimeStamp")?.toDate()
+            }
 
-        // 반환할 리스트
-        val resultList = mutableListOf<Map<String, *>>()
+            val resultList = mutableListOf<TripNoteReplyVO>()
 
-
-        // 데이터의 수 만큼 반환한다
-        val sortedResult = result.documents.sortedByDescending { it.getTimestamp("replyTimeStamp")?.toDate() }
-
-            // 데이터의 수 만큼 반환한다.
             sortedResult.forEach {
-            val tripNoteReplyVO = it.toObject(TripNoteReplyVO::class.java)
-            val map = mapOf(
-                // 문서의 id
-                "tripNoteDocumentId" to it.id,
-                // 데이터를 가지고 있는 객체
-                "tripNoteReplyVO" to tripNoteReplyVO,
-            )
-            resultList.add(map)
+                val tripNoteReplyVO = it.toObject(TripNoteReplyVO::class.java)
+                Log.d("TripNoteReply", "댓글 파싱 완료: $tripNoteReplyVO")
+                if (tripNoteReplyVO != null) {
+                    resultList.add(tripNoteReplyVO)
+                } else {
+                    Log.w("TripNoteReply", "댓글 파싱 실패 - 문서 ID: ${it.id}")
+                }
+            }
+
+            Log.d("TripNoteReply", "최종 댓글 리스트 크기: ${resultList.size}")
+            resultList
+        } catch (e: Exception) {
+            Log.e("TripNoteReply", "댓글 조회 중 오류 발생: ${e.message}", e)
+            mutableListOf() // 예외 발생 시 빈 리스트 반환
         }
-        return resultList
     }
+
 
     // 여행기 리스트 가져오는 메서드
     suspend fun gettingTripNoteList(): MutableList<Map<String, *>> {

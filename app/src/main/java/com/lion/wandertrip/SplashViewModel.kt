@@ -49,6 +49,7 @@ class SplashViewModel @Inject constructor(
             if(item!=null)
             tripList.add(item ?: TripItemModel())
         }
+        tripApplication.popularTripList.clear()
         // 모듈에 저장한다
         tripApplication.popularTripList.addAll(tripList)
     }

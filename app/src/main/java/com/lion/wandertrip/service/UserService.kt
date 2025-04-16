@@ -148,7 +148,9 @@ class UserService (val userRepository: UserRepository) {
     // 이미지 데이터 Uri 가져오기
     suspend fun gettingImage(imageFileName:String) : Uri {
         val imageUri = userRepository.gettingImage(imageFileName)
-        return imageUri
+        val basicImage = "https://firebasestorage.googleapis.com/v0/b/wandertripsole.firebasestorage.app/o/basic%2FbasicProfileImage.png?alt=media&token=1463ed5d-c336-4c09-a214-adafe27d68b8"
+        val basicImageUri: Uri = Uri.parse(basicImage)
+        return imageUri?: basicImageUri
     }
 
     // 좋아요 목록 가져오기

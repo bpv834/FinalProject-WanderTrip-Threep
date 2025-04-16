@@ -41,14 +41,9 @@ class TripNoteViewModel @Inject constructor(
     // 글 목록을 구성하기 위한 상태 관리 변수
     var tripNoteList = mutableStateListOf<TripNoteModel>()
 
-    // 보여줄 이미지의 Uri
-    //var showImageUri = mutableStateListOf<Uri?>(null)
-    val imageUrisMap = mutableStateMapOf<Int, MutableList<Uri?>>()
-
     // lottie 상태변수
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> get() = _isLoading
-
 
 
     // + 버튼(fab 버튼)을 눌렀을 때
@@ -76,27 +71,6 @@ class TripNoteViewModel @Inject constructor(
 
                 val recyclerViewList = work1.await().mapIndexed { index, tripNoteModel ->
                     index to tripNoteModel
-                }
-
-                val storage = Firebase.storage
-                val storageReference = storage.reference
-
-                recyclerViewList.forEach { (index, tripNoteModel) ->
-                    val imagePaths = tripNoteModel.tripNoteImage ?: emptyList()
-                    val imageUris = mutableListOf<Uri?>()
-
-                    imagePaths.forEach { imagePath ->
-                        val imageRef = storageReference.child("image/$imagePath")
-                        try {
-                            val uri = imageRef.downloadUrl.await()
-                            imageUris.add(uri)
-                        } catch (e: Exception) {
-                            Log.e("FirebaseStorage", "Failed to get download URL for $imagePath", e)
-                        }
-                    }
-
-                    imageUrisMap[index] = imageUris
-                    Log.d("TripNoteScreen", "Index: $index, imageUris: ${imageUrisMap[index]}")
                 }
 
                 tripNoteList.clear()

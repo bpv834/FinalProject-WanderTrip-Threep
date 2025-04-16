@@ -63,14 +63,13 @@ import com.lion.wandertrip.presentation.trip_note_detail_page.component.TripNote
 import com.lion.wandertrip.ui.theme.NanumSquareRound
 import com.lion.wandertrip.ui.theme.NanumSquareRoundRegular
 import com.bumptech.glide.integration.compose.GlideImage
-import com.lion.wandertrip.component.LottieLoadingIndicator
 
 
 @RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalGlideComposeApi::class)
 @Composable
 fun TripNoteDetailScreen(
-    documentId: String,
+    tripNoteDocumentId: String,
     tripNoteDetailViewModel: TripNoteDetailViewModel = hiltViewModel(),
 ) {
 
@@ -78,38 +77,24 @@ fun TripNoteDetailScreen(
     val isFirstLaunch = rememberSaveable { mutableStateOf(true) } // ✅ 처음 실행 여부 저장
     val isLoading by tripNoteDetailViewModel.isLoading // ✅ 로딩 상태 가져오기
 
-//    LaunchedEffect(isFirstLaunch.value) {
-//        if (isFirstLaunch.value) { // ✅ 처음 실행될 때만 실행
-//            tripNoteDetailViewModel.getTripSchedule()
-//            isFirstLaunch.value = false // ✅ 이후에는 실행되지 않도록 설정
-//        }
-//    }
+    LaunchedEffect (Unit){
+        // 여행기 상세 데이터 가져오기
+        tripNoteDetailViewModel.gettingTripNoteDetailData(tripNoteDocumentId)
+    }
 
+    LaunchedEffect (tripNoteDetailViewModel.tripNoteDetailList.size){
 
+        // 댓글 리스트 가져오기
+        tripNoteDetailViewModel.gettingTripNoteReplyData(tripNoteDocumentId)
 
-    tripNoteDetailViewModel.getTripSchedule()
-
-
-    // 여행기 상세 데이터 가져오기
-    tripNoteDetailViewModel.gettingTripNoteDetailData(documentId)
-    // 댓글 리스트 가져오기
-    tripNoteDetailViewModel.gettingTripNoteReplyData(documentId)
-    // 닉네임 가져오기
-    tripNoteDetailViewModel.nickName
+        // tripNoteDetailList를 ViewModel에서 가져옵니다.
+        val tripNoteDetailList = tripNoteDetailViewModel.tripNoteDetailList
+        val tripNoteDetailData = tripNoteDetailList.firstOrNull()
+    }
 
     // 휴지통 다이얼로그 상태값
     var showDeleteDialogState by remember { mutableStateOf(false) }
 
-
-
-    // tripNoteDetailList를 ViewModel에서 가져옵니다.
-    val tripNoteDetailList = tripNoteDetailViewModel.tripNoteDetailList
-    val tripNoteDetailData = tripNoteDetailList.firstOrNull()
-
-
-
-    // 이미지 목록 가져오기
-    // val images = tripNoteDetailData?.tripNoteImage ?: listOf()  // 이미지 목록을 안전하게 처리합니다.
     val images = tripNoteDetailViewModel.showImageUri
     // HorizontalPager에 필요한 상태를 pageCount를 전달하여 초기화합니다.
     val pagerState = rememberPagerState(pageCount = { images.value.size })
@@ -119,8 +104,6 @@ fun TripNoteDetailScreen(
 
     val focusRequester = remember { FocusRequester() }
     var isFocused by remember { mutableStateOf(false) }
-
-
 
 
     Scaffold(
@@ -184,7 +167,7 @@ fun TripNoteDetailScreen(
                                 confirmButton = {
                                     TextButton(onClick = {
                                         // 삭제 버튼 클릭
-                                        tripNoteDetailViewModel.deleteButtonClick(documentId)
+                                        tripNoteDetailViewModel.deleteButtonClick(tripNoteDocumentId)
                                         // 다이얼로그 닫기
                                         showDeleteDialogState = false
                                     }) {
@@ -205,7 +188,7 @@ fun TripNoteDetailScreen(
 
                         // 다운로드 아이콘 (오른쪽 상단에 배치)
                         IconButton(
-                            onClick = { tripNoteDetailViewModel.bringTripNote(tripNoteDetailViewModel.textFieldTripNoteScheduleDocId, documentId) },
+                            onClick = { tripNoteDetailViewModel.bringTripNote(tripNoteDetailViewModel.textFieldTripNoteScheduleDocId, tripNoteDocumentId) },
                             modifier = Modifier.padding(end = 3.dp)
                         ) {
                             Icon(
@@ -408,7 +391,7 @@ fun TripNoteDetailScreen(
                         tripNoteReply = tripNoteReply,
                         loginNickName = tripNoteDetailViewModel.nickName,
                         tripNoteDetailViewModel = tripNoteDetailViewModel,
-                        documentId = documentId
+                        documentId = tripNoteDocumentId
                     )
                 }
 
@@ -449,8 +432,8 @@ fun TripNoteDetailScreen(
                                 IconButton(
                                     onClick =
                                     {   // 제출하기
-                                        tripNoteDetailViewModel.addReplyClick(documentId)
-                                        tripNoteDetailViewModel.gettingTripNoteReplyData(documentId)
+                                        tripNoteDetailViewModel.addReplyClick(tripNoteDetailViewModel.tripNoteModel.tripNoteDocumentId,tripNoteDocumentId)
+                                        tripNoteDetailViewModel.gettingTripNoteReplyData(tripNoteDocumentId)
                                         // 제출하면 필드 비어있게
                                         tripNoteDetailViewModel.textFieldTripNoteReply.value = ""
                                     }

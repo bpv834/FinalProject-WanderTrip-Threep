@@ -57,6 +57,7 @@ import com.lion.a02_boardcloneproject.component.CustomTopAppBar
 import com.lion.wandertrip.component.LottieLoadingIndicator
 import com.lion.wandertrip.model.TripNoteModel
 import com.lion.wandertrip.presentation.bottom.schedule_page.component.ScheduleIconButton
+import com.lion.wandertrip.presentation.bottom.trip_note_page.components.TripNoteItem
 import com.lion.wandertrip.ui.theme.Gray0
 import com.lion.wandertrip.ui.theme.NanumSquareRound
 import com.lion.wandertrip.ui.theme.NanumSquareRoundRegular
@@ -67,13 +68,13 @@ fun TripNoteScreen(
     tripNoteViewModel: TripNoteViewModel = hiltViewModel()
 ) {
     val isLoading by tripNoteViewModel.isLoading.collectAsState()
-    LaunchedEffect (Unit){
+    LaunchedEffect(Unit) {
         // 여행기 초기화
         tripNoteViewModel.gettingTripNoteData()
     }
 
-    if(isLoading) LottieLoadingIndicator()
-    else{
+    if (isLoading) LottieLoadingIndicator()
+    else {
         Scaffold(
             topBar = {
                 CustomTopAppBar(
@@ -101,13 +102,9 @@ fun TripNoteScreen(
                     .padding(it)
                     .padding(10.dp)
             ) {
-                Log.d("TripNoteScreen", "ImageUrisMap: ${tripNoteViewModel.imageUrisMap}")
 
                 itemsIndexed(tripNoteViewModel.tripNoteList) { index, tripNote ->
-                    Log.d(
-                        "TripNoteScreen",
-                        "Index: $index, imageUris: ${tripNoteViewModel.imageUrisMap[index]}"
-                    )
+
                     Card(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -117,16 +114,8 @@ fun TripNoteScreen(
                         colors = CardDefaults.cardColors(Gray0)
                     ) {
                         TripNoteItem(
-                            tripNote = tripNote,
-                            onClick = {
-                                tripNoteViewModel.listItemOnClick(tripNote.tripNoteDocumentId)
-                            },
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .background(Color.White, shape = RoundedCornerShape(12.dp))
-                                .padding(0.dp),
-                            imageUris = tripNoteViewModel.imageUrisMap[index]?.filterNotNull()
-                                ?: emptyList()
+                            tripItem = tripNoteViewModel.tripNoteList[index],
+                            onItemClick = { tripNoteViewModel.listItemOnClick(tripNoteViewModel.tripNoteList[index].tripNoteDocumentId) }
                         )
                     }
                 }
@@ -135,77 +124,3 @@ fun TripNoteScreen(
     }
 
 }
-
-@OptIn(ExperimentalGlideComposeApi::class)
-@Composable
-fun TripNoteItem(
-    tripNote: TripNoteModel,
-    onClick: () -> Unit,
-    modifier: Modifier,
-    imageUris: List<Uri?>
-) {
-
-    Column(
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(16.dp)
-            .clickable { onClick() }
-    ) {
-        // 제목 (굵은 글씨)
-        Text(
-            text = tripNote.tripNoteTitle,
-            fontSize = 20.sp,
-            fontFamily = NanumSquareRound,
-            modifier = Modifier.padding(bottom = 4.dp)
-        )
-
-        // 닉네임 (작은 글씨)
-        Text(
-            text = "${tripNote.userNickname} 님의 여행기",
-            fontSize = 14.sp,
-            color = Color.Gray,
-            fontFamily = NanumSquareRound,
-            modifier = Modifier.padding(bottom = 15.dp, start = 1.dp)
-        )
-
-
-        // 이미지 리스트
-        if (imageUris.isNotEmpty()) {
-            Row(
-                modifier = Modifier
-                    .wrapContentWidth(Alignment.Start) // Row를 왼쪽 정렬로 설정
-                    .padding(bottom = 11.dp),
-                horizontalArrangement = Arrangement.spacedBy(3.dp) // 이미지 간 간격 유지
-
-            ) {
-
-                imageUris.forEach { imageUrl ->
-                    Log.d("TripNoteItem", "ImageUri: $imageUrl")
-                    imageUrl?.let {
-                        GlideImage(
-                            model = imageUrl,
-                            contentDescription = null,
-                            modifier = Modifier
-                                .height(200.dp) // 이미지 높이를 고정
-                                .weight(1f) // 화면 너비를 균등하게 나누도록 설정
-                                .clip(RoundedCornerShape(0.dp)) // 둥근 모서리 적용
-                                .fillMaxWidth() // 너비를 꽉 채우기
-                                .aspectRatio(1f) // 비율을 1:1로 맞추기
-                                .then(Modifier.fillMaxHeight()),
-                            contentScale = ContentScale.Crop// 높이를 고정
-                        )
-                    }
-                }
-            }
-        }
-
-        // 내용
-        Text(
-            text = tripNote.tripNoteContent,
-            fontSize = 16.sp,
-            fontFamily = NanumSquareRoundRegular,
-            modifier = Modifier.padding(start = 2.dp)
-        )
-    }
-}
-

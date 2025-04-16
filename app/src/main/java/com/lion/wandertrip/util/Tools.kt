@@ -113,23 +113,29 @@ class Tools {
             return contentUri
         }
 
-        fun takeAlbumData(context: Context, previewUri:Uri?, previewBitmap:MutableState<Bitmap?>){
-            // 가져온 사진이 있다면
-            if(previewUri != null){
-                val bitmap = if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q){
+        // 앨범 가져오는 메서드 사진을 uri처리해서 비트맵에 담는다
+        fun takeAlbumData(context: Context, previewUri: Uri?, previewBitmap: MutableState<Bitmap?>) {
+            if (previewUri != null) {
+                val bitmap = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                     val source = ImageDecoder.createSource(context.contentResolver, previewUri)
                     ImageDecoder.decodeBitmap(source)
                 } else {
-                    val cursor = context.contentResolver.query(previewUri, null, null, null, null)
-                    cursor?.moveToNext()
-                    val idx = cursor?.getColumnIndex(MediaStore.Images.Media.DATA)
-                    val source = cursor?.getString(idx!!)
-
-                    BitmapFactory.decodeFile(source)
+                    try {
+                        context.contentResolver.openInputStream(previewUri)?.use { inputStream ->
+                            BitmapFactory.decodeStream(inputStream)
+                        }
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                        null
+                    }
                 }
 
-                val resizeBitmap = resizeBitmap(1024, bitmap)
-                previewBitmap.value = resizeBitmap
+                bitmap?.let {
+                    val resizeBitmap = resizeBitmap(1024, it)
+                    previewBitmap.value = resizeBitmap
+                } ?: run {
+                    Log.e("takeAlbumData", "Bitmap decoding 실패")
+                }
             }
         }
 

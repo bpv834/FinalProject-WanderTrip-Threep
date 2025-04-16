@@ -1,8 +1,5 @@
 package com.lion.wandertrip
 
-import android.app.appsearch.SearchResult
-import android.app.appsearch.SearchResults
-import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
@@ -11,8 +8,6 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.annotation.RequiresApi
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -148,7 +143,7 @@ fun MyApp() {
             route = "${TripNoteScreenName.TRIP_NOTE_DETAIL.name}/{documentId}"
         ){
             val documentId = it.arguments?.getString("documentId") ?:  ""
-            TripNoteDetailScreen(documentId = documentId)
+            TripNoteDetailScreen(tripNoteDocumentId = documentId)
         }
 
 

@@ -5,6 +5,7 @@ import android.util.Log
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.storage.FirebaseStorage
+import com.google.firebase.storage.StorageException
 import com.lion.wandertrip.util.UserState
 import com.lion.wandertrip.vo.UserVO
 import kotlinx.coroutines.tasks.await
@@ -263,23 +264,27 @@ class UserRepository {
 
     // 이미지 Uri 가져온다.
     // 이미지 데이터를 가져온다.
-    suspend fun gettingImage(imageFileName: String): Uri {
-         Log.d("gettingImage", "이미지 파일명을 받음: $imageFileName")
+    suspend fun gettingImage(imageFileName: String): Uri? {
+        Log.d("gettingImage", "이미지 파일명을 받음: $imageFileName")
 
         val storageReference = FirebaseStorage.getInstance().reference
-         Log.d("gettingImage", "Firebase Storage 레퍼런스 초기화됨")
+        Log.d("gettingImage", "Firebase Storage 레퍼런스 초기화됨")
 
-        // 파일명을 지정하여 이미지 데이터를 가져온다.
         val childStorageReference = storageReference.child("userProfileImage/$imageFileName")
-         Log.d("gettingImage", "이미지 파일 경로: userProfileImage/$imageFileName")
+        Log.d("gettingImage", "이미지 파일 경로: userProfileImage/$imageFileName")
 
-        try {
+        return try {
             val imageUri = childStorageReference.downloadUrl.await()
-             Log.d("gettingImage", "이미지 URI 가져옴: $imageUri")
-            return imageUri
+            Log.d("gettingImage", "이미지 URI 가져옴: $imageUri")
+            imageUri
         } catch (e: Exception) {
-            Log.e("gettingImage", "이미지 URI 가져오기 실패: ${e.message}")
-            throw e
+            if (e is StorageException && e.errorCode == StorageException.ERROR_OBJECT_NOT_FOUND) {
+                Log.w("gettingImage", "이미지가 존재하지 않습니다: $imageFileName")
+                null // 이미지가 없을 경우 null 반환
+            } else {
+                Log.e("gettingImage", "이미지 URI 가져오기 실패: ${e.message}")
+                throw e // 다른 예외는 그대로 던짐
+            }
         }
     }
 

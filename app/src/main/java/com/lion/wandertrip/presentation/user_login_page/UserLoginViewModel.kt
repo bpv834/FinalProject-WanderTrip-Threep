@@ -31,6 +31,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
+import org.mindrot.jbcrypt.BCrypt
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
@@ -73,6 +74,7 @@ class UserLoginViewModel @Inject constructor(
     // 탈퇴한 회원 다이얼로그 상태변수
     val alertDialogLoginFail3State = mutableStateOf(false)
 
+
     // 회원 가입 버튼 click
     fun buttonUserJoinClick() {
         tripApplication.navHostController.navigate(MainScreenName.MAIN_SCREEN_USER_SIGN_UP_STEP1.name)
@@ -94,57 +96,41 @@ class UserLoginViewModel @Inject constructor(
 
         // 사용자가 입력한 아이디와 비밀번호
         val loginUserId = textFieldUserLoginIdValue.value
-        val loginUserPw = textFieldUserLoginPasswordValue.value
+        val loginUserPw = textFieldUserLoginPasswordValue.value // 암호화하지 않고 원본 비밀번호를 받음
 
         CoroutineScope(Dispatchers.Main).launch {
             val work1 = async(Dispatchers.IO) {
-                userService.checkLogin(loginUserId, loginUserPw)
+                userService.selectUserDataByUserIdOne(loginUserId)
             }
-            // 로그인 결과를 가져온다.
-            val loginResult = work1.await()
+            // 로그인한 사용자 데이터를 가져옴
+            val loginUserModel = work1.await()
 
-            // 로그인 결과로 분기한다.
-            when (loginResult) {
-                LoginResult.LOGIN_RESULT_ID_NOT_EXIST -> {
-                    alertDialogLoginFail1State.value = true
-                }
-
-                LoginResult.LOGIN_RESULT_PASSWORD_INCORRECT -> {
-                    alertDialogLoginFail2State.value = true
-                }
-
-                LoginResult.LOGIN_RESULT_SIGN_OUT_MEMBER -> {
-                    alertDialogLoginFail3State.value = true
-                }
+            // 가져온 암호화된 비밀번호와 입력된 비밀번호를 비교
+            if (BCrypt.checkpw(loginUserPw, loginUserModel.userPw)) { // 입력된 비밀번호와 저장된 암호화된 비밀번호 비교
                 // 로그인 성공시
-                LoginResult.LOGIN_RESULT_SUCCESS -> {
-                    // 로그인한 사용자 정보를 가져온다.
-                    val work2 = async(Dispatchers.IO) {
-                        userService.selectUserDataByUserIdOne(loginUserId)
-                    }
-                    val loginUserModel = work2.await()
-
-                    // 만약 자동로그인이 체크되어 있다면
-                    if (checkBoxAutoLoginValue.value) {
-                        CoroutineScope(Dispatchers.Main).launch {
-                            val work3 = async(Dispatchers.IO) {
-                                userService.updateUserAutoLoginToken(
-                                    tripApplication,
-                                    loginUserModel.userDocId
-                                )
-                            }
-                            work3.join()
+                if (checkBoxAutoLoginValue.value) {
+                    // 자동 로그인 처리
+                    CoroutineScope(Dispatchers.Main).launch {
+                        val work3 = async(Dispatchers.IO) {
+                            userService.updateUserAutoLoginToken(
+                                tripApplication,
+                                loginUserModel.userDocId
+                            )
                         }
-                    }
-
-                    // Application 객체에 로그인한 사용자의 정보를 담고 게시판 메인 화면으로 이동한다.
-                    tripApplication.loginUserModel = loginUserModel
-
-                    tripApplication.navHostController.navigate(BotNavScreenName.BOT_NAV_SCREEN_HOME.name) {
-                        // 홈 화면은 남기고 그 이전의 화면들만 백스택에서 제거
-                        popUpTo(MainScreenName.MAIN_SCREEN_USER_LOGIN.name) { inclusive = true }
+                        work3.join()
                     }
                 }
+
+                // Application 객체에 로그인한 사용자의 정보를 담고 게시판 메인 화면으로 이동한다.
+                tripApplication.loginUserModel = loginUserModel
+
+                tripApplication.navHostController.navigate(BotNavScreenName.BOT_NAV_SCREEN_HOME.name) {
+                    // 홈 화면은 남기고 그 이전의 화면들만 백스택에서 제거
+                    popUpTo(MainScreenName.MAIN_SCREEN_USER_LOGIN.name) { inclusive = true }
+                }
+            } else {
+                // 비밀번호 불일치
+                alertDialogLoginFail2State.value = true
             }
         }
     }

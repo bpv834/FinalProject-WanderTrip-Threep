@@ -9,9 +9,7 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
 import com.google.firebase.Timestamp
 import com.lion.wandertrip.TripApplication
 import com.lion.wandertrip.model.ScheduleItem
@@ -73,9 +71,6 @@ class TripNoteDetailViewModel @Inject constructor(
     val tripApplication = context as TripApplication
     val nickName = tripApplication.loginUserModel.userNickName
 
-    // 댓글 정보를 담을 변수
-    lateinit var tripNoteReplyModel : MutableList<TripNoteReplyModel>
-
     val tripSchedule = mutableStateOf(TripScheduleModel())
     var tripScheduleItems = mutableStateListOf<ScheduleItem>()
 
@@ -83,41 +78,41 @@ class TripNoteDetailViewModel @Inject constructor(
 
 
     // 일정 상세 정보 가져오기
-    fun getTripSchedule() {
-        viewModelScope.launch {
+    suspend fun getTripSchedule() {
+        Log.d("ScheduleViewModel", "getTripSchedule() 호출됨")
 
-            isLoading.value = true // ✅ 로딩 시작
+            isLoading.value = true
+            Log.d("ScheduleViewModel", "로딩 시작")
 
-            // 첫 번째 작업
             val work1 = tripNoteService.getTripSchedule(textFieldTripNoteScheduleDocId.value)
+            // 첫 번째 작업: 일정 정보 가져오기
+            Log.d("ScheduleViewModel", "일정 문서 ID: ${textFieldTripNoteScheduleDocId.value}")
+
             if (work1 != null) {
                 tripSchedule.value = work1
+                Log.d("ScheduleViewModel", "일정 정보 가져오기 완료: $work1")
             } else {
-                Log.d("ScheduleViewModel", "해당 문서가 없습니다.")
+                Log.d("ScheduleViewModel", "해당 일정 문서가 없습니다.")
             }
 
-            // 두 번째 작업은 첫 번째 작업이 완료된 후 실행됨
+            // 두 번째 작업: 일정 아이템들 가져오기
             val work2 = tripNoteService.getTripScheduleItems(textFieldTripNoteScheduleDocId.value)
+
             if (work2 != null) {
                 tripScheduleItems.clear()
                 tripScheduleItems.addAll(work2)
+                Log.d("ScheduleViewModel", "일정 아이템 가져오기 완료. 아이템 수: ${tripScheduleItems.size}")
             } else {
-                Log.d("ScheduleViewModel", "해당 문서가 없습니다.")
+                Log.d("ScheduleViewModel", "해당 일정 아이템 문서가 없습니다.")
             }
 
-            isLoading.value = false // ✅ 로딩 완료
-        }
+            isLoading.value = false
+            Log.d("ScheduleViewModel", "로딩 완료")
+
     }
 
 
-
-
-
-
     var tripNoteDetailList = mutableStateListOf<TripNoteModel>()
-
-
-
     val areaName = mutableStateOf("")
     val areaCode = mutableIntStateOf(0)
 
@@ -130,13 +125,20 @@ class TripNoteDetailViewModel @Inject constructor(
 
 
     // 여행기 리사이클러뷰 데이터 가져오기
-    fun gettingTripNoteDetailData(documentId : String) {
-        // 서버에서 데이터를 가져온다.
+    fun gettingTripNoteDetailData(documentId: String) {
+        Log.d("TripNote", "gettingTripNoteDetailData 호출됨. documentId: $documentId")
+
         CoroutineScope(Dispatchers.Main).launch {
             val work1 = async(Dispatchers.IO) {
-                tripNoteService.selectTripNoteDataOneById(documentId)
+                Log.d("TripNote", "서버에서 여행기 데이터 조회 시작")
+                val result = tripNoteService.selectTripNoteDataOneById(documentId)
+                Log.d("TripNote", "서버에서 여행기 데이터 조회 완료: $result")
+                result
             }
+
             tripNoteModel = work1.await()!!
+
+            Log.d("TripNote", "tripNoteModel 데이터 할당 완료")
 
             textFieldTripNoteNickName.value = tripNoteModel.userNickname
             textFieldTripNoteSubject.value = tripNoteModel.tripNoteTitle
@@ -144,33 +146,35 @@ class TripNoteDetailViewModel @Inject constructor(
             textFieldTripNoteScheduleDocId.value = tripNoteModel.tripScheduleDocumentId
             textFieldTripNoteScrap.value = tripNoteModel.tripNoteScrapCount.toString()
 
-            // 만약 작성자와 로그인한 사용자가 같다면 메뉴를 보여준다.
-            if(tripNoteModel.userNickname == tripApplication.loginUserModel.userNickName){
+            Log.d("TripNote", "텍스트 필드에 값 할당 완료")
+
+            // 일정 문서 아이디 할당
+            textFieldTripNoteScheduleDocId.value = tripNoteModel.tripScheduleDocumentId
+
+            // 일정 가져오기
+            getTripSchedule()
+
+
+
+            if (tripNoteModel.userNickname == tripApplication.loginUserModel.userNickName) {
                 showTopAppBarDeleteMenuState.value = true
+                Log.d("TripNote", "작성자와 로그인 사용자 일치 → 삭제 메뉴 표시")
+            } else {
+                Log.d("TripNote", "작성자와 로그인 사용자 불일치 → 삭제 메뉴 미표시")
             }
+            if (tripNoteModel.tripNoteImage.isNotEmpty()) {
+                Log.d("TripNote", "이미지 경로 존재: ${tripNoteModel.tripNoteImage}")
 
-            // 첨부 이미지가 있다면
-            if(tripNoteModel.tripNoteImage.isNotEmpty()){
-                val work2 = async(Dispatchers.IO){
-                    // tripNoteService.gettingImage(tripNoteModel.tripNoteImage)
-                    // 이미지 URI 리스트를 하나씩 처리하여 MutableList<Uri?>로 변환
-                    tripNoteModel.tripNoteImage.map { imagePath ->
-                        tripNoteService.gettingImage(imagePath) // 개별 이미지 가져오기
-                    }
-                }
-
-                showImageUri.value = work2.await().toMutableList()
-                showImageState.value = showImageUri.value.isNotEmpty()
-
+            } else {
+                Log.d("TripNote", "첨부된 이미지 없음")
             }
         }
-
     }
 
     // 댓글 등록하기 버튼
-    fun addReplyClick(documentId : String){
+    fun addReplyClick(tripNoteDocId : String,replyDocumentId : String){
         // 댓글 작성한 여행기 문서 id
-        val tripNoteDocumentId = documentId
+        val tripNoteDocumentId = replyDocumentId
         // 작성자 닉네임
         val userNickname = nickName
         // 댓글 내용
@@ -188,25 +192,23 @@ class TripNoteDetailViewModel @Inject constructor(
         // 저장하기
         CoroutineScope(Dispatchers.Main).launch {
             val work1 = async(Dispatchers.IO) {
-                tripNoteService.addTripNoteReplyData(tripNoteReplyModel)
+                tripNoteService.addTripNoteReplyData(tripNoteDocId,tripNoteReplyModel)
             }
+            work1.join()
 
         }
     }
 
     // 댓글 리스트 데이터 가져오기
-    fun gettingTripNoteReplyData(documentId : String) {
+    fun gettingTripNoteReplyData(tripNoteDocumentId : String) {
         // 서버에서 데이터를 가져온다.
         CoroutineScope(Dispatchers.Main).launch {
             val work1 = async(Dispatchers.IO) {
-                tripNoteService.selectReplyDataOneById(documentId)
+                tripNoteService.selectReplyDataOneById(tripNoteDocumentId)
             }
-            // val result = work1.await()
-            tripNoteReplyModel = work1.await()
+            val result = work1.await()
             tripNoteReplyList.clear()
-            tripNoteReplyList.addAll(tripNoteReplyModel)
-            // tripNoteReplyList.addAll(result)
-
+            tripNoteReplyList.addAll(result)
         }
     }
 
@@ -232,17 +234,6 @@ class TripNoteDetailViewModel @Inject constructor(
     fun deleteButtonClick(documentId : String){
         // 삭제 그거 ... 다이얼로그 띄우고 확인 누르면,,,
         CoroutineScope(Dispatchers.Main).launch {
-
-            // 사진도 삭제
-            if(tripNoteModel.tripNoteImage.isNotEmpty()){
-                val work2 = async(Dispatchers.IO){
-                    tripNoteModel.tripNoteImage.map { imagePath ->
-                        tripNoteService.removeImageFile(imagePath) // 개별 이미지 가져오기
-                    }
-                }
-                work2.join()
-            }
-
             // 여행기를 삭제한다.
             val work1 = async(Dispatchers.IO){
                 tripNoteService.deleteTripNoteData(documentId)
@@ -279,55 +270,6 @@ class TripNoteDetailViewModel @Inject constructor(
 
         return dateList
     }
-    ////////////////////////////////////////////////////////////////////////////////////////////////
-
-
-
-
-    // 일정 모델
-    val tripScheduleDetailList = TripScheduleModel(
-        scheduleStartDate = startDate,
-        scheduleEndDate = endDate,
-        scheduleDateList = scheduleDateList,
-        scheduleItems = listOf(
-            ScheduleItem(
-                itemDate = Timestamp(1738627200, 0),
-                itemIndex = 1,
-                itemTitle = "강서습지생태공원",
-                itemType = "관광지",
-                itemLongitude = 126.8171490732,
-                itemLatitude = 37.5860879769,
-                itemImagesURL = emptyList(),
-                itemReviewText = "재미없었다",
-                itemReviewImagesURL = listOf(
-                    "http://tong.visitkorea.or.kr/cms/resource/92/2671592_image2_1.jpg",
-                    "http://tong.visitkorea.or.kr/cms/resource/92/2671592_image2_1.jpg"
-                ),
-            ),
-            ScheduleItem(
-                itemDate = Timestamp(1738627200, 0),
-                itemIndex = 2,
-                itemTitle = "서울 양천고성지",
-                itemType = "관광지",
-                itemLongitude = 126.8408278075,
-                itemLatitude = 37.5740425776,
-                itemImagesURL = emptyList(),
-                itemReviewText = "너무 재밌다",
-                itemReviewImagesURL = emptyList()
-            ),
-            ScheduleItem(
-                itemDate = Timestamp(1738713600, 0),
-                itemIndex = 1,
-                itemTitle = "개화산 호국공원",
-                itemType = "관광지",
-                itemLongitude = 126.8033171574,
-                itemLatitude = 37.5805689272,
-                itemImagesURL = emptyList(),
-                itemReviewText = "",
-                itemReviewImagesURL = emptyList()
-            )
-        )
-    )
 
     // 도시 이름과 코드를 설정 하는 함수
     fun addAreaData(tripScheduleDocId: String, areaName: String, areaCode: Int) {
@@ -341,9 +283,6 @@ class TripNoteDetailViewModel @Inject constructor(
         val sdf = SimpleDateFormat("yyyy.MM.dd", Locale.getDefault())
         return sdf.format(Date(timestamp.seconds * 1000))
     }
-
-
-
 
     // ✅ Timestamp -> "YYYY.MM.DD" 형식 변환 함수
     @RequiresApi(Build.VERSION_CODES.O)
