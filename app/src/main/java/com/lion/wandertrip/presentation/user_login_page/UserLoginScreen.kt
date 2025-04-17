@@ -63,7 +63,7 @@ import kotlinx.coroutines.flow.forEach
 @SuppressLint("RestrictedApi")
 @Composable
 fun UserLoginScreen(userLoginViewModel: UserLoginViewModel = hiltViewModel()) {
-    Log.d("te","로그화면")
+    Log.d("UserLoginScreen","로그인 화면")
 
     val navController = userLoginViewModel.tripApplication.navHostController
     val backStackEntries = navController.currentBackStack

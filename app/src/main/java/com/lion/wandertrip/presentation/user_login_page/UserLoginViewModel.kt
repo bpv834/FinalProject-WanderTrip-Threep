@@ -24,6 +24,7 @@ import java.security.NoSuchAlgorithmException
 import javax.inject.Inject
 import kotlin.io.encoding.ExperimentalEncodingApi
 import android.util.Base64
+import android.widget.Toast
 import androidx.core.content.edit
 import androidx.lifecycle.viewModelScope
 import com.lion.wandertrip.util.LoginResult
@@ -137,69 +138,96 @@ class UserLoginViewModel @Inject constructor(
 
     // 카카오 로그인 버튼 눌렀을 때
     fun onClickButtonKakaoLogin() {
-        // 키해시 값 불러오기
-        // getHashKey()
-        // 토큰값 가져오기
-
-        // 릴리즈 해시값 불러오기
-        getReleaseKeyHash()
-
-        //viewModelScope는 자동으로 취소됨
-        //✔ viewModelScope는 ViewModel이 clear() 될 때 자동으로 취소돼!
-        //✔ CoroutineScope(Dispatchers.Main).launch {}로 만든 코루틴은 Activity나 Fragment가 종료되어도 계속 실행될 수 있음 → 메모리 누수 위험 🚨
-        //✔ viewModelScope는 ViewModel이 사라지면 자동으로 코루틴을 정리하므로 안정적
+        val context = tripApplication.applicationContext // Compose에서 context 전달 어려우면 여기서 가져옴
 
         viewModelScope.launch {
-            var str : String? = "isError"
+            var str: String? = "isError"
+
             val work1 = async(Dispatchers.IO) {
-                str = createKakaoToken()
+                try {
+                    str = createKakaoToken()
+                } catch (e: Exception) {
+                    Log.e("KakaoLogin", "카카오 토큰 생성 실패: ${e.localizedMessage}")
+                    Toast.makeText(context, "카카오 토큰 생성 실패", Toast.LENGTH_SHORT).show()
+                }
             }
-            val kToken = work1.await()
-            if(str==null) return@launch
 
+            val kToken = try {
+                work1.await()
+            } catch (e: Exception) {
+                Log.e("KakaoLogin", "카카오 토큰 await 실패: ${e.localizedMessage}")
+                Toast.makeText(context, "카카오 로그인 중 오류 발생", Toast.LENGTH_SHORT).show()
+                null
+            }
 
-            // 카카오 아이디 받아오기
+            if (str == null || kToken == null) {
+                Toast.makeText(context, "카카오 로그인 실패", Toast.LENGTH_SHORT).show()
+                return@launch
+            }
+
             val work2 = async(Dispatchers.IO) {
-                getKakaoUserId()
+                try {
+                    getKakaoUserId()
+                } catch (e: Exception) {
+                    Log.e("KakaoLogin", "카카오 사용자 ID 가져오기 실패: ${e.localizedMessage}")
+                    Toast.makeText(context, "카카오 사용자 정보 가져오기 실패", Toast.LENGTH_SHORT).show()
+                    null
+                }
             }
-            // 카카오 아이디
-            val kakaoId = work2.await()
-            // 등록된 회원인지 유저 탐색
-            val model = userService.selectUserDataByKakaoLoginToken(kakaoId ?: 0)
-            // 유저중에 kakaoToken 값에 kakaoId 를 갖고 있는 사람이 있다면 홈
-            if (model != null && kakaoId != null) {
+
+            val kakaoId = try {
+                work2.await()
+            } catch (e: Exception) {
+                Log.e("KakaoLogin", "카카오 사용자 ID await 실패: ${e.localizedMessage}")
+                Toast.makeText(context, "카카오 ID 처리 실패", Toast.LENGTH_SHORT).show()
+                null
+            }
+
+            if (kakaoId == null) {
+                Toast.makeText(context, "카카오 사용자 ID가 유효하지 않습니다", Toast.LENGTH_SHORT).show()
+                return@launch
+            }
+
+            val model = try {
+                userService.selectUserDataByKakaoLoginToken(kakaoId)
+            } catch (e: Exception) {
+                Log.e("KakaoLogin", "서버에서 사용자 정보 조회 실패: ${e.localizedMessage}")
+                Toast.makeText(context, "서버 오류: 사용자 정보 조회 실패", Toast.LENGTH_SHORT).show()
+                null
+            }
+
+            if (model != null) {
                 tripApplication.loginUserModel = model
 
                 tripApplication.navHostController.navigate(BotNavScreenName.BOT_NAV_SCREEN_HOME.name) {
-
-                    // 홈 화면은 남기고 그 이전의 화면들만 백스택에서 제거
                     popUpTo(MainScreenName.MAIN_SCREEN_USER_LOGIN.name) { inclusive = true }
                 }
 
-                // 내부 저장소에 userKakao ID 저장
-                // SharedPreference에 저장한다.
-                val pref = tripApplication.getSharedPreferences("KakaoToken", Context.MODE_PRIVATE)
-                pref.edit {
-                    putString("kToken", model.kakaoId.toString())
-                    Log.d("userSingStep3", "ktoken: ${model.kakaoId.toString()}")
+                try {
+                    val pref = tripApplication.getSharedPreferences("KakaoToken", Context.MODE_PRIVATE)
+                    pref.edit {
+                        putString("kToken", model.kakaoId.toString())
+                        Log.d("userSingStep3", "ktoken: ${model.kakaoId}")
+                    }
+
+                    val kakaoPref = tripApplication.getSharedPreferences("KakaoToken", Context.MODE_PRIVATE)
+                    val ktToken = kakaoPref.getString("kToken", null)
+                    Log.d("userSingStep3", "토큰 가져오기 : $ktToken")
+                } catch (e: Exception) {
+                    Log.e("KakaoLogin", "SharedPreferences 처리 실패: ${e.localizedMessage}")
+                    Toast.makeText(context, "토큰 저장 실패", Toast.LENGTH_SHORT).show()
                 }
-
-                // Preference에 login token이 있는지 확인한다.
-                val kakaoPref =
-                    tripApplication.getSharedPreferences("KakaoToken", Context.MODE_PRIVATE)
-                val ktToken = kakaoPref.getString("kToken", null)
-                Log.d("userSingStep3", "토큰 가져오기 : $ktToken")
-
 
             } else {
-                // 등록된 회원이 아니라면
+                Toast.makeText(context, "등록되지 않은 사용자입니다", Toast.LENGTH_SHORT).show()
                 if (kToken != null) {
-                    tripApplication.navHostController.navigate("${MainScreenName.MAIN_SCREEN_USER_SIGN_UP_STEP3.name}/${kakaoId.toString()}")
+                    tripApplication.navHostController.navigate("${MainScreenName.MAIN_SCREEN_USER_SIGN_UP_STEP3.name}/${kakaoId}")
                 }
             }
-
         }
     }
+
+
 
 
     // 카카오 로그인 토큰 받아오기
@@ -284,6 +312,8 @@ class UserLoginViewModel @Inject constructor(
             }
         }
     }
+
+    // 릴리즈 해쉬키 받기
     @OptIn(ExperimentalEncodingApi::class)
     private fun getReleaseKeyHash() {
         try {

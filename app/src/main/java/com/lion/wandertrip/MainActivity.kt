@@ -69,9 +69,9 @@ class MainActivity : ComponentActivity() {
         Firebase.auth.signInAnonymously()
             .addOnCompleteListener { task ->
                 if (task.isSuccessful) {
-                    Log.d("FirebaseAuth", "로그인 성공: ${task.result?.user?.uid}")
+                    Log.d("MainActivity FirebaseAuth", "로그인 성공: ${task.result?.user?.uid}")
                 } else {
-                    Log.e("FirebaseAuth", "로그인 실패", task.exception)
+                    Log.e("MainActivity FirebaseAuth ", "로그인 실패", task.exception)
                 }
             }
 

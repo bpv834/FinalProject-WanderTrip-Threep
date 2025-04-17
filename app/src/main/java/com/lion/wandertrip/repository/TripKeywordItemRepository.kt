@@ -11,6 +11,7 @@ class TripKeywordItemRepository(private val api: TripKeywordItemInterface) {
 
     // 키워드로 tripItem 가져오기
     suspend fun gettingTripItemByKeyword(keyword: String): TripItemModel? {
+        Log.d("TripKeywordItemRepository", "gettingTripItemByKeyword - keyword: $keyword")
         return try {
             val response = api.getKeywordTripItem(
                 numOfRows = 20,
@@ -24,9 +25,19 @@ class TripKeywordItemRepository(private val api: TripKeywordItemInterface) {
             )
 
             if (response.isSuccessful) {
-                val items = response.body()?.response?.body?.items?.item.orEmpty()
+                val responseBody = response.body()
+                if (responseBody == null) {
+                    Log.e("TripRepo", "응답 본문이 null입니다.")
+                    return null
+                }
 
-                // contentTypeId == "12" (관광지)인 첫 번째 아이템 선택
+                val items = responseBody.response?.body?.items?.item.orEmpty()
+
+                if (items.isEmpty()) {
+                    Log.w("TripRepo", "검색된 아이템이 없습니다.")
+                    return null
+                }
+
                 val item = items.firstOrNull { it.contentTypeId == "12" }?.let {
                     TripItemModel(
                         contentId = it.contentId ?: "",
@@ -35,7 +46,7 @@ class TripKeywordItemRepository(private val api: TripKeywordItemInterface) {
                         tel = it.tel ?: "",
                         firstImage = it.firstImage ?: "",
                         areaCode = it.areaCode ?: "",
-                        sigunguCode = it.siGunGuCode?:"",
+                        sigunguCode = it.siGunGuCode ?: "",
                         addr1 = it.addr1 ?: "",
                         addr2 = it.addr2 ?: "",
                         mapLat = it.mapLat?.toDouble() ?: 0.0,
@@ -43,14 +54,22 @@ class TripKeywordItemRepository(private val api: TripKeywordItemInterface) {
                     )
                 }
 
+                if (item == null) {
+                    Log.w("TripRepo", "contentTypeId == \"12\" 조건에 맞는 아이템이 없습니다.")
+                }
+
                 return item
             } else {
-                Log.e("TripRepo", "API request failed: ${response.code()} - ${response.message()}")
+                Log.e(
+                    "TripRepo",
+                    "API 요청 실패 - Code: ${response.code()}, Message: ${response.message()}"
+                )
                 null
             }
         } catch (e: Exception) {
-            Log.e("TripRepo", "Error occurred while fetching trip item", e)
+            Log.e("TripRepo", "여행지 정보 요청 중 예외 발생${e.message}")
             null
         }
     }
+
 }
