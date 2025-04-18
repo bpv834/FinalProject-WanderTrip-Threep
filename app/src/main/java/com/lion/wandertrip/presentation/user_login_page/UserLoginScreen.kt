@@ -1,6 +1,7 @@
 package com.lion.wandertrip.presentation.user_login_page
 
 import android.annotation.SuppressLint
+import android.app.Activity
 import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -33,6 +34,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.TextStyle
@@ -60,13 +62,25 @@ import com.lion.wandertrip.util.MainScreenName
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.forEach
 
-@SuppressLint("RestrictedApi")
+@SuppressLint("RestrictedApi", "ContextCastToActivity")
 @Composable
 fun UserLoginScreen(userLoginViewModel: UserLoginViewModel = hiltViewModel()) {
     Log.d("UserLoginScreen","로그인 화면")
 
     val navController = userLoginViewModel.tripApplication.navHostController
     val backStackEntries = navController.currentBackStack
+
+    val activity = LocalContext.current as? Activity
+
+    LaunchedEffect(activity) {
+        if (activity == null) {
+            Log.e("UserLoginScreen", "Activity context가 없습니다.")
+        } else {
+            Log.d("UserLoginScreen", "Activity context 확인됨: ${activity.localClassName}")
+
+            // 여기서 카카오 로그인 로직을 넣거나 안전하게 호출 가능
+        }
+    }
 
     LaunchedEffect(Unit) {
         val navController = userLoginViewModel.tripApplication.navHostController
@@ -209,7 +223,7 @@ fun UserLoginScreen(userLoginViewModel: UserLoginViewModel = hiltViewModel()) {
                 KakaoButton(
                     paddingTop = 5.dp,
                     onClick = {
-                        userLoginViewModel.onClickButtonKakaoLogin()
+                        userLoginViewModel.onClickButtonKakaoLogin(activity!!)
                     }
                 )
 

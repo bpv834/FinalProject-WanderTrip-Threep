@@ -1,6 +1,7 @@
 package com.lion.wandertrip.presentation.user_login_page
 
 import android.annotation.SuppressLint
+import android.app.Activity
 import android.content.Context
 import android.content.pm.PackageInfo
 import android.content.pm.PackageManager
@@ -137,23 +138,29 @@ class UserLoginViewModel @Inject constructor(
     }
 
     // 카카오 로그인 버튼 눌렀을 때
-    fun onClickButtonKakaoLogin() {
-        val context = tripApplication.applicationContext // Compose에서 context 전달 어려우면 여기서 가져옴
+    fun onClickButtonKakaoLogin(context: Context) {
+        /*val context = tripApplication*/
 
         viewModelScope.launch {
             var str: String? = "isError"
 
             val work1 = async(Dispatchers.IO) {
                 try {
-                    str = createKakaoToken()
+                    str = createKakaoToken(context)
+                    Log.d("onClickButtonKakaoLogin","str: $str")
+
                 } catch (e: Exception) {
                     Log.e("KakaoLogin", "카카오 토큰 생성 실패: ${e.localizedMessage}")
                     Toast.makeText(context, "카카오 토큰 생성 실패", Toast.LENGTH_SHORT).show()
                 }
             }
+            work1.join()
 
             val kToken = try {
+                Log.d("onClickButtonKakaoLogin","2222222")
                 work1.await()
+
+
             } catch (e: Exception) {
                 Log.e("KakaoLogin", "카카오 토큰 await 실패: ${e.localizedMessage}")
                 Toast.makeText(context, "카카오 로그인 중 오류 발생", Toast.LENGTH_SHORT).show()
@@ -161,7 +168,7 @@ class UserLoginViewModel @Inject constructor(
             }
 
             if (str == null || kToken == null) {
-                Toast.makeText(context, "카카오 로그인 실패", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, "카카오 로그인 실패 ${str?:"str이 널"} ${kToken?:"kToken이 널"}!!!!", Toast.LENGTH_SHORT).show()
                 return@launch
             }
 
@@ -174,6 +181,7 @@ class UserLoginViewModel @Inject constructor(
                     null
                 }
             }
+            work2.join()
 
             val kakaoId = try {
                 work2.await()
@@ -231,7 +239,7 @@ class UserLoginViewModel @Inject constructor(
 
 
     // 카카오 로그인 토큰 받아오기
-    suspend fun createKakaoToken(): String? = suspendCoroutine { continuation ->
+    suspend fun createKakaoToken(context: Context): String? = suspendCoroutine { continuation ->
         val callback: (OAuthToken?, Throwable?) -> Unit = { token, error ->
             if (error != null) {
                 Log.e("test100", "카카오계정으로 로그인 실패", error)
@@ -242,8 +250,12 @@ class UserLoginViewModel @Inject constructor(
             }
         }
 
-        if (UserApiClient.instance.isKakaoTalkLoginAvailable(tripApplication)) {
-            UserApiClient.instance.loginWithKakaoTalk(tripApplication) { token, error ->
+        // `context`에 Activity를 명시적으로 넘기기
+        val activityContext = context
+
+        if (UserApiClient.instance.isKakaoTalkLoginAvailable(activityContext)) {
+            Log.d("createKakaoToken", "카카오톡이 단말기에 깔려있음")
+            UserApiClient.instance.loginWithKakaoTalk(activityContext) { token, error ->
                 if (error != null) {
                     Log.e("test100", "카카오톡으로 로그인 실패", error)
 
@@ -254,7 +266,7 @@ class UserLoginViewModel @Inject constructor(
 
                     // 카카오 계정 로그인 시도
                     UserApiClient.instance.loginWithKakaoAccount(
-                        tripApplication,
+                        activityContext,
                         callback = callback
                     )
                 } else if (token != null) {
@@ -263,7 +275,8 @@ class UserLoginViewModel @Inject constructor(
                 }
             }
         } else {
-            UserApiClient.instance.loginWithKakaoAccount(tripApplication, callback = callback)
+            Log.d("createKakaoToken", "카카오톡이 단말기에 없음")
+            UserApiClient.instance.loginWithKakaoAccount(activityContext, callback = callback)
         }
     }
 
