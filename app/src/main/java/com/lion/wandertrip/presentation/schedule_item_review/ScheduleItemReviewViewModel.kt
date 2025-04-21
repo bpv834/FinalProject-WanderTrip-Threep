@@ -87,19 +87,27 @@ class ScheduleItemReviewViewModel @Inject constructor(
     // 추가한 이미지 Storage 업로드 후 DB에 저장
     fun saveReview(tripScheduleDocId: String, scheduleItemDocId: String, reviewText: String) {
         viewModelScope.launch {
+            Log.d("ScheduleItemReviewViewModel", "🔹 저장 시작")
+
             // 🔹 저장 시작 -> 로딩 표시
             isLoading.value = true
+
             // (1) newBitmaps -> 업로드 -> 다운로드 URL 리스트
+            Log.d("ScheduleItemReviewViewModel", "(1) 이미지 업로드 시작")
             val work1 = async(Dispatchers.IO) {
                 tripScheduleService.uploadBitmapListToFirebase(newBitmaps)
             }
             val newUrls = work1.await()
+            Log.d("ScheduleItemReviewViewModel", "(1) 이미지 업로드 완료: ${newUrls.size}개 업로드됨")
 
             // (2) 기존 URL + 새 URL 합치기
+            Log.d("ScheduleItemReviewViewModel", "(2) 기존 이미지와 새 이미지 합치기")
             val oldList = scheduleItem.value.itemReviewImagesURL
             val finalList = oldList + newUrls
+            Log.d("ScheduleItemReviewViewModel", "(2) 최종 이미지 리스트 크기: ${finalList.size}")
 
             // (3) scheduleItem 업데이트
+            Log.d("ScheduleItemReviewViewModel", "(3) scheduleItem 업데이트 생성")
             val updatedItem = scheduleItem.value.copy(
                 itemReviewImagesURL = finalList,
                 itemReviewText = reviewText,
@@ -110,6 +118,7 @@ class ScheduleItemReviewViewModel @Inject constructor(
             }
 
             // (4) DB에 최종 저장
+            Log.d("ScheduleItemReviewViewModel", "(4) DB 저장 시작")
             val work2 = async(Dispatchers.IO) {
                 tripScheduleService.updateScheduleItem(
                     tripScheduleDocId = tripScheduleDocId,
@@ -117,11 +126,12 @@ class ScheduleItemReviewViewModel @Inject constructor(
                     updatedItem
                 )
             }.await()
+            Log.d("ScheduleItemReviewViewModel", "(4) DB 저장 완료")
 
             backScreen()
+            Log.d("ScheduleItemReviewViewModel", "🔹 저장 완료 후 화면 복귀")
         }
     }
-
     // 이전 화면(일정 상세)으로 이동
     fun backScreen() {
         application.navHostController.popBackStack()

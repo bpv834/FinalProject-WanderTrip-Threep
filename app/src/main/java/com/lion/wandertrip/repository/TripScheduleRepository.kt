@@ -193,33 +193,38 @@ class TripScheduleRepository {
 
     // 단일 Bitmap 업로드 -> 다운 로드 URL
     suspend fun uploadBitmapListToFirebase(bitmaps: List<Bitmap>): List<String> {
+        val TAG = "FirebaseUpload"
         val downloadUrls = mutableListOf<String>()
         val storage = FirebaseStorage.getInstance()
-        val storageRef = storage.getReferenceFromUrl("gs://wandertrip-13b8b.firebasestorage.app")
-            .child("image")
+        val storageRef = storage.getReferenceFromUrl("gs://wandertripsole.firebasestorage.app")
+            .child("scheduleItemImage")
 
-        // 개별 Bitmap마다 반복
-        for (bitmap in bitmaps) {
+        Log.d(TAG, "업로드 시작: 총 ${bitmaps.size}개의 이미지")
+
+        for ((index, bitmap) in bitmaps.withIndex()) {
             try {
                 val fileName = "image_${System.currentTimeMillis()}.jpg"
                 val imageRef = storageRef.child(fileName)
 
-                // Bitmap -> ByteArray
                 val baos = ByteArrayOutputStream()
                 bitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos)
                 val data = baos.toByteArray()
 
-                // 업로드 -> await
+                Log.d(TAG, "[$index] $fileName 업로드 시작")
                 imageRef.putBytes(data).await()
                 val downloadUrl = imageRef.downloadUrl.await()
                 downloadUrls.add(downloadUrl.toString())
+
+                Log.d(TAG, "[$index] $fileName 업로드 성공: $downloadUrl")
             } catch (e: Exception) {
-                e.printStackTrace()
-                // 실패 시 로깅만
+                Log.e(TAG, "[$index] 이미지 업로드 실패: ${e.message}", e)
             }
         }
+
+        Log.d(TAG, "업로드 완료: 성공한 이미지 ${downloadUrls.size}개")
         return downloadUrls
     }
+
 
     // 위치 조정한 일정 항목 업데이트
     suspend fun updateItemsPosition(tripScheduleDocId: String, updatedItems: List<ScheduleItemVO>) {
