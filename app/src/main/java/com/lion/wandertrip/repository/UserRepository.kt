@@ -44,7 +44,7 @@ class UserRepository {
         val firestore = FirebaseFirestore.getInstance()
         val collectionReference = firestore.collection("UserData")
         val documentReference = collectionReference.document()
-        userVO.userDocId= documentReference.id
+        userVO.userDocId = documentReference.id
 
         Log.d("Firestore", "생성된 문서 ID: ${documentReference.id}")
         Log.d("Firestore", "추가할 유저 데이터: $userVO")
@@ -59,21 +59,29 @@ class UserRepository {
 
         return documentReference.id
     }
-
-
     // 사용자 아이디와 동일한 사용자의 정보 하나를 반환하는 메서드
-    suspend fun selectUserDataByUserIdOne(userId: String): MutableMap<String, *> {
+    suspend fun selectUserDataByUserIdOne(userId: String): UserVO? {
         val firestore = FirebaseFirestore.getInstance()
         val collectionReference = firestore.collection("UserData")
+
         val result = collectionReference.whereEqualTo("userId", userId).get().await()
         val userVoList = result.toObjects(UserVO::class.java)
 
-        val userMap = mutableMapOf(
-            "user_document_id" to result.documents[0].id,
-            "user_vo" to userVoList[0]
-        )
-        return userMap
+        Log.d("UserRepository", "Requested userId: $userId")
+        Log.d("UserRepository", "Fetched document count: ${result.documents.size}")
+        Log.d("UserRepository", "Parsed UserVO list size: ${userVoList.size}")
+
+        if (userVoList.size != 0) {
+            val user = userVoList[0]
+            Log.d("UserRepository", "Fetched user: $user")
+            return user
+        } else {
+            Log.e("UserRepository", "No user found with userId: $userId")
+            Log.d("UserRepository", "no user")
+            return null
+        }
     }
+
 
     // 자동로그인 토큰값을 갱신하는 메서드
     suspend fun updateUserAutoLoginToken(userDocumentId: String, newToken: String) {
@@ -290,7 +298,7 @@ class UserRepository {
 
     // 사용자의 관심 콘텐츠 ID 리스트를 가져오는 함수
     suspend fun gettingUserInterestingContentIdList(userDocId: String): List<String> {
-        Log.d("UserRepo","gettingUserInterestingContentIdList")
+        Log.d("UserRepo", "gettingUserInterestingContentIdList")
         return try {
             val firebase = FirebaseFirestore.getInstance()
             val contentIdList = mutableListOf<String>()
@@ -360,7 +368,10 @@ class UserRepository {
                 document.reference.update("interestingCount", FieldValue.increment(1))
                     .await()
             }
-            Log.d("addLikeCnt", "interestingCount incremented for contentId: $likeItemContentId")
+            Log.d(
+                "addLikeCnt",
+                "interestingCount incremented for contentId: $likeItemContentId"
+            )
         } else {
             // 문서가 없으면 새 문서를 생성 (초기값: interestingCount = 1, 나머지는 기본값)
             val newDoc = hashMapOf(
@@ -371,7 +382,10 @@ class UserRepository {
                 "interestingCount" to 1
             )
             collectionReference.add(newDoc).await()
-            Log.d("addLikeCnt", "New document created for contentId: $likeItemContentId with interestingCount = 1")
+            Log.d(
+                "addLikeCnt",
+                "New document created for contentId: $likeItemContentId with interestingCount = 1"
+            )
         }
     }
 
@@ -413,17 +427,23 @@ class UserRepository {
                 document.reference.update("interestingCount", FieldValue.increment(-1))
                     .await()
             }
-            Log.d("removeLikeCnt", "Decremented interestingCount for contentId: $likeItemContentId")
+            Log.d(
+                "removeLikeCnt",
+                "Decremented interestingCount for contentId: $likeItemContentId"
+            )
         } else {
             Log.d("removeLikeCnt", "No document found with contentId: $likeItemContentId")
         }
     }
 
-  /*  suspend fun gettingUserScheduleIdList(userDocId : String): List<String>{
+    /*  suspend fun gettingUserScheduleIdList(userDocId : String): List<String>{
 
-    }*/
+      }*/
     // 유저 컬렉션에 스케줄 서브리스트에 스케줄 문서 아이디 추가하기
-    suspend fun addTripScheduleToUserSubCollection(userDocId: String, tripScheduleDocId: String) {
+    suspend fun addTripScheduleToUserSubCollection(
+        userDocId: String,
+        tripScheduleDocId: String
+    ) {
         val firestore = FirebaseFirestore.getInstance()
         val userScheduleRef = firestore.collection("UserData")
             .document(userDocId)
@@ -476,4 +496,6 @@ class UserRepository {
             userScheduleRef.document(document.id).delete().await()
         }
     }
+
 }
+

@@ -78,11 +78,10 @@ class UserService (val userRepository: UserRepository) {
 
     // 사용자 아이디를 통해 문서 id와 사용자 정보를 가져온다.
     // 사용자 아이디와 동일한 사용자의 정보 하나를 반환하는 메서드
-    suspend fun selectUserDataByUserIdOne(userId:String) : UserModel{
-        val tempMap = userRepository.selectUserDataByUserIdOne(userId)
+    suspend fun selectUserDataByUserIdOne(userId:String) : UserModel?{
+        val userVo = userRepository.selectUserDataByUserIdOne(userId)
 
-        val loginUserVo = tempMap["user_vo"] as UserVO
-        val loginUserModel = loginUserVo.toUserModel()
+        val loginUserModel = userVo?.toUserModel()
 
         return loginUserModel
     }

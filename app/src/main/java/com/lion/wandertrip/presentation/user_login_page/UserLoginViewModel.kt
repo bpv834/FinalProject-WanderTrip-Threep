@@ -85,6 +85,7 @@ class UserLoginViewModel @Inject constructor(
     // 로그인 버튼 click
     fun buttonUserLoginOnClick() {
         Log.d("test100", "클릭")
+        var result = LoginResult.LOGIN_RESULT_SUCCESS
 
         if (textFieldUserLoginIdValue.value.isEmpty()) {
             alertDialogUserIdState.value = true
@@ -101,11 +102,20 @@ class UserLoginViewModel @Inject constructor(
         val loginUserPw = textFieldUserLoginPasswordValue.value // 암호화하지 않고 원본 비밀번호를 받음
 
         CoroutineScope(Dispatchers.Main).launch {
+            // id 로 회원찾기 회원이 없다면 null 리턴
             val work1 = async(Dispatchers.IO) {
                 userService.selectUserDataByUserIdOne(loginUserId)
             }
             // 로그인한 사용자 데이터를 가져옴
             val loginUserModel = work1.await()
+
+            // 존재하지 않는 ID 라면
+            if(loginUserModel==null) {
+                alertDialogLoginFail1State.value = true
+                return@launch
+            }
+
+            Log.d("buttonUserLoginOnClick","user : $loginUserModel")
 
             // 가져온 암호화된 비밀번호와 입력된 비밀번호를 비교
             if (BCrypt.checkpw(loginUserPw, loginUserModel.userPw)) { // 입력된 비밀번호와 저장된 암호화된 비밀번호 비교
