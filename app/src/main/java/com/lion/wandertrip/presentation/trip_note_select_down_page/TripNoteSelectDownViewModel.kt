@@ -4,24 +4,16 @@ import android.content.Context
 import android.os.Build
 import android.util.Log
 import androidx.annotation.RequiresApi
-import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.lifecycle.ViewModel
 import com.google.firebase.Timestamp
-import com.google.firebase.firestore.DocumentReference
 import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.QuerySnapshot
-import com.lion.a02_boardcloneproject.component.CustomAlertDialog
 import com.lion.wandertrip.TripApplication
-import com.lion.wandertrip.model.TripNoteModel
 import com.lion.wandertrip.model.TripScheduleModel
 import com.lion.wandertrip.service.TripNoteService
 import com.lion.wandertrip.util.AreaCode
-import com.lion.wandertrip.util.MainScreenName
 import com.lion.wandertrip.util.ScheduleScreenName
-import com.lion.wandertrip.util.TripNoteScreenName
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
@@ -56,22 +48,29 @@ class TripNoteSelectDownViewModel @Inject constructor(
     // 지역 코드
     var areaCode : Int = 0
 
-
-    // 리사이클러뷰 데이터 리스트 (다가오는 내 일정 리스트)
+    // 여행기 상세 데이터를 가져오는 함수
     fun gettingTripNoteDetailData() {
 
+        Log.d("GettingTripNote", "getTripNoteDetailData() called")
+
         CoroutineScope(Dispatchers.Main).launch {
-            val work1 = async(Dispatchers.IO){
-                tripNoteService.gettingUpcomingScheduleList(userNickName)
+            Log.d("GettingTripNote", "Coroutine started on Main thread")
+
+            val work1 = async(Dispatchers.IO) {
+                Log.d("GettingTripNote", "Fetching upcoming schedule list on IO thread for user: ${tripApplication.loginUserModel.userDocId}")
+                tripNoteService.gettingUpcomingScheduleListByUserDocId(tripApplication.loginUserModel.userDocId)
             }
-            val recyclerViewList  = work1.await()
+
+            val recyclerViewList = work1.await()
+            Log.d("GettingTripNote", "Received schedule list: ${recyclerViewList.size} items")
 
             // 상태 관리 변수에 담아준다.
             tripNoteMyScheduleList.clear()
             tripNoteMyScheduleList.addAll(recyclerViewList)
+            Log.d("GettingTripNote", "tripNoteMyScheduleList updated with new data")
         }
-
     }
+
 
     // 뒤로 가기 버튼
     fun navigationButtonClick(){

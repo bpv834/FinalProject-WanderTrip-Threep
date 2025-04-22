@@ -1,5 +1,6 @@
 package com.lion.wandertrip.presentation.trip_note_select_down_page
 
+import android.util.Log
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -31,6 +32,7 @@ fun TripNoteSelectDownScreen(
     documentId : String,
     tripNoteSelectDownViewModel: TripNoteSelectDownViewModel = hiltViewModel())
 {
+    Log.d("TripNoteSelectDownScreen","TripNoteSelectDownScreen!!!")
     tripNoteSelectDownViewModel.gettingTripNoteDetailData()
 
     // 다이얼로그를 보여주는 상태 - 완료

@@ -236,48 +236,64 @@ class TripNoteRepository@Inject constructor() {
 //    }
 
     // 닉네임을 통해 유저의 다가오는 일정 리스트를 가져오는 메서드
+/*
     suspend fun gettingUpcomingScheduleList(userNickName: String): MutableList<Map<String, *>> {
         val firestore = FirebaseFirestore.getInstance()
-
-        // 현재 시간 가져오기
         val currentTime = Timestamp.now()
 
-        // 유저 데이터 가져오기
+        Log.d("일정조회", "⭐ 다가오는 일정 조회 시작 - 닉네임: $userNickName, 현재 시간: $currentTime")
+
+        // 유저 데이터 조회
         val userDataSnapshot = firestore.collection("UserData")
             .whereEqualTo("userNickName", userNickName)
             .get()
             .await()
 
-        if (userDataSnapshot.isEmpty) return mutableListOf() // 유저 데이터가 없으면 빈 리스트 반환
+        if (userDataSnapshot.isEmpty) {
+            Log.d("일정조회", "⚠️ 유저 데이터 없음 - 닉네임: $userNickName")
+            return mutableListOf()
+        }
 
-        // userScheduleList 필드 가져오기
+        // 유저의 일정 ID 리스트 추출
         val userScheduleList = userDataSnapshot.documents.first()
-            .get("userScheduleList") as? List<String> ?: return mutableListOf()
+            .get("userScheduleList") as? List<String> ?: run {
+            Log.d("일정조회", "⚠️ userScheduleList 필드가 존재하지 않거나 비어 있음")
+            return mutableListOf()
+        }
 
-        // 반환할 리스트
+        Log.d("일정조회", "📋 유저의 일정 ID 리스트: $userScheduleList")
+
         val resultList = mutableListOf<Map<String, *>>()
 
-        // TripSchedule 컬렉션에서 일정 문서 가져오기
+        // 일정 문서 조회
         val tripScheduleSnapshot = firestore.collection("TripSchedule")
             .whereIn(FieldPath.documentId(), userScheduleList)
             .get()
             .await()
 
+        Log.d("일정조회", "📦 TripSchedule 문서 ${tripScheduleSnapshot.size()}건 조회 완료")
+
         tripScheduleSnapshot.forEach { document ->
             val tripScheduleVO = document.toObject(TripScheduleVO::class.java)
 
-            // scheduleStartDate가 현재 시간보다 큰 경우만 추가
             if (tripScheduleVO.scheduleStartDate > currentTime) {
-                val map = mapOf(
-                    "documentId" to document.id,
-                    "tripScheduleVO" to tripScheduleVO
+                Log.d("일정조회", "✅ 다가오는 일정 추가됨 - 문서 ID: ${document.id}, 시작일: ${tripScheduleVO.scheduleStartDate}")
+                resultList.add(
+                    mapOf(
+                        "documentId" to document.id,
+                        "tripScheduleVO" to tripScheduleVO
+                    )
                 )
-                resultList.add(map)
+            } else {
+                Log.d("일정조회", "⏭️ 과거 일정이므로 제외됨 - 문서 ID: ${document.id}, 시작일: ${tripScheduleVO.scheduleStartDate}")
             }
         }
 
+        Log.d("일정조회", "🎯 최종 반환 일정 개수: ${resultList.size}")
+
         return resultList
     }
+*/
 
 
 

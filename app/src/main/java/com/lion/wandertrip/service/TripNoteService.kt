@@ -2,14 +2,13 @@ package com.lion.wandertrip.service
 
 import android.net.Uri
 import android.util.Log
+import com.google.firebase.Timestamp
 import com.lion.wandertrip.model.ScheduleItem
 import com.lion.wandertrip.model.TripNoteModel
 import com.lion.wandertrip.model.TripNoteReplyModel
 import com.lion.wandertrip.model.TripScheduleModel
 import com.lion.wandertrip.repository.TripNoteRepository
-import com.lion.wandertrip.vo.TripNoteReplyVO
 import com.lion.wandertrip.vo.TripNoteVO
-import com.lion.wandertrip.vo.TripScheduleVO
 import javax.inject.Inject
 
 class TripNoteService @Inject constructor(val tripNoteRepository: TripNoteRepository) {
@@ -87,19 +86,29 @@ class TripNoteService @Inject constructor(val tripNoteRepository: TripNoteReposi
     }
 
     // 내 다가오는 여행 일정 가져오기
-    suspend fun gettingUpcomingScheduleList(userNickName : String) : MutableList<TripScheduleModel>{
-        // 여행기 정보를 가져온다.
-        val tripNoteList = mutableListOf<TripScheduleModel>()
-        val resultList = tripNoteRepository.gettingUpcomingScheduleList(userNickName)
+    suspend fun gettingUpcomingScheduleListByUserDocId(userDocId: String): MutableList<TripScheduleModel> {
+        Log.d("일정조회", "🔥 다가오는 일정 조회 시작 - 유저 문서 ID: $userDocId")
 
-        resultList.forEach {
-            val tripNoteVO = it["tripScheduleVO"] as TripScheduleVO
-            // val documentId = it["documentId"] as String
-            val tripNoteModel = tripNoteVO.toTripScheduleModel()
-            tripNoteList.add(tripNoteModel)
+        // 1. 유저의 전체 일정 VO 가져오기
+        val myScheduleList = tripNoteRepository.getTripSchedulesByUserDocId(userDocId)
+        Log.d("일정조회", "📋 전체 일정 VO 개수: ${myScheduleList.size}")
+
+        // 2. VO → Model 변환
+        val tripNoteScheduleList = mutableListOf<TripScheduleModel>()
+        myScheduleList.forEachIndexed { index, vo ->
+            val model = vo.toTripScheduleModel()
+            tripNoteScheduleList.add(model)
+            Log.d("일정조회", "✅ 일정 변환 완료 [$index] - 종료일: ${model.scheduleEndDate}")
         }
 
-        return tripNoteList
+        // 3. 다가오는 일정 필터링
+        val now = Timestamp.now()
+        val upComingScheduleList = tripNoteScheduleList.filter { it.scheduleEndDate > now }.toMutableList()
+
+        Log.d("일정조회", "🎯 현재 시간 기준: $now")
+        Log.d("일정조회", "📌 다가오는 일정 개수: ${upComingScheduleList.size}")
+
+        return upComingScheduleList
     }
 
     suspend fun gettingTripNoteListWithScrapCount(): MutableList<TripNoteModel> {
