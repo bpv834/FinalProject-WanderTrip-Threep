@@ -23,6 +23,7 @@ import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.ThumbUp
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
@@ -32,11 +33,13 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.imageResource
 import androidx.compose.ui.res.vectorResource
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.LifecycleCoroutineScope
@@ -70,9 +73,16 @@ fun TripNoteItem(tripNote: TripNoteModel, pos: Int, myTripNoteViewModel: MyTripN
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(10.dp).clickable {
+            .padding(10.dp).padding(vertical = 5.dp)
+            .clickable {
                 myTripNoteViewModel.onClickTripNoteItemGoTripNoteDetail(tripNote.tripNoteDocumentId)
-            }
+            },
+        colors = CardDefaults.cardColors(
+            containerColor = Color.White
+        ),
+        elevation = CardDefaults.cardElevation(
+            defaultElevation = 6.dp
+        )
     ) {
         Column(
             modifier = Modifier.padding(10.dp)
@@ -84,18 +94,19 @@ fun TripNoteItem(tripNote: TripNoteModel, pos: Int, myTripNoteViewModel: MyTripN
                     .padding(horizontal = 10.dp),
                 text = tripNote.tripNoteTitle,
                 fontFamily = CustomFont.customFontBold,
-                fontSize = 24.sp // 글씨 크기 설정
+                fontSize = 24.sp, // 글씨 크기 설정
+                maxLines = 1, // Limit text to a single line
+                overflow = TextOverflow.Ellipsis // Add ellipsis when text overflows
             )
 
             Column(modifier = Modifier.padding(horizontal = 10.dp)) {
-                // 여행기 대표 이미지
-                if(myTripNoteViewModel.uriMap[pos]!=null)
+
                 GlideImage(
-                    imageModel = myTripNoteViewModel.uriMap[pos],
+                    imageModel = if(tripNote.tripNoteImage[0]=="") ImageVector.vectorResource(R.drawable.img_image_holder) else tripNote.tripNoteImage[0],
                     contentScale = ContentScale.Crop,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height((sH / 9).dp),
+                        .height((sH / 12).dp),
                     circularReveal = CircularReveal(duration = 250),
                     placeHolder = ImageBitmap.imageResource(R.drawable.img_image_holder),
                 )

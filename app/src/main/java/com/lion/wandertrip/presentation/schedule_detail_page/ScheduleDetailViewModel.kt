@@ -120,7 +120,7 @@ class ScheduleDetailViewModel @Inject constructor(
         viewModelScope.launch {
             val work1 = async(Dispatchers.IO) {
                 tripScheduleService.removeTripScheduleItem(scheduleDocId, itemDocId, itemDate)
-            }.await()
+            }.join()
         }
     }
 

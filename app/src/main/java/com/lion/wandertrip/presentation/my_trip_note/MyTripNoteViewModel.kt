@@ -44,13 +44,6 @@ class MyTripNoteViewModel @Inject constructor(
     // 메뉴 상태 관리 변수
     var isMenuOpened = mutableStateOf(false)
 
-    // 보여줄 이미지의 Uri
-    val showImageUri = mutableStateOf<Uri?>(null)
-
-    // 인덱스에 uri를 넣는 맵
-    val uriMap = mutableStateMapOf<Int,Uri?>()
-
-
     // 리스트 가져오기
     fun getTripNoteList() {
         Log.d("test10","getTripNoteList")
@@ -61,7 +54,6 @@ class MyTripNoteViewModel @Inject constructor(
             tripNoteList.clear()
             tripNoteList.addAll(work1.await())
             addMap()
-            settingUriMap()
         }
     }
 
@@ -103,24 +95,6 @@ class MyTripNoteViewModel @Inject constructor(
         return TimeUnit.MILLISECONDS.toDays(diffInMillis).toInt()
     }
 
-    // 경로명으로 uri 리턴받는 메서드
-    suspend fun fetchImageUri(imagePath: String): Uri {
-        return withContext(Dispatchers.IO) {
-            tripNoteService.gettingImage(imagePath) // 이미지 URI 가져오기
-        }
-    }
-    // map 에 파일경로가 있는 model 만 uri 객체를 만들어 담는다
-    fun settingUriMap() {
-        CoroutineScope(Dispatchers.Main).launch {
-            tripNoteList.forEachIndexed { index, tripNoteModel ->
-                if(tripNoteModel.tripNoteImage.size!=0){
-                    uriMap[index] = fetchImageUri(tripNoteModel.tripNoteImage.first())
-                }else{
-                    uriMap[index]= null
-                }
-            }
-        }
-    }
 
     // 여행기 삭제 메서드
     fun deleteTripNoteByDocId(tripDocId: String) {

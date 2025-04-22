@@ -354,31 +354,38 @@ class TripNoteRepository@Inject constructor() {
 
 
     // 닉네임을 통해 다른 사람 여행기 리스트를 가져온다
-    suspend fun gettingOtherTripNoteList(otherNickName : String): MutableList<Map<String, *>> {
+    suspend fun gettingOtherTripNoteList(otherNickName: String): MutableList<Map<String, *>> {
         val firestore = FirebaseFirestore.getInstance()
         val collectionReference = firestore.collection("TripNoteData")
+
+        Log.d("TripNoteRepo", "Fetching trip notes for nickname: $otherNickName")
+
         // 데이터를 가져온다.
-        val result =
-            collectionReference
-                .whereEqualTo("userNickname", otherNickName)
-                //.orderBy("scheduleTimeStamp", Query.Direction.DESCENDING)
-                .get()
-                .await()
+        val result = collectionReference
+            .whereEqualTo("userNickname", otherNickName)
+            // .orderBy("scheduleTimeStamp", Query.Direction.DESCENDING)
+            .get()
+            .await()
+
+        Log.d("TripNoteRepo", "Fetched document count: ${result.documents.size}")
+
         // 반환할 리스트
         val resultList = mutableListOf<Map<String, *>>()
-        // 데이터의 수 만큼 반환한다.
+
+        // 데이터의 수만큼 반환한다.
         result.forEach {
-            val tripNoteVO = it.toObject(TripNoteVO::class.java) // TripNoteVO 객체 가져오기
+            val tripNoteVO = it.toObject(TripNoteVO::class.java)
+            Log.d("TripNoteRepo", "Parsed trip note document: ${it.id}")
             val map = mapOf(
-                // 문서의 id
                 "documentId" to it.id,
-                // 데이터를 가지고 있는 객체
                 "tripNoteVO" to tripNoteVO,
             )
             resultList.add(map)
         }
+
         return resultList
     }
+
 
 
 

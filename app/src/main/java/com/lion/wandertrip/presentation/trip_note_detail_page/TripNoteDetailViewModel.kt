@@ -42,8 +42,7 @@ class TripNoteDetailViewModel @Inject constructor(
 ) : ViewModel() {
 
     // 여행기 정보를 담을 변수
-    lateinit var tripNoteModel:TripNoteModel
-
+    val tripNoteModelValue = mutableStateOf(TripNoteModel())
 
     // 여행기 제목
     val textFieldTripNoteSubject = mutableStateOf(" ")
@@ -53,8 +52,7 @@ class TripNoteDetailViewModel @Inject constructor(
     val textFieldTripNoteContent = mutableStateOf(" ")
     // 일정 문서 id
     val textFieldTripNoteScheduleDocId = mutableStateOf(" ")
-    // 여행기 사진 uri
-    val showImageUri = mutableStateOf(mutableListOf<Uri?>())
+
     // 스크랩 수
     val textFieldTripNoteScrap = mutableStateOf(" ")
 
@@ -136,34 +134,32 @@ class TripNoteDetailViewModel @Inject constructor(
                 result
             }
 
-            tripNoteModel = work1.await()!!
+            tripNoteModelValue.value = work1.await()!!
 
             Log.d("TripNote", "tripNoteModel 데이터 할당 완료")
 
-            textFieldTripNoteNickName.value = tripNoteModel.userNickname
-            textFieldTripNoteSubject.value = tripNoteModel.tripNoteTitle
-            textFieldTripNoteContent.value = tripNoteModel.tripNoteContent
-            textFieldTripNoteScheduleDocId.value = tripNoteModel.tripScheduleDocumentId
-            textFieldTripNoteScrap.value = tripNoteModel.tripNoteScrapCount.toString()
+            textFieldTripNoteNickName.value = tripNoteModelValue.value.userNickname
+            textFieldTripNoteSubject.value = tripNoteModelValue.value.tripNoteTitle
+            textFieldTripNoteContent.value = tripNoteModelValue.value.tripNoteContent
+            textFieldTripNoteScheduleDocId.value = tripNoteModelValue.value.tripScheduleDocumentId
+            textFieldTripNoteScrap.value = tripNoteModelValue.value.tripNoteScrapCount.toString()
 
             Log.d("TripNote", "텍스트 필드에 값 할당 완료")
 
             // 일정 문서 아이디 할당
-            textFieldTripNoteScheduleDocId.value = tripNoteModel.tripScheduleDocumentId
+            textFieldTripNoteScheduleDocId.value = tripNoteModelValue.value.tripScheduleDocumentId
 
             // 일정 가져오기
             getTripSchedule()
 
-
-
-            if (tripNoteModel.userNickname == tripApplication.loginUserModel.userNickName) {
+            if (tripNoteModelValue.value.userNickname == tripApplication.loginUserModel.userNickName) {
                 showTopAppBarDeleteMenuState.value = true
                 Log.d("TripNote", "작성자와 로그인 사용자 일치 → 삭제 메뉴 표시")
             } else {
                 Log.d("TripNote", "작성자와 로그인 사용자 불일치 → 삭제 메뉴 미표시")
             }
-            if (tripNoteModel.tripNoteImage.isNotEmpty()) {
-                Log.d("TripNote", "이미지 경로 존재: ${tripNoteModel.tripNoteImage}")
+            if (tripNoteModelValue.value.tripNoteImage.isNotEmpty()) {
+                Log.d("TripNote", "이미지 경로 존재: ${tripNoteModelValue.value.tripNoteImage}")
 
             } else {
                 Log.d("TripNote", "첨부된 이미지 없음")
@@ -247,10 +243,19 @@ class TripNoteDetailViewModel @Inject constructor(
     }
 
     // 일정 담기 아이콘 해당 여행기의 일정 문서id와 여행기 문서id를 전달해줌
-    fun bringTripNote(tripNoteScheduleDocId: MutableState<String>, documentId : String) {
-        val tripNoteScheduleDocId = tripNoteScheduleDocId.value
-        tripApplication.navHostController.navigate("${TripNoteScreenName.TRIP_NOTE_SELECT_DOWN.name}/${tripNoteScheduleDocId}/${documentId}")
+
+    // 일정 담기 아이콘 해당 여행기의 일정 문서id와 여행기 문서id를 전달해줌
+    fun bringTripNote(tripNoteScheduleDocId: MutableState<String>, documentId: String) {
+        val tripNoteScheduleDocIdValue = tripNoteScheduleDocId.value
+
+        Log.d("BringTripNote", "tripNoteScheduleDocId: $tripNoteScheduleDocIdValue")
+        Log.d("BringTripNote", "documentId: $documentId")
+
+        tripApplication.navHostController.navigate(
+            "${TripNoteScreenName.TRIP_NOTE_SELECT_DOWN.name}/$tripNoteScheduleDocIdValue/$documentId"
+        )
     }
+
 
     // 닉네임 클릭하면 그 사람 여행기 리스트 화면으로 이동
     fun clickNickname(){

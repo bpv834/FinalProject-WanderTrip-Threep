@@ -72,11 +72,6 @@ fun TripNoteDetailScreen(
     tripNoteDocumentId: String,
     tripNoteDetailViewModel: TripNoteDetailViewModel = hiltViewModel(),
 ) {
-
-
-    val isFirstLaunch = rememberSaveable { mutableStateOf(true) } // ✅ 처음 실행 여부 저장
-    val isLoading by tripNoteDetailViewModel.isLoading // ✅ 로딩 상태 가져오기
-
     LaunchedEffect (Unit){
         // 여행기 상세 데이터 가져오기
         tripNoteDetailViewModel.gettingTripNoteDetailData(tripNoteDocumentId)
@@ -87,17 +82,14 @@ fun TripNoteDetailScreen(
         // 댓글 리스트 가져오기
         tripNoteDetailViewModel.gettingTripNoteReplyData(tripNoteDocumentId)
 
-        // tripNoteDetailList를 ViewModel에서 가져옵니다.
-        val tripNoteDetailList = tripNoteDetailViewModel.tripNoteDetailList
-        val tripNoteDetailData = tripNoteDetailList.firstOrNull()
     }
 
     // 휴지통 다이얼로그 상태값
     var showDeleteDialogState by remember { mutableStateOf(false) }
 
-    val images = tripNoteDetailViewModel.showImageUri
+    val images = tripNoteDetailViewModel.tripNoteModelValue.value.tripNoteImage
     // HorizontalPager에 필요한 상태를 pageCount를 전달하여 초기화합니다.
-    val pagerState = rememberPagerState(pageCount = { images.value.size })
+    val pagerState = rememberPagerState(pageCount = { images.size })
 
     // 댓글 작성칸 (네모박스 형태)
     var commentText by remember { mutableStateOf("") }
@@ -211,19 +203,17 @@ fun TripNoteDetailScreen(
             ) {
 
                 // 이미지 슬라이더
-                if (tripNoteDetailViewModel.showImageState.value) {
+                if (tripNoteDetailViewModel.tripNoteModelValue.value.tripNoteImage.isNotEmpty()) {
                     item {
-
                         var showFullImage by remember { mutableStateOf(false) }  // 전체 이미지 보기 상태
-
                         HorizontalPager(
                             state = pagerState,
-                            modifier = Modifier
+                            modifier = Modifier.padding(top = 10.dp)
                                 .fillMaxWidth()
                                 .height(200.dp)
                         ) { page ->
 
-                            val imageUrl = images.value[page]
+                            val imageUrl = images[page]
 
                             // GlideImage 클릭 시 showFullImage 상태를 true로 변경
                             GlideImage(
@@ -432,7 +422,7 @@ fun TripNoteDetailScreen(
                                 IconButton(
                                     onClick =
                                     {   // 제출하기
-                                        tripNoteDetailViewModel.addReplyClick(tripNoteDetailViewModel.tripNoteModel.tripNoteDocumentId,tripNoteDocumentId)
+                                        tripNoteDetailViewModel.addReplyClick(tripNoteDetailViewModel.tripNoteModelValue.value.tripNoteDocumentId,tripNoteDocumentId)
                                         tripNoteDetailViewModel.gettingTripNoteReplyData(tripNoteDocumentId)
                                         // 제출하면 필드 비어있게
                                         tripNoteDetailViewModel.textFieldTripNoteReply.value = ""

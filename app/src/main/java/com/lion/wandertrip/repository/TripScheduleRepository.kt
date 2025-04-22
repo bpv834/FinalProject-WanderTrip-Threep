@@ -111,15 +111,29 @@ class TripScheduleRepository {
             .document(scheduleDocId)
             .collection("TripScheduleItem")
 
+        Log.d("TripSchedule", "Attempting to delete item: $itemDocId from schedule: $scheduleDocId")
+
         // 삭제할 문서의 스냅샷을 가져와 itemIndex와 itemDate를 확인합니다.
         val docSnapshot = subCollectionRef.document(itemDocId).get().await()
-        if (!docSnapshot.exists()) return
+        if (!docSnapshot.exists()) {
+            Log.w("TripSchedule", "Item document $itemDocId does not exist.")
+            return
+        }
 
-        val deletedIndex = docSnapshot.getLong("itemIndex")?.toInt() ?: return
-        val deletedItemDate = docSnapshot.getTimestamp("itemDate") ?: return
+        val deletedIndex = docSnapshot.getLong("itemIndex")?.toInt()
+        val deletedItemDate = docSnapshot.getTimestamp("itemDate")
+
+
+        if (deletedIndex == null || deletedItemDate == null) {
+            Log.w("TripSchedule", "Missing itemIndex or itemDate for document $itemDocId")
+            return
+        }
+
+        Log.d("TripSchedule", "Deleting item with index $deletedIndex and date $deletedItemDate")
 
         // 해당 문서를 삭제합니다.
         subCollectionRef.document(itemDocId).delete().await()
+        Log.d("TripSchedule", "Deleted item document $itemDocId")
 
         // 삭제한 문서와 동일한 itemDate를 가진, itemIndex가 삭제된 값보다 큰 모든 문서를 조회합니다.
         val querySnapshot = subCollectionRef
@@ -128,13 +142,19 @@ class TripScheduleRepository {
             .get()
             .await()
 
+        Log.d("TripSchedule", "Found ${querySnapshot.size()} items to update indices")
+
         // 각 문서의 itemIndex를 1씩 감소시켜 재조정합니다.
         for (doc in querySnapshot.documents) {
             val currentIndex = doc.getLong("itemIndex")?.toInt() ?: continue
             val newIndex = currentIndex - 1
             subCollectionRef.document(doc.id).update("itemIndex", newIndex).await()
+            Log.d("TripSchedule", "Updated document ${doc.id} index: $currentIndex -> $newIndex")
         }
+
+        Log.d("TripSchedule", "Item index adjustment completed after deletion.")
     }
+
 
     // 일정 항목 문서 id로 일정 항목 가져 오기
     suspend fun getScheduleItemByDocId(tripScheduleDocId: String, scheduleItemDocId: String,): ScheduleItemVO? {
