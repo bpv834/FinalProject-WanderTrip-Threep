@@ -7,6 +7,7 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.google.firebase.Timestamp
 import com.lion.wandertrip.TripApplication
 import com.lion.wandertrip.model.RecentTripItemModel
 import com.lion.wandertrip.model.TripScheduleModel
@@ -42,7 +43,7 @@ class MyInfoViewModel @Inject constructor(
     val showImageUri = mutableStateOf<Uri?>(null)
 
     // 최근 일정 목록
-    val recentScheduleList = mutableStateListOf<TripScheduleModel>()
+    val upComingScheduleList = mutableStateListOf<TripScheduleModel>()
 
     // 최근 본 아이템 목록
     val recentTripItemList = mutableStateListOf<RecentTripItemModel>()
@@ -104,13 +105,15 @@ class MyInfoViewModel @Inject constructor(
 
     // 화면 열 때 여행 일정 리스트 가져오기
     fun getTripScheduleList() {
-        recentScheduleList.clear()
+        upComingScheduleList.clear()
         viewModelScope.launch {
             val work1 = async(Dispatchers.IO){
                 tripScheduleService.gettingMyTripSchedules(tripApplication.loginUserModel.userNickName)
             }
-            val result = work1.await()
-            recentScheduleList.addAll(
+            val myScheduleList = work1.await()
+            // 다가오는 일정만 가져오기
+            val result = myScheduleList.filter { it.scheduleEndDate> Timestamp.now() }
+            upComingScheduleList.addAll(
                 result
             )
         }
