@@ -7,6 +7,8 @@ import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.Scaffold
@@ -52,6 +54,7 @@ fun ScheduleAddScreen(
             modifier = Modifier
                 .padding(it)
                 .fillMaxSize()
+                .verticalScroll(rememberScrollState())
                 .pointerInput(Unit) { // 터치 이벤트 감지 바깥쪽 클릭 시 포커스 해제
                     detectTapGestures(
                         onTap = { focusManager.clearFocus() }
@@ -60,7 +63,7 @@ fun ScheduleAddScreen(
         ) {
             // 일정 제목 입력 TextInputLayout
             ScheduleAddTextInputLayout(
-                label = "일정 제목",
+                label = "일정 제목을 입력하세요",
                 placeholder = "일정 제목을 입력하세요",
                 errorMessage = errorMessage,
                 value = viewModel.scheduleTitle.value,
@@ -72,13 +75,14 @@ fun ScheduleAddScreen(
             )
 
             Text(
-                text = "날짜 선택",
+                text = "날짜 선택(제목입력 후 선택 가능)",
                 fontFamily = NanumSquareRoundRegular,
                 fontSize = 22.sp,
                 modifier = Modifier.padding(top = 40.dp, bottom = 20.dp, end = 16.dp, start = 16.dp)
             )
 
             // ✅ 캘린더 컴포넌트 추가
+            if(viewModel.scheduleTitle.value!="")
             ScheduleAddCalendar(
                 startDate = viewModel.scheduleStartDate,
                 endDate = viewModel.scheduleEndDate,
@@ -94,6 +98,7 @@ fun ScheduleAddScreen(
                 }
             )
 
+            if(viewModel.scheduleTitle.value!="")
             CustomBlueButton(
                 text = "${viewModel.formatTimestampToDateString(viewModel.scheduleStartDate.value)} " +
                         "~" +

@@ -16,6 +16,8 @@ import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -23,6 +25,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.lion.wandertrip.component.LottieLoadingIndicator
 import com.lion.wandertrip.presentation.bottom.schedule_page.component.ScheduleIconButton
 import com.lion.wandertrip.presentation.bottom.schedule_page.component.ScheduleItemList
 import com.lion.wandertrip.ui.theme.NanumSquareRound
@@ -33,49 +36,55 @@ import kotlinx.coroutines.launch
 fun ScheduleScreen(
     viewModel: ScheduleViewModel = hiltViewModel(),
 ) {
+    val isLoading by viewModel.isLoading.collectAsState()
     // 일정 데이터 가져오기
     LaunchedEffect(Unit) {
         viewModel.fetchUserScheduleList()
     }
 
-    Scaffold(
-        containerColor = Color.White
-    ) { innerPadding ->
-        Column(
-            modifier = Modifier
-                .padding(innerPadding)
-                .fillMaxSize()
-        ) {
-            // 상단 제목 + 추가 버튼
-            Row(
+    if(isLoading){
+        LottieLoadingIndicator()
+    }
+    else{
+        Scaffold(
+            containerColor = Color.White
+        ) { innerPadding ->
+            Column(
                 modifier = Modifier
-                    .padding(horizontal = 16.dp, vertical = 16.dp)
+                    .padding(innerPadding)
+                    .fillMaxSize()
             ) {
-                Text(
-                    text = "내 일정",
-                    fontFamily = NanumSquareRound,
-                    fontSize = 22.sp,
+                // 상단 제목 + 추가 버튼
+                Row(
                     modifier = Modifier
-                        .weight(1f)
-                )
+                        .padding(horizontal = 16.dp, vertical = 16.dp)
+                ) {
+                    Text(
+                        text = "내 일정",
+                        fontFamily = NanumSquareRound,
+                        fontSize = 22.sp,
+                        modifier = Modifier
+                            .weight(1f)
+                    )
 
-                // 일정 추가 버튼
-                ScheduleIconButton(
-                    icon = Icons.Filled.Add,
-                    size = 30,
-                    iconButtonOnClick = { viewModel.addIconButtonEvent() }
+                    // 일정 추가 버튼
+                    ScheduleIconButton(
+                        icon = Icons.Filled.Add,
+                        size = 30,
+                        iconButtonOnClick = { viewModel.addIconButtonEvent() }
+                    )
+                }
+
+                // LazyColumn으로 일정 목록 출력
+                ScheduleItemList(
+                    dataList = viewModel.myScheduleList,
+                    scheduleType = 0,
+                    viewModel = viewModel,
+                    onRowClick = { userSchedule ->
+                        viewModel.moveToScheduleDetailScreen(userSchedule)
+                    }
                 )
             }
-
-            // LazyColumn으로 일정 목록 출력
-            ScheduleItemList(
-                dataList = viewModel.myScheduleList,
-                scheduleType = 0,
-                viewModel = viewModel,
-                onRowClick = { userSchedule ->
-                    viewModel.moveToScheduleDetailScreen(userSchedule)
-                }
-            )
         }
     }
 }

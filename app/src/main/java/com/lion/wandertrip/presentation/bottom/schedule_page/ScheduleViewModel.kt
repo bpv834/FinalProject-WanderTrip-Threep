@@ -3,6 +3,7 @@ package com.lion.wandertrip.presentation.bottom.schedule_page
 import android.content.Context
 import android.util.Log
 import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.Timestamp
@@ -16,6 +17,9 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import java.time.Instant
 import java.time.ZoneId
@@ -33,11 +37,18 @@ class ScheduleViewModel @Inject constructor(
 
     val myScheduleList = mutableStateListOf<TripScheduleModel>()
 
+    // 데이터 로딩 상태
+    // ViewModel 안에서 선언
+    private val _isLoading = MutableStateFlow(false)
+    val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
+
     // 유저 일정 docId로 일정 항목 가져 오기
     fun fetchUserScheduleList() {
         myScheduleList.clear()
         Log.d("test100","fetchUserScheduleList")
         viewModelScope.launch {
+            _isLoading.value=true
+
             // 유저의 일정 서브컬렉션에서 일정 문서 아이디 리스트 가져오기
             val work0 = async(Dispatchers.IO){
                 userService.gettingTripScheduleItemList(application.loginUserModel.userDocId)
@@ -49,8 +60,12 @@ class ScheduleViewModel @Inject constructor(
                 tripScheduleService.fetchScheduleList(userScheduleDocIdList)
             }
             myScheduleList.addAll(
-                work1.await().sortedBy { it.scheduleEndDate }
+                // 다가오는 일정만 내 일정에 표시
+                // 지난 일정은 my -> 내일정에서 보여주기
+                work1.await().filter { it.scheduleEndDate> Timestamp.now() }.sortedBy { it.scheduleEndDate }
             )
+            _isLoading.value=false
+
         }
     }
 
