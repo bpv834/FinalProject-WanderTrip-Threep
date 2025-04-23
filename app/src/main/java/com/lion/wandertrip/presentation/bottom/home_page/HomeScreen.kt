@@ -42,7 +42,12 @@ fun HomeScreen(
 
     val imageUrlMap = viewModel.imageUrlMap
     val isLoading by viewModel.isLoading.observeAsState(false) // ✅ 로딩 상태 감지
-    val userModel by viewModel.userModel.observeAsState(UserModel(userDocId = "", userLikeList = emptyList()))
+    val userModel by viewModel.userModel.observeAsState(
+        UserModel(
+            userDocId = "",
+            userLikeList = emptyList()
+        )
+    )
     val contentsModelMap by viewModel.contentsModelMap.collectAsState()
     // 좋아요 map 구독 변수
     val favoriteMap by viewModel.favoriteMap.collectAsState()
@@ -54,9 +59,9 @@ fun HomeScreen(
         viewModel.loadFavorites()
     }
 
-    LaunchedEffect (favoriteMap.size){
+    LaunchedEffect(favoriteMap.size) {
         favoriteMap.keys.forEach {
-            Log.d("test100","key: $it")
+            Log.d("test100", "key: $it")
             viewModel.fetchContentsModel(it)
         }
     }
@@ -68,7 +73,8 @@ fun HomeScreen(
     LaunchedEffect(navController) {
         navController.currentBackStackEntryFlow.collectLatest { backStackEntry ->
             // 현재 백스택을 안전하게 가져옴
-            val backStackList = navController.currentBackStack.value.mapNotNull { it.destination.route }
+            val backStackList =
+                navController.currentBackStack.value.mapNotNull { it.destination.route }
 
             backStackRoutes = backStackList // 최신 백스택 반영
         }
@@ -85,12 +91,7 @@ fun HomeScreen(
 
     if (isLoading) {
         // ✅ 로딩 중일 때 표시할 화면
-        Box(
-            modifier = Modifier.fillMaxSize(),
-            contentAlignment = Alignment.Center
-        ) {
-            LottieLoadingIndicator() // ✅ 로딩 UI 표시
-        }
+        LottieLoadingIndicator() // ✅ 로딩 UI 표시
     } else {
         // ✅ 로딩 완료 후 실제 화면 표시
         Scaffold(
@@ -109,8 +110,10 @@ fun HomeScreen(
             }
         ) {
             Column(
-                modifier = Modifier.padding(it)
-                    .fillMaxSize().verticalScroll(scrollState)
+                modifier = Modifier
+                    .padding(it)
+                    .fillMaxSize()
+                    .verticalScroll(scrollState)
             ) {
                 LazyColumn(
                     modifier = Modifier
@@ -134,7 +137,7 @@ fun HomeScreen(
                             contentsModel = contentsModelMap[tripItem.contentId],
                             onFavoriteClick = { contentId -> viewModel.toggleFavorite(contentId) },
                             viewModel = viewModel,
-                            isFavorite = favoriteMap[tripItem.contentId]?:false ,
+                            isFavorite = favoriteMap[tripItem.contentId] ?: false,
                         )
                     }
                     item {

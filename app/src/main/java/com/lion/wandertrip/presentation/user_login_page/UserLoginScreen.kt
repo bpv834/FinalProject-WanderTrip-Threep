@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -65,7 +66,7 @@ import kotlinx.coroutines.flow.forEach
 @SuppressLint("RestrictedApi", "ContextCastToActivity")
 @Composable
 fun UserLoginScreen(userLoginViewModel: UserLoginViewModel = hiltViewModel()) {
-    Log.d("UserLoginScreen","로그인 화면")
+    Log.d("UserLoginScreen", "로그인 화면")
 
     val navController = userLoginViewModel.tripApplication.navHostController
     val backStackEntries = navController.currentBackStack
@@ -89,25 +90,26 @@ fun UserLoginScreen(userLoginViewModel: UserLoginViewModel = hiltViewModel()) {
         navController.popBackStack(MainScreenName.MAIN_SCREEN_USER_LOGIN.name, false)
     }
 
-         var backStackRoutes by remember { mutableStateOf<List<String>>(emptyList()) }
+    var backStackRoutes by remember { mutableStateOf<List<String>>(emptyList()) }
 
-         LaunchedEffect(navController) {
-             navController.currentBackStackEntryFlow.collectLatest { backStackEntry ->
-                 // 현재 백스택을 안전하게 가져옴
-                 val backStackList = navController.currentBackStack.value.mapNotNull { it.destination.route }
+    LaunchedEffect(navController) {
+        navController.currentBackStackEntryFlow.collectLatest { backStackEntry ->
+            // 현재 백스택을 안전하게 가져옴
+            val backStackList =
+                navController.currentBackStack.value.mapNotNull { it.destination.route }
 
-                 backStackRoutes = backStackList // 최신 백스택 반영
-             }
-         }
+            backStackRoutes = backStackList // 최신 백스택 반영
+        }
+    }
 
-         // 백스택 로그 출력
-         LaunchedEffect(backStackRoutes) {
-             Log.d("BackStack", "===== Current BackStack =====")
-             backStackRoutes.forEach { route ->
-                 Log.d("BackStack", "Route: $route")
-             }
-             Log.d("BackStack", "=============================")
-         }
+    // 백스택 로그 출력
+    LaunchedEffect(backStackRoutes) {
+        Log.d("BackStack", "===== Current BackStack =====")
+        backStackRoutes.forEach { route ->
+            Log.d("BackStack", "Route: $route")
+        }
+        Log.d("BackStack", "=============================")
+    }
 
 
     val sW = userLoginViewModel.tripApplication.screenWidth
@@ -120,6 +122,7 @@ fun UserLoginScreen(userLoginViewModel: UserLoginViewModel = hiltViewModel()) {
             modifier = Modifier
                 .background(Color.White)
                 .fillMaxWidth()
+                .fillMaxHeight()
                 .padding(it)
                 .padding(horizontal = 20.dp), // Row가 화면의 전체 너비를 차지하도록 설정
             horizontalArrangement = Arrangement.Center // Column을 수평 가운데 정렬
