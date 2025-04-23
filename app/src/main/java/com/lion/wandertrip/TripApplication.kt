@@ -10,6 +10,7 @@ import androidx.navigation.NavHostController
 import com.kakao.sdk.common.KakaoSdk
 import com.lion.wandertrip.model.TripItemModel
 import com.lion.wandertrip.model.UserModel
+import com.lion.wandertrip.util.PopularCity
 import dagger.hilt.android.HiltAndroidApp
 
 // Hilt를 사용하려면 이 어노테이션을 애플리케이션의 Application 클래스에 선언해야 합니다.
@@ -52,5 +53,9 @@ class TripApplication : Application() {
         screenRatio = screenWidth.toFloat() / screenHeight.toFloat()
     }
 
+    // 인기 관광지
     val popularTripList: MutableList<TripItemModel> = mutableListOf()
+
+    // 인기 지역
+    val cities : MutableList<PopularCity> = mutableListOf()
 }

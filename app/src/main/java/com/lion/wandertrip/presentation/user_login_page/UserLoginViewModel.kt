@@ -309,7 +309,7 @@ class UserLoginViewModel @Inject constructor(
 
     // 디버그 키해시 받아오는 메서드
     @OptIn(ExperimentalEncodingApi::class)
-    private fun getHashKey() {
+     fun getHashKey() {
         var packageInfo: PackageInfo? = null
         try {
             packageInfo = tripApplication.packageManager.getPackageInfo(
@@ -338,14 +338,22 @@ class UserLoginViewModel @Inject constructor(
 
     // 릴리즈 해쉬키 받기
     @OptIn(ExperimentalEncodingApi::class)
-    private fun getReleaseKeyHash() {
+    fun getReleaseKeyHash() {
+
+        // 앱 배포할땐 배포에 사용한 키를 카카오 키에 넣어야함
+        // 구글콘솔 -> 설정 -> 앱 서명 -> sha -1 인증서 지문 값을 base64 로 인코딩 한 값을 카카오 디벨로퍼 키에 넣어줘야 함
+
+        Log.d("getReleaseKeyHash()" ,"getReleaseKeyHash()") // ① 함수 진입 로그
+
         try {
             val packageInfo = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                // Android 9 (Pie) 이상
                 tripApplication.packageManager.getPackageInfo(
                     tripApplication.packageName,
                     PackageManager.GET_SIGNING_CERTIFICATES
                 )
             } else {
+                // Android 8 이하
                 tripApplication.packageManager.getPackageInfo(
                     tripApplication.packageName,
                     PackageManager.GET_SIGNATURES
@@ -364,11 +372,11 @@ class UserLoginViewModel @Inject constructor(
                     val md = MessageDigest.getInstance("SHA")
                     md.update(signature.toByteArray())
                     val keyHash = Base64.encodeToString(md.digest(), Base64.NO_WRAP)
-                    Log.d("KeyHash", "릴리즈 키 해시: $keyHash")
+                    Log.e("KeyHash", "릴리즈 키 해시: $keyHash") // ② 여기서 최종 키 해시 로그 출력!
                 }
             }
         } catch (e: Exception) {
-            Log.e("KeyHash", "키 해시 구하는 중 오류 발생", e)
+            Log.e("KeyHash", "키 해시 구하는 중 오류 발생", e) // ③ 예외 발생 시 로그
         }
     }
 

@@ -5,6 +5,7 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import com.lion.wandertrip.model.TripItemModel
 import com.lion.wandertrip.service.TripKeywordItemService
+import com.lion.wandertrip.util.PopularCity
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
@@ -21,7 +22,6 @@ class SplashViewModel @Inject constructor(
     // suspend 함수로 변경: csv 파일에서 인기 관광지명을 리스트를 얻어 리턴받는다
     suspend fun getHotSpotList(): MutableList<String> = withContext(Dispatchers.IO) {
         val result = mutableListOf<String>()
-
         try {
             // assets 디렉토리에서 파일 열기
             tripApplication.assets.open("인기관광지.csv").bufferedReader().useLines { lines ->
@@ -37,7 +37,6 @@ class SplashViewModel @Inject constructor(
         } catch (e: Exception) {
             Log.e("SplashViewModel", "CSV 파일 읽기 오류: ${e.localizedMessage}")
         }
-
         result
     }
 
@@ -60,4 +59,30 @@ class SplashViewModel @Inject constructor(
         val list = getHotSpotList()
         getTripModelList(list)
     }
+
+    // 인기 지역 순위 csv 파일에서 popularCity 객체 리스트를 리턴받는다
+    suspend fun getPopularCityList(): List<PopularCity> = withContext(Dispatchers.IO) {
+        val result = mutableListOf<PopularCity>()
+        try {
+            // assets 디렉토리에서 파일 열기
+            tripApplication.assets.open("인기 지역 순위.csv").bufferedReader().useLines { lines ->
+                lines.forEach { line ->
+                    val tokens = line.split(",")
+                    if (tokens.size >= 3) {
+                        val rank = tokens[0].trim().toIntOrNull()
+                        val name = tokens[1].trim()
+                        val imageUrl = tokens[2].trim()
+
+                        if (rank != null) {
+                            result.add(PopularCity(rank, name, imageUrl))
+                        }
+                    }
+                }
+            }
+        } catch (e: Exception) {
+            Log.e("SplashViewModel", "CSV 파일 읽기 오류: ${e.localizedMessage}")
+        }
+        result
+    }
+
 }

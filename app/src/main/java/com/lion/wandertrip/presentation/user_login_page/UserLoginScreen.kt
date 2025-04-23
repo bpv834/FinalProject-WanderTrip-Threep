@@ -79,7 +79,8 @@ fun UserLoginScreen(userLoginViewModel: UserLoginViewModel = hiltViewModel()) {
         } else {
             Log.d("UserLoginScreen", "Activity context 확인됨: ${activity.localClassName}")
 
-            // 여기서 카카오 로그인 로직을 넣거나 안전하게 호출 가능
+          /*  // 여기서 카카오 로그인 로직을 넣거나 안전하게 호출 가능
+            userLoginViewModel.getReleaseKeyHash()*/
         }
     }
 
