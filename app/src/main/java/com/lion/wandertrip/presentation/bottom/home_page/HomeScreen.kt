@@ -12,19 +12,18 @@ import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.lion.a02_boardcloneproject.component.CustomTopAppBar
 import com.lion.wandertrip.component.LottieLoadingIndicator
 import com.lion.wandertrip.model.UserModel
+import com.lion.wandertrip.presentation.bottom.home_page.components.HorizontalPopularCityList
 import com.lion.wandertrip.presentation.bottom.home_page.components.PopularTripNoteItem
 import com.lion.wandertrip.presentation.bottom.home_page.components.TripSpotItem
 import com.lion.wandertrip.ui.theme.NanumSquareRound
@@ -36,11 +35,11 @@ import kotlinx.coroutines.flow.collectLatest
 fun HomeScreen(
     viewModel: HomeViewModel = hiltViewModel()
 ) {
-    val tripItems by viewModel.randomTourItems.observeAsState(emptyList())
+    /*    val tripItems by viewModel.randomTourItems.observeAsState(emptyList())*/
     val topTrips by viewModel.topScrapedTrips.observeAsState(emptyList())
 
 
-    val imageUrlMap = viewModel.imageUrlMap
+    /*    val imageUrlMap = viewModel.imageUrlMap*/
     val isLoading by viewModel.isLoading.observeAsState(false) // ✅ 로딩 상태 감지
     val userModel by viewModel.userModel.observeAsState(
         UserModel(
@@ -57,6 +56,7 @@ fun HomeScreen(
         viewModel.getTopScrapedTrips()
         // 유저 좋아요 목록 content ID 가져오기
         viewModel.loadFavorites()
+
     }
 
     LaunchedEffect(favoriteMap.size) {
@@ -93,67 +93,74 @@ fun HomeScreen(
         // ✅ 로딩 중일 때 표시할 화면
         LottieLoadingIndicator() // ✅ 로딩 UI 표시
     } else {
-        // ✅ 로딩 완료 후 실제 화면 표시
-        Scaffold(
-            containerColor = Color.White,
-            topBar = {
-                CustomTopAppBar(menuItems = {
-                    IconButton(
-                        onClick = { viewModel.onClickIconSearch() }
-                    ) {
-                        Icon(
-                            imageVector = Icons.Filled.Search,
-                            contentDescription = "검색",
-                        )
-                    }
-                })
-            }
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .verticalScroll(scrollState)
         ) {
-            Column(
+            LazyColumn(
                 modifier = Modifier
-                    .padding(it)
-                    .fillMaxSize()
-                    .verticalScroll(scrollState)
+                    .weight(1f)
+                    .padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                LazyColumn(
-                    modifier = Modifier
-                        .weight(1f)
-                        .padding(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(16.dp)
-                ) {
-                    item {
-                        Text(
-                            text = "인기 관광지",
-                            fontSize = 20.sp,
-                            fontFamily = NanumSquareRound,
-                            modifier = Modifier.padding(bottom = 8.dp)
-                        )
+                item {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(56.dp), // 탑바 높이와 비슷하게 설정하여 검색 아이콘의 수직 위치를 조정합니다.
+                        // 이미지상 검색 아이콘 위에 여백이 있는 것 같으므로, 필요에 따라 이 높이를 조절하거나
+                        // Modifier.padding(top = ...)을 추가할 수 있습니다.
+                        horizontalArrangement = Arrangement.End, // 아이콘을 우측 끝으로 정렬
+                        verticalAlignment = Alignment.CenterVertically // 아이콘을 수직 중앙 정렬
+                    ) {
+                        IconButton(
+                            onClick = { viewModel.onClickIconSearch() }
+                        ) {
+                            Icon(
+                                imageVector = Icons.Filled.Search,
+                                contentDescription = "검색",
+                            )
+                        }
                     }
-                    items(viewModel.tripApplication.popularTripList) { tripItem ->
-                        TripSpotItem(
-                            tripItem = tripItem,
-                            onItemClick = { viewModel.onClickTrip(tripItem.contentId) },
-                            userModel = userModel,
-                            contentsModel = contentsModelMap[tripItem.contentId],
-                            onFavoriteClick = { contentId -> viewModel.toggleFavorite(contentId) },
-                            viewModel = viewModel,
-                            isFavorite = favoriteMap[tripItem.contentId] ?: false,
-                        )
-                    }
-                    item {
-                        Text(
-                            text = "🔥 인기 많은 여행기",
-                            fontSize = 20.sp,
-                            fontFamily = NanumSquareRound,
-                            modifier = Modifier.padding(bottom = 8.dp)
-                        )
-                    }
-                    items(topTrips) { tripNote ->
-                        PopularTripNoteItem(
-                            tripItem = tripNote,
-                            onItemClick = { viewModel.onClickTripNote(tripNote.tripNoteDocumentId) }
-                        )
-                    }
+                }
+
+                item {
+                    HorizontalPopularCityList(viewModel)
+                }
+
+                item {
+                    Text(
+                        text = "인기 관광지",
+                        fontSize = 20.sp,
+                        fontFamily = NanumSquareRound,
+                        modifier = Modifier.padding(bottom = 8.dp)
+                    )
+                }
+                items(viewModel.tripApplication.popularTripList) { tripItem ->
+                    TripSpotItem(
+                        tripItem = tripItem,
+                        onItemClick = { viewModel.onClickTrip(tripItem.contentId) },
+                        userModel = userModel,
+                        contentsModel = contentsModelMap[tripItem.contentId],
+                        onFavoriteClick = { contentId -> viewModel.toggleFavorite(contentId) },
+                        viewModel = viewModel,
+                        isFavorite = favoriteMap[tripItem.contentId] ?: false,
+                    )
+                }
+                item {
+                    Text(
+                        text = "🔥 인기 많은 여행기",
+                        fontSize = 20.sp,
+                        fontFamily = NanumSquareRound,
+                        modifier = Modifier.padding(bottom = 8.dp)
+                    )
+                }
+                items(topTrips) { tripNote ->
+                    PopularTripNoteItem(
+                        tripItem = tripNote,
+                        onItemClick = { viewModel.onClickTripNote(tripNote.tripNoteDocumentId) }
+                    )
                 }
             }
         }

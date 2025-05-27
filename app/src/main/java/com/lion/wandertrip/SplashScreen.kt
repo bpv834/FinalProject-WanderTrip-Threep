@@ -63,6 +63,7 @@ class SplashActivity : ComponentActivity() {
                 targetValue = 1f,
                 animationSpec = tween(1500)
             )
+            viewModel.savePopularCities()
             viewModel.fetchTripItemModel()
             delay(500L) // 약간의 딜레이를 주어 자연스러운 전환
             onNavigate()

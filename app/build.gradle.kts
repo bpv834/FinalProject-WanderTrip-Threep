@@ -26,8 +26,8 @@ android {
         applicationId = "com.lion.wandertrip"
         minSdk = 26
         targetSdk = 35
-        versionCode = 8
-        versionName = "1.8.0"
+        versionCode = 12
+        versionName = "1.12.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         signingConfig = signingConfigs.getByName("release")

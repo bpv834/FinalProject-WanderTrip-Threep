@@ -57,5 +57,5 @@ class TripApplication : Application() {
     val popularTripList: MutableList<TripItemModel> = mutableListOf()
 
     // 인기 지역
-    val cities : MutableList<PopularCity> = mutableListOf()
+    val popularCities : MutableList<PopularCity> = mutableListOf()
 }

@@ -66,15 +66,18 @@ class SplashViewModel @Inject constructor(
         try {
             // assets 디렉토리에서 파일 열기
             tripApplication.assets.open("인기 지역 순위.csv").bufferedReader().useLines { lines ->
-                lines.forEach { line ->
+                lines.drop(1).forEach  { line ->
                     val tokens = line.split(",")
-                    if (tokens.size >= 3) {
+                    if (tokens.size >= 6) {
                         val rank = tokens[0].trim().toIntOrNull()
                         val name = tokens[1].trim()
                         val imageUrl = tokens[2].trim()
+                        val lat = tokens[3].trim().toDoubleOrNull()
+                        val lng = tokens[4].trim().toDoubleOrNull()
+                        val radius = tokens[5].trim().toInt()
 
                         if (rank != null) {
-                            result.add(PopularCity(rank, name, imageUrl))
+                            result.add(PopularCity(rank, name, imageUrl,lat!!,lng!!,radius))
                         }
                     }
                 }
@@ -84,5 +87,15 @@ class SplashViewModel @Inject constructor(
         }
         result
     }
+    // 인기 지역 순위 module에 저장
+    suspend fun savePopularCities(){
+        Log.d("SplashViewModel","savePopularSpoList")
+        val popularCities = getPopularCityList()
+
+        tripApplication.popularCities.clear()
+        // 모듈에 저장한다
+        tripApplication.popularCities.addAll(popularCities)
+    }
+
 
 }

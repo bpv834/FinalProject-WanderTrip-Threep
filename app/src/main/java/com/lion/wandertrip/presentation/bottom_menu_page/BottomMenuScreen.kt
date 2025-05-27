@@ -101,7 +101,7 @@ fun BottomMenuScreen(bottomMenuViewModel: BottomMenuViewModel = hiltViewModel())
             contentAlignment = Alignment.Center
         ) {
             when (bottomMenuViewModel.tripApplication.selectedItem.value) {
-                0 -> HomeScreen()
+                0 -> HomeScreen() // ✅ HomeScreen으로 fillMaxSize()를 전달합니다.
                 1 -> ScheduleScreen()
                 2 -> TripNoteScreen()
                 3 -> MyInfoScreen()
