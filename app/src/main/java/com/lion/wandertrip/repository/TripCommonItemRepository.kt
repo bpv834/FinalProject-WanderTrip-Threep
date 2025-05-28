@@ -98,7 +98,8 @@ class TripCommonItemRepository(private val api: TripCommonItemInterface) {
                     mapinfoYN = "Y",
                     overviewYN = "Y",
                     numOfRows = 10,
-                    pageNo = 1
+                    pageNo = 1,
+
                 )
 
                 if (response.isSuccessful) {

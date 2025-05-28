@@ -29,6 +29,7 @@ import com.lion.wandertrip.presentation.my_interesting_page.MyInterestingScreen
 import com.lion.wandertrip.presentation.my_review_page.MyReviewScreen
 import com.lion.wandertrip.presentation.my_trip_note.MyTripNoteScreen
 import com.lion.wandertrip.presentation.my_trip_page.MyTripScreen
+import com.lion.wandertrip.presentation.popular_city_page.PopularCityScreen
 import com.lion.wandertrip.presentation.schedule_add.ScheduleAddScreen
 import com.lion.wandertrip.presentation.schedule_city_select.ScheduleCitySelectScreen
 import com.lion.wandertrip.presentation.schedule_city_select.city_roulette.RouletteCityScreen
@@ -114,14 +115,13 @@ fun MyApp() {
         composable(MainScreenName.MAIN_SCREEN_USER_SIGN_UP_STEP3.name) { UserSignUpStep1Screen() }
 
         // 카카오 가입
-        composable("${MainScreenName.MAIN_SCREEN_USER_SIGN_UP_STEP3.name}/{kakaoToken}") {
-                backStackEntry ->
-            val kakaoToken : String = backStackEntry.arguments?.getString("kakaoToken")?:""
+        composable("${MainScreenName.MAIN_SCREEN_USER_SIGN_UP_STEP3.name}/{kakaoToken}") { backStackEntry ->
+            val kakaoToken: String = backStackEntry.arguments?.getString("kakaoToken") ?: ""
             UserSignUpStep3Screen(kakaoToken = kakaoToken)
         }
 
         composable(MainScreenName.MAIN_SCREEN_SEARCH.name) { SearchScreen() }
-        composable(MainScreenName.MAIN_SCREEN_USER_INFO.name) {UserInfoScreen()}
+        composable(MainScreenName.MAIN_SCREEN_USER_INFO.name) { UserInfoScreen() }
 
         composable("${MainScreenName.MAIN_SCREEN_SEARCH_RESULT.name}/{contentId}") { backStackEntry ->
             val contentId = backStackEntry.arguments?.getString("contentId") ?: "default_id"
@@ -141,8 +141,8 @@ fun MyApp() {
         // 여행기 상세 화면
         composable(
             route = "${TripNoteScreenName.TRIP_NOTE_DETAIL.name}/{documentId}"
-        ){
-            val documentId = it.arguments?.getString("documentId") ?:  ""
+        ) {
+            val documentId = it.arguments?.getString("documentId") ?: ""
             TripNoteDetailScreen(tripNoteDocumentId = documentId)
         }
 
@@ -150,8 +150,8 @@ fun MyApp() {
         // 여행기 작성 화면
         composable(
             route = "${TripNoteScreenName.TRIP_NOTE_WRITE.name}/{scheduleTitle}/{scheduleDocId}"
-        ){
-            val scheduleTitle = it.arguments?.getString("scheduleTitle") ?:  ""
+        ) {
+            val scheduleTitle = it.arguments?.getString("scheduleTitle") ?: ""
             val scheduleDocId = it.arguments?.getString("scheduleDocId") ?: ""
             TripNoteWriteScreen(tripScheduleTitle = scheduleTitle, scheduleDocId = scheduleDocId)
         }
@@ -159,8 +159,8 @@ fun MyApp() {
         // 여행기 페이지에서 다른 사람 여행기 보기
         composable(
             route = "${TripNoteScreenName.TRIP_NOTE_OTHER_SCHEDULE.name}/{otherNickName}"
-        ){
-            val otherNickName = it.arguments?.getString("otherNickName") ?:  ""
+        ) {
+            val otherNickName = it.arguments?.getString("otherNickName") ?: ""
             TripNoteOtherScheduleScreen(otherNickName = otherNickName)
         }
 
@@ -168,11 +168,14 @@ fun MyApp() {
         // composable(TripNoteScreenName.TRIP_NOTE_SELECT_DOWN.name) { TripNoteSelectDownScreen() }
         composable(
             route = "${TripNoteScreenName.TRIP_NOTE_SELECT_DOWN.name}/{tripNoteScheduleDocId}/{documentId}"
-        ){
-            val tripNoteScheduleDocId = it.arguments?.getString("tripNoteScheduleDocId") ?:  ""
-            val documentId = it.arguments?.getString("documentId") ?:  ""
+        ) {
+            val tripNoteScheduleDocId = it.arguments?.getString("tripNoteScheduleDocId") ?: ""
+            val documentId = it.arguments?.getString("documentId") ?: ""
 
-            TripNoteSelectDownScreen(tripNoteScheduleDocId = tripNoteScheduleDocId, documentId = documentId)
+            TripNoteSelectDownScreen(
+                tripNoteScheduleDocId = tripNoteScheduleDocId,
+                documentId = documentId
+            )
         }
 
 
@@ -181,17 +184,16 @@ fun MyApp() {
 
 
         // 일정 화면 ////////////////////////////////////////////////////////////////////////////
-        
+
         // 일정 제목, 날짜 입력 화면
         // composable(ScheduleScreenName.SCHEDULE_ADD_SCREEN.name) { ScheduleAddScreen() }
         composable(
             route = "${ScheduleScreenName.SCHEDULE_ADD_SCREEN.name}/{documentId}"
-        ){
-            val documentId = it.arguments?.getString("documentId") ?:  ""
+        ) {
+            val documentId = it.arguments?.getString("documentId") ?: ""
 
             ScheduleAddScreen(documentId = documentId)
         }
-
 
 
         // 내 여행 화면
@@ -211,9 +213,10 @@ fun MyApp() {
         }
 
         // 구글 맵 화면
-        composable("${MainScreenName.MAIN_SCREEN_GOOGLE_MAP.name}/{contentId}") {backStackEntry ->
+        composable("${MainScreenName.MAIN_SCREEN_GOOGLE_MAP.name}/{contentId}") { backStackEntry ->
             val contentId = backStackEntry.arguments?.getString("contentId") ?: "default_id"
-            GoogleMapScreen(contentId) }
+            GoogleMapScreen(contentId)
+        }
 
 
         // 일정 도시 선택 화면
@@ -327,7 +330,11 @@ fun MyApp() {
         }
 
         // 룰렛 도시 항목 추가 화면
-        composable(RouletteScreenName.ROULETTE_CITY_SELECT_SCREEN.name) { RouletteCitySelectScreen(navController = rememberNavHostController) }
+        composable(RouletteScreenName.ROULETTE_CITY_SELECT_SCREEN.name) {
+            RouletteCitySelectScreen(
+                navController = rememberNavHostController
+            )
+        }
 
         // 룰렛 일정 화면
         composable(
@@ -350,7 +357,11 @@ fun MyApp() {
         }
 
         // 룰렛 일정 항목 선택 화면
-        composable(RouletteScreenName.ROULETTE_ITEM_SELECT_SCREEN.name) { RouletteItemSelectScreen(navController = rememberNavHostController) }
+        composable(RouletteScreenName.ROULETTE_ITEM_SELECT_SCREEN.name) {
+            RouletteItemSelectScreen(
+                navController = rememberNavHostController
+            )
+        }
 
         ////////////////////////////////////////////////////////////////////////////////////////////
         // 리뷰 작성 화면
@@ -379,8 +390,36 @@ fun MyApp() {
             val contentsID = backStackEntry.arguments?.getString("contentsID") ?: ""
             val reviewDocID = backStackEntry.arguments?.getString("reviewDocID") ?: ""
 
-            DetailReviewModifyScreen(contentDocID = contentDocID, contentsID = contentsID, reviewDocID = reviewDocID)
+            DetailReviewModifyScreen(
+                contentDocID = contentDocID,
+                contentsID = contentsID,
+                reviewDocID = reviewDocID
+            )
         }
+
+        // 인기 도시 화면
+        composable(
+            route = "${
+                MainScreenName.MAIN_SCREEN_POPULAR_CITY
+                    .name
+            }/{lat}/{lng}/{cityName}/{radius}",
+            arguments = listOf(
+                navArgument("lat") { type = NavType.StringType },
+                navArgument("lng") { type = NavType.StringType },
+                navArgument("cityName") { type = NavType.StringType },
+                navArgument("radius") { type = NavType.StringType },
+
+            )
+        ) { backStackEntry ->
+            val lat = backStackEntry.arguments?.getString("lat") ?: ""
+            val lng = backStackEntry.arguments?.getString("lng") ?: ""
+            val cityName = backStackEntry.arguments?.getString("cityName") ?: ""
+            val radius = backStackEntry.arguments?.getString("radius") ?: ""
+
+            PopularCityScreen(lat.toDouble(), lng.toDouble(), cityName,radius)
+
+        }
+
 
     }
 }

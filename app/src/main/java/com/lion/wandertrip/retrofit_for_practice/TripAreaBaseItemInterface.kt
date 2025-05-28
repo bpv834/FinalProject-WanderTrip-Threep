@@ -22,5 +22,5 @@ interface TripAreaBaseItemInterface {
         @Query("overviewYN") overviewYN: String? = null,
         @Query("numOfRows") numOfRows: Int? = null,
         @Query("pageNo") pageNo: Int? = null
-    ): Response<TripCommonItemsApiResponse>
+    ): Response<TripApiResponse>
 }

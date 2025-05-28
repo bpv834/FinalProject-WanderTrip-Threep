@@ -293,6 +293,9 @@ enum class MainScreenName{
     MAIN_SCREEN_DETAIL_REVIEW_WRITE,
     // 리뷰 수정 화면
     MAIN_SCREEN_DETAIL_REVIEW_MODIFY,
+    // 인기 도시 화면
+    MAIN_SCREEN_POPULAR_CITY,
+
 
 }
 

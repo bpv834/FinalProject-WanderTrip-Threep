@@ -1,5 +1,7 @@
 package com.lion.wandertrip.presentation.bottom.home_page.components
 
+import android.util.Log
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -48,7 +50,7 @@ fun HorizontalPopularCityList(viewModel: HomeViewModel) {
         ) {
             // 뷰모델에서 가져온 인기 도시 목록을 반복하여 표시합니다.
             items(viewModel.tripApplication.popularCities) { city ->
-                PopularCityItemView(city = city) // 각 도시 아이템을 표시하는 컴포저블을 호출합니다.
+                PopularCityItemView(city = city,viewModel) // 각 도시 아이템을 표시하는 컴포저블을 호출합니다.
             }
         }
     }
@@ -56,10 +58,14 @@ fun HorizontalPopularCityList(viewModel: HomeViewModel) {
 
 @OptIn(ExperimentalGlideComposeApi::class) // Glide Compose API를 사용하기 위한 옵트인입니다.
 @Composable
-fun PopularCityItemView(city: PopularCity) {
+fun PopularCityItemView(city: PopularCity,viewModel : HomeViewModel) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally, // 컬럼 내의 내용을 수평 중앙 정렬합니다.
         modifier = Modifier.width(80.dp) // 각 도시 아이템의 너비를 80dp로 고정하여 레이아웃을 일정하게 유지합니다.
+            .clickable {
+                Log.d("PopularCityItemView","${city.lat} ${city.lng} ${city.name}")
+                viewModel.onClickPopularCity(city.lat,city.lng,city.name,city.radius.toString())
+            }
     ) {
         // Glide를 사용하여 도시 이미지를 로드하고 표시합니다.
         GlideImage(

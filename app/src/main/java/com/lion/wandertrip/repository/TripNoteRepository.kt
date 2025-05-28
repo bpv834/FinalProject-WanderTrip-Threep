@@ -8,10 +8,12 @@ import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
 import com.google.firebase.storage.FirebaseStorage
+import com.lion.wandertrip.model.TripNoteModel
 import com.lion.wandertrip.vo.ScheduleItemVO
 import com.lion.wandertrip.vo.TripNoteReplyVO
 import com.lion.wandertrip.vo.TripNoteVO
 import com.lion.wandertrip.vo.TripScheduleVO
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.tasks.await
 import java.io.File
 import javax.inject.Inject
@@ -560,5 +562,32 @@ class TripNoteRepository@Inject constructor() {
         // 최종적으로 다운로드 URL 리스트를 반환
         return downloadUrls
     }
+
+/*    // 도시이름으로 여행기 가져오는 메서드
+    suspend fun gettingTripNoteListByCityName(cityName :String): Flow<List<TripNoteModel>> {
+        val firestore = FirebaseFirestore.getInstance()
+        val collectionReference = firestore.collection("TripNoteData")
+        // 데이터를 가져온다.
+        val result =
+            collectionReference.whereIn(cityName)
+
+        // 반환할 리스트
+        val resultList = mutableListOf<Map<String, *>>()
+        // 데이터의 수 만큼 반환한다.
+        result.forEach {
+            val tripNoteVO = it.toObject(TripNoteVO::class.java) // TripNoteVO 객체 가져오기
+            val tripNoteImage = tripNoteVO.tripNoteImage
+            val map = mapOf(
+                // 문서의 id
+                "documentId" to it.id,
+                // 데이터를 가지고 있는 객체
+                "tripNoteVO" to tripNoteVO,
+                // 이미지 리스트
+                "tripNoteImage" to tripNoteImage
+            )
+            resultList.add(map)
+        }
+        return resultList
+    }*/
 
 }

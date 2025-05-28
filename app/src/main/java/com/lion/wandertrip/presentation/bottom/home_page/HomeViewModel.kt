@@ -38,7 +38,7 @@ class HomeViewModel @Inject constructor(
     val tripAreaBaseItemService: TripAreaBaseItemService,
     val contentsService: ContentsService,
     val userService: UserService
-) : ViewModel(){
+) : ViewModel() {
 
 
     val tripApplication = context as TripApplication
@@ -69,17 +69,19 @@ class HomeViewModel @Inject constructor(
 
     // 사용자 좋아요 맵 상태변수
     private val _favoriteMap = MutableStateFlow<Map<String, Boolean>>(emptyMap())
+
     // get 변수
     val favoriteMap: StateFlow<Map<String, Boolean>> = _favoriteMap
 
     fun loadFavorites() {
-        Log.d("loadFavorites","loadFavorites 메서드 실행")
+        Log.d("loadFavorites", "loadFavorites 메서드 실행")
         viewModelScope.launch {
             // 좋아요 목록 컨텐츠 아이디 리스트 가져오기
-            val result = userService.gettingUserLikeList(tripApplication.loginUserModel.userDocId) // 서버 통신
+            val result =
+                userService.gettingUserLikeList(tripApplication.loginUserModel.userDocId) // 서버 통신
             // associateBy -> key, value 로 맵을 생성
             _favoriteMap.value = result.associateBy({ it }, { true })
-            result.forEach { Log.d("loadFavorites","contentId: ${it}") }
+            result.forEach { Log.d("loadFavorites", "contentId: ${it}") }
         }
     }
 
@@ -103,11 +105,12 @@ class HomeViewModel @Inject constructor(
     }
 
     fun fetchContentsModel(contentId: String) {
-        Log.d("test100","fetchContentsModel")
+        Log.d("test100", "fetchContentsModel")
         viewModelScope.launch {
             val contentsData = contentsService.getContentByContentsId(contentId)
-            _contentsModelMap.value = _contentsModelMap.value.orEmpty() + (contentId to contentsData)
-            Log.d("test100","map : ${_contentsModelMap.value}")
+            _contentsModelMap.value =
+                _contentsModelMap.value.orEmpty() + (contentId to contentsData)
+            Log.d("test100", "map : ${_contentsModelMap.value}")
         }
     }
 
@@ -128,7 +131,10 @@ class HomeViewModel @Inject constructor(
     fun removeLikeItem(likeItemContentId: String) {
         viewModelScope.launch {
             val work1 = async(Dispatchers.IO) {
-                userService.removeLikeItem(tripApplication.loginUserModel.userDocId, likeItemContentId)
+                userService.removeLikeItem(
+                    tripApplication.loginUserModel.userDocId,
+                    likeItemContentId
+                )
             }
             work1.join()
 
@@ -141,7 +147,7 @@ class HomeViewModel @Inject constructor(
 
     // 여행기 가져오기
     fun fetchTripNotes() {
-        Log.d("test100","fetchTripNotes")
+        Log.d("test100", "fetchTripNotes")
         viewModelScope.launch {
 
         }
@@ -170,7 +176,13 @@ class HomeViewModel @Inject constructor(
         tripApplication.navHostController.navigate("${MainScreenName.MAIN_SCREEN_DETAIL.name}/$contentId")
     }
 
-    fun onClickTripNote(documentId : String) {
+    fun onClickTripNote(documentId: String) {
         tripApplication.navHostController.navigate("${TripNoteScreenName.TRIP_NOTE_DETAIL.name}/${documentId}")
+    }
+
+    // 인기도시 리스너
+    fun onClickPopularCity(lat: Double, lng: Double, cityName: String, radius:String) {
+        println("/${lat}/${lng}/${cityName}/${radius}")
+        tripApplication.navHostController.navigate("${MainScreenName.MAIN_SCREEN_POPULAR_CITY.name}/${lat}/${lng}/${cityName}/${radius}")
     }
 }

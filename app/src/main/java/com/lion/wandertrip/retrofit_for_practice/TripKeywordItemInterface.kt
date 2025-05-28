@@ -17,5 +17,5 @@ interface TripKeywordItemInterface {
         @Query("arrange") arrange: String = "O",
         @Query("keyword") keyword: String,
         @Query("serviceKey") serviceKey: String
-    ): Response<TripCommonItemsApiResponse>
+    ): Response<TripApiResponse>
 }

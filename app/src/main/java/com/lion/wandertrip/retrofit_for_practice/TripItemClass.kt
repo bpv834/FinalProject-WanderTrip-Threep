@@ -6,7 +6,7 @@ import kotlinx.serialization.Serializable
 
 
 @Serializable
-data class TripCommonItemsApiResponse(
+data class TripApiResponse(
     val response: ResponseWrapper
 )
 

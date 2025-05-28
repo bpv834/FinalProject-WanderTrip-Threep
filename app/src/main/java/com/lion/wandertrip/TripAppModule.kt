@@ -5,16 +5,19 @@ import com.lion.wandertrip.repository.ContentsReviewRepository
 import com.lion.wandertrip.repository.TripAreaBaseItemRepository
 import com.lion.wandertrip.repository.TripCommonItemRepository
 import com.lion.wandertrip.repository.TripKeywordItemRepository
+import com.lion.wandertrip.repository.TripLocationBasedItemRepository
 import com.lion.wandertrip.repository.TripScheduleRepository
 import com.lion.wandertrip.repository.UserRepository
 import com.lion.wandertrip.retrofit_for_practice.TripAreaBaseItemInterface
 import com.lion.wandertrip.retrofit_for_practice.TripCommonItemInterface
 import com.lion.wandertrip.retrofit_for_practice.TripKeywordItemInterface
+import com.lion.wandertrip.retrofit_for_practice.TripLocationBasedInterface
 import com.lion.wandertrip.service.ContentsReviewService
 import com.lion.wandertrip.service.ContentsService
 import com.lion.wandertrip.service.TripAreaBaseItemService
 import com.lion.wandertrip.service.TripCommonItemService
 import com.lion.wandertrip.service.TripKeywordItemService
+import com.lion.wandertrip.service.TripLocationBasedItemService
 import com.lion.wandertrip.service.TripScheduleService
 import com.lion.wandertrip.service.UserService
 import dagger.Module
@@ -167,5 +170,22 @@ object TripAppModule {
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
+    // tripKeywordProvider
+    @Provides
+    @Singleton
+    fun tripLocationBasedInterfaceProvider(retrofit: Retrofit): TripLocationBasedInterface {
+        return retrofit.create(TripLocationBasedInterface::class.java)
+    }
 
+    @Provides
+    @Singleton
+    fun tripLocationBasedRepositoryProvider(api: TripLocationBasedInterface): TripLocationBasedItemRepository {
+        return TripLocationBasedItemRepository(api)
+    }
+
+    @Provides
+    @Singleton
+    fun tripLocationBasedServiceProvider(repository: TripLocationBasedItemRepository): TripLocationBasedItemService {
+        return TripLocationBasedItemService(repository)
+    }
 }
