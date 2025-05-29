@@ -1,5 +1,6 @@
 package com.lion.wandertrip.presentation.popular_city_page
 
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -22,14 +23,14 @@ import kotlin.math.ln
 
 @Composable
 fun PopularCityScreen(
-    lat: Double,
-    lng: Double,
+/*    lat: String,
+    lng: String,*/
     cityName: String,
-    radius : String,
-    viewModel: PopularCityViewModel = hiltViewModel()
+ /*   radius : String,*/
+    viewModel: PopularCityViewModel= hiltViewModel()
 ) {
     LaunchedEffect (Unit){
-        println("$lat $lng $cityName $radius")
+/*        viewModel.setInitialLocation(lat,lng,radius)*/
     }
     Scaffold(
         topBar = {

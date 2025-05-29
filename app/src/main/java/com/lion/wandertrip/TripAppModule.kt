@@ -170,7 +170,7 @@ object TripAppModule {
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    // tripKeywordProvider
+    // TripLocationBased
     @Provides
     @Singleton
     fun tripLocationBasedInterfaceProvider(retrofit: Retrofit): TripLocationBasedInterface {

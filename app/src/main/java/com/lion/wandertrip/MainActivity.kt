@@ -409,15 +409,15 @@ fun MyApp() {
                 navArgument("cityName") { type = NavType.StringType },
                 navArgument("radius") { type = NavType.StringType },
 
-            )
+                )
         ) { backStackEntry ->
-            val lat = backStackEntry.arguments?.getString("lat") ?: ""
+         /*   val lat = backStackEntry.arguments?.getString("lat") ?: ""
             val lng = backStackEntry.arguments?.getString("lng") ?: ""
+            val radius = backStackEntry.arguments?.getString("radius") ?: ""*/
             val cityName = backStackEntry.arguments?.getString("cityName") ?: ""
-            val radius = backStackEntry.arguments?.getString("radius") ?: ""
 
-            PopularCityScreen(lat.toDouble(), lng.toDouble(), cityName,radius)
 
+            PopularCityScreen(/*lat, lng, */cityName,/*radius*/)
         }
 
 
