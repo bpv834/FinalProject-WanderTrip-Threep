@@ -20,6 +20,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.lion.a02_boardcloneproject.component.CustomTopAppBar
 import com.lion.wandertrip.R
 import com.lion.wandertrip.presentation.my_trip_page.components.VerticalTripItemList
+import com.lion.wandertrip.presentation.popular_city_page.components.PopularCityHome
 import com.lion.wandertrip.util.PopularCity
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlin.math.ln
@@ -32,7 +33,10 @@ fun PopularCityScreen(
     /*   radius : String,*/
     viewModel: PopularCityViewModel = hiltViewModel()
 ) {
+    // 구독 설정
     val restaurantList by viewModel.restaurantList.collectAsState()
+    val attractionList by viewModel.attractionList.collectAsState()
+    val accommodationList by viewModel.accommodationList.collectAsState()
     LaunchedEffect(Unit) {
     }
     Scaffold(
@@ -54,6 +58,7 @@ fun PopularCityScreen(
                 .padding(paddingValues)
                 .padding(horizontal = 10.dp)
         ) {
+            PopularCityHome(viewModel)
         }
 
     }

@@ -2,6 +2,7 @@ package com.lion.wandertrip.presentation.popular_city_page
 
 import android.content.Context
 import android.util.Log
+import androidx.compose.runtime.collectAsState
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -36,6 +37,7 @@ class PopularCityViewModel @Inject constructor(
     private val savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
+
     val tripApplication = context as TripApplication
 
     private val _tripNoteList = MutableStateFlow<List<TripNoteModel>>(emptyList())
@@ -52,7 +54,10 @@ class PopularCityViewModel @Inject constructor(
     private var initialLng: String = savedStateHandle.get<String>("lng") ?: ""
     private var initialRadius: String = savedStateHandle.get<String>("radius") ?: ""
 
-    private val _allContentsMap = MutableStateFlow<Map<String, ContentsModel>>(emptyMap())
+    val allContentsMap: StateFlow<Map<String, ContentsModel>> =
+        contentsService.getAllContentsModelsFlow()
+            .map { list -> list.associate { it.contentId to it } }
+            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyMap())
 
     private val RESTAURANT_CONTENT_TYPE_ID = ContentTypeId.RESTAURANT.contentTypeCode.toString()
     private val _restaurantPage = MutableStateFlow(1)
@@ -89,7 +94,7 @@ class PopularCityViewModel @Inject constructor(
     ): StateFlow<List<UnifiedSpotItem>> {
         return combine(
             pageFlow,
-            _allContentsMap
+            allContentsMap // 컴바인도중 컬렉트하기떄문에 스크린이나 init 에서 collect 할 필요 없음
         ) { page, allContentsMap ->
             if (initialLat.isNotBlank() && initialLng.isNotBlank() && initialRadius.isNotBlank()) {
                 Log.d("createUnifiedSpotItemListFlow","$initialLat $initialLng $contentTypeId $page $initialRadius")
@@ -100,6 +105,9 @@ class PopularCityViewModel @Inject constructor(
                     page = page,
                     radius = initialRadius
                 )
+             /*   Log.d("createUnifiedSpotItemListFlow","${allContentsMap} ")
+                Log.d("createUnifiedSpotItemListFlow","$publicItemList ")*/
+
 
                 publicItemList.map { publicItem ->
                     UnifiedSpotItem(

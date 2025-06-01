@@ -13,7 +13,7 @@ class TripLocationBasedItemRepository(private val api: TripLocationBasedInterfac
         lat: String, lng: String, contentTypeId: String, page: Int = 1, radius: String,
     ): MutableList<TripLocationBasedItem> {
         // 로그 찍기
-        Log.d("gettingTripLocationBased", "요청 파라미터 - lat: $lat, lng: $lng, contentTypeId: $contentTypeId, page: $page, radius: $radius")
+        //Log.d("gettingTripLocationBased", "요청 파라미터 - lat: $lat, lng: $lng, contentTypeId: $contentTypeId, page: $page, radius: $radius")
 
         try {
             val response = api.getLocationBasedList(
@@ -29,8 +29,6 @@ class TripLocationBasedItemRepository(private val api: TripLocationBasedInterfac
                 radius = (radius.toInt()*1000).toString(),
                 arrange = "O", // 대표이미지가 있는 정렬 (제목순)
             )
-            Log.d("gettingTripLocationBased","${response.body()}")
-            Log.d("gettingTripLocationBased","${response.code()}")
 
 
             if (response.isSuccessful) {

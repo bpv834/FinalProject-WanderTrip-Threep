@@ -34,6 +34,7 @@ import androidx.compose.ui.unit.dp
 import com.lion.wandertrip.R
 import com.lion.wandertrip.model.ContentsModel
 import com.lion.wandertrip.model.TripLocationBasedItem
+import com.lion.wandertrip.model.UnifiedSpotItem
 import com.lion.wandertrip.presentation.popular_city_page.PopularCityViewModel
 import com.lion.wandertrip.util.Tools
 import com.skydoves.landscapist.CircularReveal
@@ -42,16 +43,11 @@ import com.skydoves.landscapist.glide.GlideImage
 
 @Composable
 fun CityTripSpotItem(
-    tripLocationBasedItem: TripLocationBasedItem,
-    contentsModel: ContentsModel?,
+    unifiedSpotItem: UnifiedSpotItem,
     onFavoriteClick: (String) -> Unit,
     viewModel: PopularCityViewModel,
     isFavorite: Boolean,
 ) {
-    Log.d(
-        "test100",
-        "contentId : ${contentsModel?.contentId} ratingScore : ${contentsModel?.ratingScore} getRatingCount : ${contentsModel?.getRatingCount} interestingCount : ${contentsModel?.interestingCount} "
-    )
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -65,7 +61,7 @@ fun CityTripSpotItem(
                 .clip(RoundedCornerShape(8.dp))
         ) {
             GlideImage(
-                imageModel = tripLocationBasedItem.firstImage,
+                imageModel = unifiedSpotItem.publicData.firstImage,
                 contentScale = ContentScale.Crop,
                 modifier = Modifier.matchParentSize(),
                 circularReveal = CircularReveal(duration = 250),
@@ -84,7 +80,7 @@ fun CityTripSpotItem(
                     .padding(4.dp)
                     .size(24.dp)
                     .clickable {
-                        onFavoriteClick(tripLocationBasedItem.contentId!!)
+                        onFavoriteClick(unifiedSpotItem.publicData.contentId?:"")
                     }
             )
         }
@@ -95,13 +91,13 @@ fun CityTripSpotItem(
             modifier = Modifier.weight(1f)
         ) {
             Text(
-                text = tripLocationBasedItem.title ?: "관광지 이름",
+                text = unifiedSpotItem.publicData.title ?: "관광지 이름",
                 style = MaterialTheme.typography.bodyLarge,
                 fontWeight = FontWeight.Bold
             )
 
             Text(
-                text = Tools.getAreaDetails(tripLocationBasedItem.areaCode!!, tripLocationBasedItem.siGunGuCode) ?: "위치",
+                text = Tools.getAreaDetails(unifiedSpotItem.publicData.areaCode?:"" ,unifiedSpotItem.publicData.siGunGuCode) ?: "위치",
                 style = MaterialTheme.typography.bodySmall,
                 color = Color.Gray,
                 modifier = Modifier.padding(top = 2.dp, bottom = 6.dp)
@@ -117,13 +113,13 @@ fun CityTripSpotItem(
                     modifier = Modifier.size(16.dp)
                 )
                 Text(
-                    text = "${contentsModel?.ratingScore ?: 0.0}",
+                    text = "${unifiedSpotItem.privateData?.ratingScore}",
                     style = MaterialTheme.typography.bodySmall,
                     modifier = Modifier.padding(start = 4.dp, end = 8.dp)
                 )
 
                 Text(
-                    text = "${"${contentsModel?.getRatingCount ?: 0}"}명",
+                    text = "${"${unifiedSpotItem.privateData?.getRatingCount ?: 0}"}명",
                     style = MaterialTheme.typography.bodySmall,
                     modifier = Modifier.padding(end = 8.dp)
                 )
@@ -135,7 +131,7 @@ fun CityTripSpotItem(
                     modifier = Modifier.size(16.dp)
                 )
                 Text(
-                    text = "${contentsModel?.interestingCount ?: 0}",
+                    text = "${unifiedSpotItem.privateData?.interestingCount ?: 0}",
                     style = MaterialTheme.typography.bodySmall,
                     modifier = Modifier.padding(start = 4.dp)
                 )
