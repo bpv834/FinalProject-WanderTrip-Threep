@@ -182,7 +182,7 @@ class HomeViewModel @Inject constructor(
 
     // 인기도시 리스너
     fun onClickPopularCity(lat: Double, lng: Double, cityName: String, radius:String) {
-        println("/${lat}/${lng}/${cityName}/${radius}")
+  /*      println("/${lat}/${lng}/${cityName}/${radius}")*/
         tripApplication.navHostController.navigate("${MainScreenName.MAIN_SCREEN_POPULAR_CITY.name}/${lat}/${lng}/${cityName}/${radius}")
     }
 }

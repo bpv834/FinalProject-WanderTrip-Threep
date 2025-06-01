@@ -12,7 +12,7 @@ class TripCommonItemRepository(private val api: TripCommonItemInterface) {
     suspend fun gettingTripItemCommon(
         contentId: String, contentTypeId: String?
     ): TripCommonItem? {
-        // Log.d("test100", "TripCommonItemRepository: Starting API call")
+        // Log.d("gettingTripItemCommon", "TripCommonItemRepository: Starting API call")
 
         return try {
             val response = api.getCommonTripItem(
@@ -34,8 +34,8 @@ class TripCommonItemRepository(private val api: TripCommonItemInterface) {
             )
 
             if (response.isSuccessful) {
-                // Log.d("test100", "API request was successful")
-                // Log.d("test100", "Response Body: ${response.body()}")
+                // Log.d("gettingTripItemCommon", "API request was successful")
+                // Log.d("gettingTripItemCommon", "Response Body: ${response.body()}")
 
                 // 응답이 성공적이라면, 응답 데이터에서 필요한 정보를 추출하여 TripCommonItem으로 매핑
                 response.body()?.let { apiResponse ->
@@ -61,11 +61,11 @@ class TripCommonItemRepository(private val api: TripCommonItemInterface) {
                     }
                 }
             } else {
-                Log.d("test100", "API request failed: ${response.code()} - ${response.message()}")
+                Log.d("gettingTripItemCommon", "API request failed: ${response.code()} - ${response.message()}")
                 null
             }
         } catch (e: Exception) {
-            Log.e("test100", "Error occurred while fetching trip item", e)
+            Log.e("gettingTripItemCommon", "Error occurred while fetching trip item", e)
             null
         }
     }
@@ -81,7 +81,7 @@ class TripCommonItemRepository(private val api: TripCommonItemInterface) {
             val interestingList = mutableListOf<UserInterestingModel>()
 
             contentIdList.forEach { contentId ->
-                //Log.d("test100", "📌 API 요청 시작 | 콘텐츠 ID: $contentId")
+                //Log.d("gettingTripItemCommonInteresting", "📌 API 요청 시작 | 콘텐츠 ID: $contentId")
 
                 val response = api.getCommonTripItem(
                     serviceKey = myKey,
@@ -108,7 +108,7 @@ class TripCommonItemRepository(private val api: TripCommonItemInterface) {
                         val item = apiResponse.response.body.items.item.firstOrNull()
 
                         if (item != null) {
-                            //Log.d("test100", "🎯 API 응답 데이터 확인 | 제목: ${item.title ?: "제목 없음"}")
+                            //Log.d("gettingTripItemCommonInteresting", "🎯 API 응답 데이터 확인 | 제목: ${item.title ?: "제목 없음"}")
 
                             interestingList.add(
                                 UserInterestingModel(
@@ -128,12 +128,12 @@ class TripCommonItemRepository(private val api: TripCommonItemInterface) {
                                 )
                             )
                         } else {
-                            Log.d("test100", "⚠️ API 응답은 성공했지만 데이터가 비어 있음 | 콘텐츠 ID: $contentId")
+                            Log.d("gettingTripItemCommonInteresting", "⚠️ API 응답은 성공했지만 데이터가 비어 있음 | 콘텐츠 ID: $contentId")
                         }
                     }
                 } else {
                     Log.e(
-                        "test100",
+                        "gettingTripItemCommonInteresting",
                         "❌ API 요청 실패 | HTTP 코드: ${response.code()} | 오류 메시지: ${response.message()}"
                     )
                 }
@@ -142,7 +142,7 @@ class TripCommonItemRepository(private val api: TripCommonItemInterface) {
             interestingList
 
         } catch (e: Exception) {
-            Log.e("test100", "🚨 API 요청 중 오류 발생", e)
+            Log.e("gettingTripItemCommonInteresting", "🚨 API 요청 중 오류 발생", e)
             mutableListOf()
         }
     }

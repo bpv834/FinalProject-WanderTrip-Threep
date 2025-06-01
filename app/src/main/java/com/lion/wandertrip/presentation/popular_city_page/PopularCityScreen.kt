@@ -6,8 +6,11 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -23,14 +26,14 @@ import kotlin.math.ln
 
 @Composable
 fun PopularCityScreen(
-/*    lat: String,
-    lng: String,*/
+    /*    lat: String,
+        lng: String,*/
     cityName: String,
- /*   radius : String,*/
-    viewModel: PopularCityViewModel= hiltViewModel()
+    /*   radius : String,*/
+    viewModel: PopularCityViewModel = hiltViewModel()
 ) {
-    LaunchedEffect (Unit){
-/*        viewModel.setInitialLocation(lat,lng,radius)*/
+    val restaurantList by viewModel.restaurantList.collectAsState()
+    LaunchedEffect(Unit) {
     }
     Scaffold(
         topBar = {
@@ -51,7 +54,6 @@ fun PopularCityScreen(
                 .padding(paddingValues)
                 .padding(horizontal = 10.dp)
         ) {
-
         }
 
     }

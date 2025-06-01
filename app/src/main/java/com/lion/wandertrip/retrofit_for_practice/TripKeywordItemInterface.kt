@@ -5,7 +5,6 @@ import retrofit2.http.GET
 import retrofit2.http.Query
 
 interface TripKeywordItemInterface {
-
     @GET("searchKeyword1")
     suspend fun getKeywordTripItem(
         @Query("numOfRows") numOfRows: Int = 10,

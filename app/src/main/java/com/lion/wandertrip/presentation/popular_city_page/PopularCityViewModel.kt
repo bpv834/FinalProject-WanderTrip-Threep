@@ -27,20 +27,13 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-
-// Factory 정의 (주석 해제)
-@AssistedFactory
-interface PopularCityViewModelFactory {
-    fun create(savedStateHandle: SavedStateHandle): PopularCityViewModel
-}
-
-@HiltViewModel(assistedFactory = PopularCityViewModelFactory::class) // <-- 여기가 핵심!
-class PopularCityViewModel @AssistedInject constructor(
+@HiltViewModel
+class PopularCityViewModel @Inject constructor(
     @ApplicationContext context: Context,
     val tripNoteService: TripNoteService,
     val contentsService: ContentsService,
     val tripLocationBasedItemService: TripLocationBasedItemService,
-    @Assisted private val savedStateHandle: SavedStateHandle
+    private val savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
     val tripApplication = context as TripApplication
@@ -54,6 +47,7 @@ class PopularCityViewModel @AssistedInject constructor(
             _tripNoteList.value = result
         }
     }
+
     private var initialLat: String = savedStateHandle.get<String>("lat") ?: ""
     private var initialLng: String = savedStateHandle.get<String>("lng") ?: ""
     private var initialRadius: String = savedStateHandle.get<String>("radius") ?: ""
@@ -64,19 +58,30 @@ class PopularCityViewModel @AssistedInject constructor(
     private val _restaurantPage = MutableStateFlow(1)
     val restaurantList: StateFlow<List<UnifiedSpotItem>> =
         createUnifiedSpotItemListFlow(RESTAURANT_CONTENT_TYPE_ID, _restaurantPage)
-    fun loadNextRestaurantPage() { _restaurantPage.value++ }
 
-    private val ATTRACTION_CONTENT_TYPE_ID = ContentTypeId.TOURIST_ATTRACTION.contentTypeCode.toString()
+    fun loadNextRestaurantPage() {
+        _restaurantPage.value++
+    }
+
+    private val ATTRACTION_CONTENT_TYPE_ID =
+        ContentTypeId.TOURIST_ATTRACTION.contentTypeCode.toString()
     private val _attractionPage = MutableStateFlow(1)
     val attractionList: StateFlow<List<UnifiedSpotItem>> =
         createUnifiedSpotItemListFlow(ATTRACTION_CONTENT_TYPE_ID, _attractionPage)
-    fun loadNextAttractionPage() { _attractionPage.value++ }
 
-    private val ACCOMMODATION_CONTENT_TYPE_ID = ContentTypeId.ACCOMMODATION.contentTypeCode.toString()
+    fun loadNextAttractionPage() {
+        _attractionPage.value++
+    }
+
+    private val ACCOMMODATION_CONTENT_TYPE_ID =
+        ContentTypeId.ACCOMMODATION.contentTypeCode.toString()
     private val _accommodationPage = MutableStateFlow(1)
     val accommodationList: StateFlow<List<UnifiedSpotItem>> =
         createUnifiedSpotItemListFlow(ACCOMMODATION_CONTENT_TYPE_ID, _accommodationPage)
-    fun loadNextAccommodationPage() { _accommodationPage.value++ }
+
+    fun loadNextAccommodationPage() {
+        _accommodationPage.value++
+    }
 
     private fun createUnifiedSpotItemListFlow(
         contentTypeId: String,
@@ -87,6 +92,7 @@ class PopularCityViewModel @AssistedInject constructor(
             _allContentsMap
         ) { page, allContentsMap ->
             if (initialLat.isNotBlank() && initialLng.isNotBlank() && initialRadius.isNotBlank()) {
+                Log.d("createUnifiedSpotItemListFlow","$initialLat $initialLng $contentTypeId $page $initialRadius")
                 val publicItemList = tripLocationBasedItemService.gettingTripLocationBasedItemList(
                     lat = initialLat,
                     lng = initialLng,
@@ -94,12 +100,14 @@ class PopularCityViewModel @AssistedInject constructor(
                     page = page,
                     radius = initialRadius
                 )
+
                 publicItemList.map { publicItem ->
                     UnifiedSpotItem(
                         publicData = publicItem,
                         privateData = publicItem.contentId?.let { allContentsMap[it] }
                     )
                 }
+
             } else {
                 emptyList()
             }
@@ -109,8 +117,11 @@ class PopularCityViewModel @AssistedInject constructor(
                 started = SharingStarted.WhileSubscribed(5000),
                 initialValue = emptyList()
             )
+
+
     }
 
+/*
     // Composable로부터 값을 설정받는 함수 추가 (Double을 String으로 변환)
     fun setInitialLocation(lat: String, lng: String, radius: String) {
         // 이미 값이 설정되지 않았을 경우에만 업데이트하거나, 항상 업데이트하도록 로직 선택
@@ -124,6 +135,7 @@ class PopularCityViewModel @AssistedInject constructor(
             Log.d("PopularCityViewModel", "Initial location set: $lat, $lng, $radius")
         }
     }
+*/
 
 
 }

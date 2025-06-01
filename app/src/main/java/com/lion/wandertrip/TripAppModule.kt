@@ -177,15 +177,19 @@ object TripAppModule {
         return retrofit.create(TripLocationBasedInterface::class.java)
     }
 
+
+
     @Provides
     @Singleton
     fun tripLocationBasedRepositoryProvider(api: TripLocationBasedInterface): TripLocationBasedItemRepository {
         return TripLocationBasedItemRepository(api)
     }
 
+
     @Provides
     @Singleton
     fun tripLocationBasedServiceProvider(repository: TripLocationBasedItemRepository): TripLocationBasedItemService {
         return TripLocationBasedItemService(repository)
     }
+
 }

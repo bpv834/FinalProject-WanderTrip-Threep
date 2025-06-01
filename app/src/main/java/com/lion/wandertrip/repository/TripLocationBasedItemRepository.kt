@@ -12,6 +12,9 @@ class TripLocationBasedItemRepository(private val api: TripLocationBasedInterfac
     suspend fun gettingTripLocationBased(
         lat: String, lng: String, contentTypeId: String, page: Int = 1, radius: String,
     ): MutableList<TripLocationBasedItem> {
+        // 로그 찍기
+        Log.d("gettingTripLocationBased", "요청 파라미터 - lat: $lat, lng: $lng, contentTypeId: $contentTypeId, page: $page, radius: $radius")
+
         try {
             val response = api.getLocationBasedList(
                 serviceKey = myKey,
@@ -23,16 +26,19 @@ class TripLocationBasedItemRepository(private val api: TripLocationBasedInterfac
                 pageNo = page,
                 mapX = lng,
                 mapY = lat,
-                radius = radius,
+                radius = (radius.toInt()*1000).toString(),
                 arrange = "O", // 대표이미지가 있는 정렬 (제목순)
             )
+            Log.d("gettingTripLocationBased","${response.body()}")
+            Log.d("gettingTripLocationBased","${response.code()}")
+
 
             if (response.isSuccessful) {
                 // 응답 본문이 null이 아니고, 항목 리스트가 비어있지 않은지 확인
                 val apiResponse = response.body()
                 if (apiResponse != null && apiResponse.response.body.items.item.isNotEmpty()) {
                     val items = apiResponse.response.body.items.item
-                    Log.d("TripRepo", "성공적으로 ${items.size}개의 항목을 가져왔습니다.")
+                    Log.d("gettingTripLocationBased", "성공적으로 ${items.size}개의 항목을 가져왔습니다.")
                     // Log.d("TripRepo", "첫 번째 항목 제목: ${items.firstOrNull()?.title}")
 
                     var list = mutableListOf<TripLocationBasedItem>()
@@ -55,22 +61,22 @@ class TripLocationBasedItemRepository(private val api: TripLocationBasedInterfac
 
                     return list
                 } else {
-                    Log.d("TripRepo", "API 응답 본문이 null이거나 항목 리스트가 비어 있습니다.")
+                    Log.d("gettingTripLocationBased", "API 응답 본문이 null이거나 항목 리스트가 비어 있습니다.")
                     return mutableListOf<TripLocationBasedItem>() // 항목이 없으면 빈 리스트 반환
                 }
             } else {
                 // API 요청 실패 시
-                Log.e("TripRepo", "API 요청 실패: ${response.code()} - ${response.message()}")
-                Log.e("TripRepo", "오류 본문: ${response.errorBody()?.string()}")
+                Log.e("gettingTripLocationBased", "API 요청 실패: ${response.code()} - ${response.message()}")
+                Log.e("gettingTripLocationBased", "오류 본문: ${response.errorBody()?.string()}")
                 return mutableListOf<TripLocationBasedItem>() // 오류 발생 시 빈 리스트 반환
             }
         } catch (e: HttpException) {
             // HTTP 관련 오류 (예: 404, 500) 처리
-            Log.e("TripRepo", "HTTP 오류 발생: ${e.code()} - ${e.message()}", e)
+            Log.e("gettingTripLocationBased", "HTTP 오류 발생: ${e.code()} - ${e.message()}", e)
             return mutableListOf<TripLocationBasedItem>()
         } catch (e: Exception) {
             // 네트워크 문제, JSON 파싱 오류 등 기타 예외 처리
-            Log.e("TripRepo", "여행 항목을 가져오는 중 오류 발생: ${e.message}", e)
+            Log.e("gettingTripLocationBased", "여행 항목을 가져오는 중 오류 발생: ${e.message}", e)
             return mutableListOf<TripLocationBasedItem>()
         }
     }
