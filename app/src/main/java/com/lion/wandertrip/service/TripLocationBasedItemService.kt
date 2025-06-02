@@ -12,11 +12,12 @@ class TripLocationBasedItemService(val repository: TripLocationBasedItemReposito
         contentTypeId: String,
         page: Int = 1,
         radius: String,
+        numOfRows : Int = 10
     ): MutableList<TripLocationBasedItem> {
         // 서비스에서 데이터를 요청하는 메소드
         return try {
             // TripCommonItemRepository의 메소드를 호출하여 데이터를 가져옵니다.
-            val tripLocationBasedItemList = repository.gettingTripLocationBased(lat,lng,contentTypeId,page,radius)
+            val tripLocationBasedItemList = repository.gettingTripLocationBased(lat,lng,contentTypeId,page,radius,numOfRows)
             // 데이터를 반환
             tripLocationBasedItemList
         } catch (e: Exception) {

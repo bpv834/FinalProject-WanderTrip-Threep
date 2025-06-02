@@ -113,13 +113,13 @@ fun CityTripSpotItem(
                     modifier = Modifier.size(16.dp)
                 )
                 Text(
-                    text = "${unifiedSpotItem.privateData?.ratingScore}",
+                    text = "${unifiedSpotItem.privateData?.ratingScore?:0}",
                     style = MaterialTheme.typography.bodySmall,
-                    modifier = Modifier.padding(start = 4.dp, end = 8.dp)
+                    modifier = Modifier.padding(start = 4.dp, end = 4.dp)
                 )
 
                 Text(
-                    text = "${"${unifiedSpotItem.privateData?.getRatingCount ?: 0}"}명",
+                    text = "(${unifiedSpotItem.privateData?.getRatingCount ?: 0})",
                     style = MaterialTheme.typography.bodySmall,
                     modifier = Modifier.padding(end = 8.dp)
                 )

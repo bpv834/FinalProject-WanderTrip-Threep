@@ -10,7 +10,7 @@ class TripLocationBasedItemRepository(private val api: TripLocationBasedInterfac
         "qe8EY3d1ixNdu4/lC0aXJXbTH/VndGcoj5DABUigtfSCLIIP48IHXbwMEkG5gkGvVW/wKl1XuuFyqYwwWQZJDg=="
 
     suspend fun gettingTripLocationBased(
-        lat: String, lng: String, contentTypeId: String, page: Int = 1, radius: String,
+        lat: String, lng: String, contentTypeId: String, page: Int = 1, radius: String,numOfRows : Int = 10
     ): MutableList<TripLocationBasedItem> {
         // 로그 찍기
         //Log.d("gettingTripLocationBased", "요청 파라미터 - lat: $lat, lng: $lng, contentTypeId: $contentTypeId, page: $page, radius: $radius")
@@ -22,7 +22,7 @@ class TripLocationBasedItemRepository(private val api: TripLocationBasedInterfac
                 mobileApp = "com.lion.wandertrip",
                 type = "json",
                 contentTypeId = contentTypeId,
-                numOfRows = 10,
+                numOfRows = numOfRows,
                 pageNo = page,
                 mapX = lng,
                 mapY = lat,

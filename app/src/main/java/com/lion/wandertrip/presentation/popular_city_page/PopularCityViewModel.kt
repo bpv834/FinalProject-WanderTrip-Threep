@@ -2,7 +2,6 @@ package com.lion.wandertrip.presentation.popular_city_page
 
 import android.content.Context
 import android.util.Log
-import androidx.compose.runtime.collectAsState
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -14,9 +13,6 @@ import com.lion.wandertrip.service.ContentsService
 import com.lion.wandertrip.service.TripLocationBasedItemService
 import com.lion.wandertrip.service.TripNoteService
 import com.lion.wandertrip.util.ContentTypeId
-import dagger.assisted.Assisted
-import dagger.assisted.AssistedFactory
-import dagger.assisted.AssistedInject
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -54,7 +50,13 @@ class PopularCityViewModel @Inject constructor(
     private var initialLng: String = savedStateHandle.get<String>("lng") ?: ""
     private var initialRadius: String = savedStateHandle.get<String>("radius") ?: ""
 
-    val allContentsMap: StateFlow<Map<String, ContentsModel>> =
+    private val _tapViewFlow = MutableStateFlow(1)
+    val tapViewFlow: StateFlow<Int> = _tapViewFlow
+
+    private val _numOfRowsFlow = MutableStateFlow(4)
+    val numOfRowsFlow: StateFlow<Int> = _numOfRowsFlow
+
+    val allContentsMapFlow: StateFlow<Map<String, ContentsModel>> =
         contentsService.getAllContentsModelsFlow()
             .map { list -> list.associate { it.contentId to it } }
             .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyMap())
@@ -62,7 +64,7 @@ class PopularCityViewModel @Inject constructor(
     private val RESTAURANT_CONTENT_TYPE_ID = ContentTypeId.RESTAURANT.contentTypeCode.toString()
     private val _restaurantPage = MutableStateFlow(1)
     val restaurantList: StateFlow<List<UnifiedSpotItem>> =
-        createUnifiedSpotItemListFlow(RESTAURANT_CONTENT_TYPE_ID, _restaurantPage)
+        createUnifiedSpotItemListFlow(RESTAURANT_CONTENT_TYPE_ID, _restaurantPage,_numOfRowsFlow)
 
     fun loadNextRestaurantPage() {
         _restaurantPage.value++
@@ -72,7 +74,7 @@ class PopularCityViewModel @Inject constructor(
         ContentTypeId.TOURIST_ATTRACTION.contentTypeCode.toString()
     private val _attractionPage = MutableStateFlow(1)
     val attractionList: StateFlow<List<UnifiedSpotItem>> =
-        createUnifiedSpotItemListFlow(ATTRACTION_CONTENT_TYPE_ID, _attractionPage)
+        createUnifiedSpotItemListFlow(ATTRACTION_CONTENT_TYPE_ID, _attractionPage,_numOfRowsFlow)
 
     fun loadNextAttractionPage() {
         _attractionPage.value++
@@ -82,7 +84,7 @@ class PopularCityViewModel @Inject constructor(
         ContentTypeId.ACCOMMODATION.contentTypeCode.toString()
     private val _accommodationPage = MutableStateFlow(1)
     val accommodationList: StateFlow<List<UnifiedSpotItem>> =
-        createUnifiedSpotItemListFlow(ACCOMMODATION_CONTENT_TYPE_ID, _accommodationPage)
+        createUnifiedSpotItemListFlow(ACCOMMODATION_CONTENT_TYPE_ID, _accommodationPage,_numOfRowsFlow)
 
     fun loadNextAccommodationPage() {
         _accommodationPage.value++
@@ -90,12 +92,15 @@ class PopularCityViewModel @Inject constructor(
 
     private fun createUnifiedSpotItemListFlow(
         contentTypeId: String,
-        pageFlow: MutableStateFlow<Int>
+        pageFlow: MutableStateFlow<Int>,
+        numOfRowsFlow: MutableStateFlow<Int> // ← 수정됨
     ): StateFlow<List<UnifiedSpotItem>> {
         return combine(
+            // combine 해줘야 값이 변경될때 새로 구독을 해서 ui를 그린다.
             pageFlow,
-            allContentsMap // 컴바인도중 컬렉트하기떄문에 스크린이나 init 에서 collect 할 필요 없음
-        ) { page, allContentsMap ->
+            allContentsMapFlow,
+            numOfRowsFlow
+        ) {page, allContentsMap, numOfRows ->
             if (initialLat.isNotBlank() && initialLng.isNotBlank() && initialRadius.isNotBlank()) {
                 Log.d("createUnifiedSpotItemListFlow","$initialLat $initialLng $contentTypeId $page $initialRadius")
                 val publicItemList = tripLocationBasedItemService.gettingTripLocationBasedItemList(
@@ -103,7 +108,8 @@ class PopularCityViewModel @Inject constructor(
                     lng = initialLng,
                     contentTypeId = contentTypeId,
                     page = page,
-                    radius = initialRadius
+                    radius = initialRadius,
+                    numOfRows= numOfRows
                 )
              /*   Log.d("createUnifiedSpotItemListFlow","${allContentsMap} ")
                 Log.d("createUnifiedSpotItemListFlow","$publicItemList ")*/
