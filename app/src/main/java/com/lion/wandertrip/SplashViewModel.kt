@@ -5,7 +5,7 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import com.lion.wandertrip.model.TripItemModel
 import com.lion.wandertrip.service.TripKeywordItemService
-import com.lion.wandertrip.util.PopularCity
+import com.lion.wandertrip.model.PopularCityModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
@@ -61,8 +61,8 @@ class SplashViewModel @Inject constructor(
     }
 
     // 인기 지역 순위 csv 파일에서 popularCity 객체 리스트를 리턴받는다
-    suspend fun getPopularCityList(): List<PopularCity> = withContext(Dispatchers.IO) {
-        val result = mutableListOf<PopularCity>()
+    suspend fun getPopularCityList(): List<PopularCityModel> = withContext(Dispatchers.IO) {
+        val result = mutableListOf<PopularCityModel>()
         try {
             // assets 디렉토리에서 파일 열기
             tripApplication.assets.open("인기 지역 순위.csv").bufferedReader().useLines { lines ->
@@ -77,7 +77,7 @@ class SplashViewModel @Inject constructor(
                         val radius = tokens[5].trim().toInt()
 
                         if (rank != null) {
-                            result.add(PopularCity(rank, name, imageUrl,lat!!,lng!!,radius))
+                            result.add(PopularCityModel(rank, name, imageUrl,lat!!,lng!!,radius))
                         }
                     }
                 }

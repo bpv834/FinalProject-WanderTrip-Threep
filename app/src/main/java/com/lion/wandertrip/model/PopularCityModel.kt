@@ -1,6 +1,6 @@
-package com.lion.wandertrip.util
+package com.lion.wandertrip.model
 
-data class PopularCity(
+data class PopularCityModel(
     val rank: Int,
     val name: String,
     val imageUrl: String,

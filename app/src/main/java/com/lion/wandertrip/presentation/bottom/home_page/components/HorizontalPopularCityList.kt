@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -27,7 +26,7 @@ import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
 import com.bumptech.glide.integration.compose.GlideImage
 import com.lion.wandertrip.presentation.bottom.home_page.HomeViewModel
 import com.lion.wandertrip.ui.theme.NanumSquareRound
-import com.lion.wandertrip.util.PopularCity
+import com.lion.wandertrip.model.PopularCityModel
 
 
 @Composable
@@ -58,7 +57,7 @@ fun HorizontalPopularCityList(viewModel: HomeViewModel) {
 
 @OptIn(ExperimentalGlideComposeApi::class) // Glide Compose API를 사용하기 위한 옵트인입니다.
 @Composable
-fun PopularCityItemView(city: PopularCity,viewModel : HomeViewModel) {
+fun PopularCityItemView(city: PopularCityModel, viewModel : HomeViewModel) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally, // 컬럼 내의 내용을 수평 중앙 정렬합니다.
         modifier = Modifier.width(80.dp) // 각 도시 아이템의 너비를 80dp로 고정하여 레이아웃을 일정하게 유지합니다.

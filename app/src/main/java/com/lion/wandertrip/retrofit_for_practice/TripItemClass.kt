@@ -24,7 +24,8 @@ data class Header(
 
 @Serializable
 data class Body(
-    val items: ItemsWrapper
+    val items: ItemsWrapper,
+    val totalCount : Int =100,
 )
 @Serializable
 data class ItemsWrapper(

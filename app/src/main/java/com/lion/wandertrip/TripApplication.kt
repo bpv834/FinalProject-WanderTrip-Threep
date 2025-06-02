@@ -2,15 +2,12 @@ package com.lion.wandertrip
 
 import android.app.Application
 import android.content.res.Resources
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.navigation.NavHostController
 import com.kakao.sdk.common.KakaoSdk
 import com.lion.wandertrip.model.TripItemModel
 import com.lion.wandertrip.model.UserModel
-import com.lion.wandertrip.util.PopularCity
+import com.lion.wandertrip.model.PopularCityModel
 import dagger.hilt.android.HiltAndroidApp
 
 // Hilt를 사용하려면 이 어노테이션을 애플리케이션의 Application 클래스에 선언해야 합니다.
@@ -57,5 +54,5 @@ class TripApplication : Application() {
     val popularTripList: MutableList<TripItemModel> = mutableListOf()
 
     // 인기 지역
-    val popularCities : MutableList<PopularCity> = mutableListOf()
+    val popularCities : MutableList<PopularCityModel> = mutableListOf()
 }

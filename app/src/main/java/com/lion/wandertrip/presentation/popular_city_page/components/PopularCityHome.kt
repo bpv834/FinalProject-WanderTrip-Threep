@@ -1,7 +1,12 @@
 package com.lion.wandertrip.presentation.popular_city_page.components
 
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.detectHorizontalDragGestures
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Text
@@ -9,13 +14,17 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.lion.a02_boardcloneproject.component.CustomDividerComponent
 import com.lion.wandertrip.presentation.my_trip_page.MyTripViewModel
 import com.lion.wandertrip.presentation.popular_city_page.PopularCityViewModel
+import com.lion.wandertrip.util.CustomFont
 
 @Composable
 fun PopularCityHome(
@@ -25,34 +34,98 @@ fun PopularCityHome(
     val attractionList by viewModel.attractionList.collectAsState()
     val accommodationList by viewModel.accommodationList.collectAsState()
 
-    LaunchedEffect (Unit){
+    LazyColumn {
+        item {
+            Text(
+                text = "추천 관광지",
+                fontFamily = CustomFont.customFontBold,
+                fontSize = 20.sp,
+                modifier = Modifier.padding(bottom = 6.dp)
 
-    }
-    LazyColumn  {
-        items(attractionList){item->
-            CityTripSpotItem(
-                item,{},viewModel,true
             )
         }
-        item{
-            CustomDividerComponent(10.dp)
-        }
-        items(restaurantList){item->
-            CityTripSpotItem(
-                item,{},viewModel,true
+
+
+        item {
+            SwipeablePageContainer(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(Color.White)
+                    .padding(8.dp),
+                onSwipeLeft = { viewModel.loadNextAttractionPage() },
+                onSwipeRight = { viewModel.loadPreAttractionPage() },
+                content = {
+                    Column {
+                        attractionList.forEach { item ->
+                            CityTripSpotItem(item, {}, viewModel, true)
+                        }
+                    }
+                }
             )
         }
-        item{
+
+        item {
             CustomDividerComponent(10.dp)
         }
-        items(accommodationList){item->
-            CityTripSpotItem(
-                item,{},viewModel,true
+        item {
+            Text(
+                text = "추천 식당",
+                fontFamily = CustomFont.customFontBold,
+                fontSize = 20.sp,
+                modifier = Modifier.padding(vertical = 6.dp)
             )
         }
-        item{
+
+
+
+        item {
+            SwipeablePageContainer(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(Color.White)
+                    .padding(8.dp),
+                onSwipeLeft = { viewModel.loadNextRestaurantPage() },
+                onSwipeRight = { viewModel.loadPreRestaurantPage() },
+                content = {
+                    Column {
+                        restaurantList.forEach { item ->
+                            CityTripSpotItem(item, {}, viewModel, true)
+                        }
+                    }
+                }
+            )
+
+        }
+
+        item {
             CustomDividerComponent(10.dp)
         }
+        item {
+            Text(
+                text = "추천 숙소",
+                fontFamily = CustomFont.customFontBold,
+                fontSize = 20.sp,
+                modifier = Modifier.padding(vertical = 6.dp)
+            )
+        }
+       item{
+           SwipeablePageContainer(
+               modifier = Modifier
+                   .fillMaxWidth()
+                   .background(Color.White)
+                   .padding(8.dp),
+               onSwipeLeft = { viewModel.loadNextAccommodationPage() },
+               onSwipeRight = { viewModel.loadPreAccommodationPage() },
+               content = {
+                   Column {
+                       accommodationList.forEach { item ->
+                           CityTripSpotItem(item, {}, viewModel, true)
+                       }
+                   }
+               }
+           )
+
+       }
     }
 
 }

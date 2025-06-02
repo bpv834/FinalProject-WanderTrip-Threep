@@ -420,3 +420,11 @@ enum class AccommodationItemCat3(val catCode: String, val catName: String) {
         }
     }
 }
+
+enum class PopularCityTap(val num:Int, val str:String){
+    POPULAR_CITY_TAP_HOME(0, "홈"),
+    POPULAR_CITY_TAP_ATTRACTION(1, "관광지"),
+    POPULAR_CITY_TAP_RESTAURANT(2, "식당"),
+    POPULAR_CITY_TAP_ACCOMMODATION(3, "숙소"),
+    POPULAR_CITY_TAP_TRIP_NOTE(4,"여행기")
+}
