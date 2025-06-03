@@ -36,7 +36,7 @@ class TripLocationBasedItemRepository(private val api: TripLocationBasedInterfac
                 val apiResponse = response.body()
                 if (apiResponse != null && apiResponse.response.body.items.item.isNotEmpty()) {
                     val items = apiResponse.response.body.items.item
-                    Log.d("gettingTripLocationBased", "성공적으로 ${items.size}개의 항목을 가져왔습니다.")
+                  //  Log.d("gettingTripLocationBased", "성공적으로 ${items.size}개의 항목을 가져왔습니다.")
                     // Log.d("TripRepo", "첫 번째 항목 제목: ${items.firstOrNull()?.title}")
                     val totalCount = apiResponse.response.body.totalCount
                     val list = mutableListOf<TripLocationBasedItem>()
