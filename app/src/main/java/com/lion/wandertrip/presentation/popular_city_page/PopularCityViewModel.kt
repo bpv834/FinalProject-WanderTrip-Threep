@@ -21,7 +21,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
@@ -60,6 +59,8 @@ class PopularCityViewModel @Inject constructor(
     private var initialLat: String = savedStateHandle.get<String>("lat") ?: ""
     private var initialLng: String = savedStateHandle.get<String>("lng") ?: ""
     private var initialRadius: String = savedStateHandle.get<String>("radius") ?: ""
+    private var cityName: String = savedStateHandle.get<String>("cityName") ?: ""
+
 
     // 뷰페이저 상태 저장 변수
     private val _tapViewFlow = MutableStateFlow(PopularCityTap.POPULAR_CITY_TAP_HOME.num) // 0 -> 홈 1->관광지 2-> 식당 3-> 숙소 4-> 여행기
@@ -81,85 +82,72 @@ class PopularCityViewModel @Inject constructor(
     private val ATTRACTION_CONTENT_TYPE_ID =
         ContentTypeId.TOURIST_ATTRACTION.contentTypeCode.toString()
     // 홈에서 사용하는 관광지 페이지 변수
-    private val _attractionPage = MutableStateFlow(1)
-    val attractionPage : StateFlow<Int> get() = _attractionPage
+    private val _attractionPageAtHome = MutableStateFlow(1)
+    val attractionPageAtHome : StateFlow<Int> get() = _attractionPageAtHome
     // 홈에서 사용하는 관광지 리스트
     val attractionListAtHome: StateFlow<List<UnifiedSpotItem>> =
-        createUnifiedSpotItemListFlowAtHome(ATTRACTION_CONTENT_TYPE_ID, _attractionPage)
+        createUnifiedSpotItemListFlowAtHome(ATTRACTION_CONTENT_TYPE_ID, _attractionPageAtHome)
 
-    // 관광지, 식당 , 숙소, 여행기 에서 사용하는 페이지 변수
-    private val _page = MutableStateFlow(1)
-
+    // 관광지 에서 사용하는 페이지 변수
+    private val _attractionPage = MutableStateFlow(1)
+    // 식당 에서 사용하는 페이지 변수
+    private val _restaurantPage = MutableStateFlow(1)
+    //  숙소에서 사용하는 페이지 변수
+    private val _accommodationPage = MutableStateFlow(1)
+    //  여행기에서 사용하는 페이지 변수
+    private val _tripNotePage = MutableStateFlow(1)
 
 
     // 관광지 다음페이지
-    fun loadNextAttractionPage() {
+    fun loadNextAttractionPageAtHome() {
         // 최대 4까지 4->1
-        _attractionPage.value = if (_attractionPage.value >= 4) 1 else _attractionPage.value + 1
+        _attractionPageAtHome.value = if (_attractionPageAtHome.value >= 4) 1 else _attractionPageAtHome.value + 1
     }
     // 관광지 이전페이지
-    fun loadPreAttractionPage() {
-        _attractionPage.value--
+    fun loadPreAttractionPageAtHome() {
+        _attractionPageAtHome.value--
     }
-
-/*
-    // 첫페이지
-    fun loadAttractionFirstPage() {
-        _attractionPage.value = 1
-    }
-
-    // 마지막페이지
-    fun loadAttractionLastPage() {
-        _attractionPage.value = (totalAttractionCount.value+3)/4
-    }
-    // 페이지 클릭
-    fun loadAttractionOnClickPage() {
-       */
-/* _attractionPage.value = *//*
-
-    }
-*/
 
 
     // 식당 컨텐트 타입 변수
     private val RESTAURANT_CONTENT_TYPE_ID = ContentTypeId.RESTAURANT.contentTypeCode.toString()
     // 식당 페이지 변수
-    private val _restaurantPage = MutableStateFlow(1)
-    val restaurantPage : StateFlow<Int> get() = _restaurantPage
+    private val _restaurantPageAtHome = MutableStateFlow(1)
+    val restaurantPageAtHome : StateFlow<Int> get() = _restaurantPageAtHome
     // 홈에서 사용하는 식당 리스트
     val restaurantListAtHome: StateFlow<List<UnifiedSpotItem>> =
-        createUnifiedSpotItemListFlowAtHome(RESTAURANT_CONTENT_TYPE_ID, _restaurantPage)
+        createUnifiedSpotItemListFlowAtHome(RESTAURANT_CONTENT_TYPE_ID, _restaurantPageAtHome)
 
 
     // 식당 다음페이지
-    fun loadNextRestaurantPage() {
+    fun loadNextRestaurantPageAtHome() {
         // 최대 4까지 4->1
-        _restaurantPage.value = if (_restaurantPage.value >= 4) 1 else _restaurantPage.value + 1
+        _restaurantPageAtHome.value = if (_restaurantPageAtHome.value >= 4) 1 else _restaurantPageAtHome.value + 1
     }
     // 식당 이전페이지
-    fun loadPreRestaurantPage() {
-        _restaurantPage.value--
+    fun loadPreRestaurantPageAtHome() {
+        _restaurantPageAtHome.value--
     }
 
     // 숙소 타입 저장 변수
     private val ACCOMMODATION_CONTENT_TYPE_ID =
         ContentTypeId.ACCOMMODATION.contentTypeCode.toString()
-    // 숙소 페이지 저장 변수
-    private val _accommodationPage = MutableStateFlow(1)
-    val accommodationPage : StateFlow<Int> get() = _accommodationPage
+    // 홈에서 사용하는 숙소 페이지 저장 변수
+    private val _accommodationPageAtHome = MutableStateFlow(1)
+    val accommodationPageAtHome : StateFlow<Int> get() = _accommodationPageAtHome
     // 홈에서 사용하는 숙소 리스트
     val accommodationListAtHome: StateFlow<List<UnifiedSpotItem>> =
-        createUnifiedSpotItemListFlowAtHome(ACCOMMODATION_CONTENT_TYPE_ID, _accommodationPage)
+        createUnifiedSpotItemListFlowAtHome(ACCOMMODATION_CONTENT_TYPE_ID, _accommodationPageAtHome)
 
 
     // 숙소 다음페이지
-    fun loadNextAccommodationPage() {
+    fun loadNextAccommodationPageAtHome() {
         // 최대 4까지 4->1
-        _accommodationPage.value = if (_accommodationPage.value >= 4) 1 else _accommodationPage.value + 1
+        _accommodationPageAtHome.value = if (_accommodationPageAtHome.value >= 4) 1 else _accommodationPageAtHome.value + 1
     }
     // 숙소 이전페이지
-    fun loadPreAccommodationPage() {
-        _accommodationPage.value--
+    fun loadPreAccommodationPageAtHome() {
+        _accommodationPageAtHome.value--
     }
 
     // 홈에서 공공데이터와 fireStore content 컬렉션을 합쳐 보여주는 메서드
@@ -218,6 +206,10 @@ class PopularCityViewModel @Inject constructor(
     }
 
     val attractionList = MutableStateFlow<List<UnifiedSpotItem>>(emptyList())
+    val restaurantList = MutableStateFlow<List<UnifiedSpotItem>>(emptyList())
+    val accommodationList = MutableStateFlow<List<UnifiedSpotItem>>(emptyList())
+
+
     private fun createUnifiedSpotItemListFlow(
         contentTypeId: String,
         pageFlow: MutableStateFlow<Int>,
@@ -273,16 +265,43 @@ class PopularCityViewModel @Inject constructor(
         }
     }
 
+    // 관광지 페이지 넘겨 리스트에 받아오기
     fun nextAttraction() {
         Log.d("nextAttraction","nextAttraction()")
-        _page.value++
+        _attractionPage.value++
     }
+
+    // 식당 페이지 넘겨 리스트에 받아오기
+    fun nextRestaurant() {
+        Log.d("nextRestaurant","nextRestaurant()")
+        _restaurantPage.value++
+    }
+
+    // 숙소 페이지 넘겨 리스트에 받아오기
+    fun nextAccommodation() {
+        Log.d("nextAccommodation","nextAccommodation()")
+        _accommodationPage.value++
+    }
+
+
 
     init {
         createUnifiedSpotItemListFlow(
             contentTypeId = ATTRACTION_CONTENT_TYPE_ID,
-            pageFlow = _page,
+            pageFlow = _attractionPage,
             currentList = attractionList
+        )
+
+        createUnifiedSpotItemListFlow(
+            contentTypeId = RESTAURANT_CONTENT_TYPE_ID,
+            pageFlow = _restaurantPage,
+            currentList = restaurantList
+        )
+
+        createUnifiedSpotItemListFlow(
+            contentTypeId = ACCOMMODATION_CONTENT_TYPE_ID,
+            pageFlow = _accommodationPage,
+            currentList = accommodationList
         )
     }
 

@@ -19,8 +19,10 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.lion.a02_boardcloneproject.component.CustomTopAppBar
 import com.lion.wandertrip.R
 import com.lion.wandertrip.presentation.popular_city_page.components.LazyRowPageTap
+import com.lion.wandertrip.presentation.popular_city_page.components.PopularCityAccommodation
 import com.lion.wandertrip.presentation.popular_city_page.components.PopularCityAttraction
 import com.lion.wandertrip.presentation.popular_city_page.components.PopularCityHome
+import com.lion.wandertrip.presentation.popular_city_page.components.PopularCityRestaurant
 import com.lion.wandertrip.util.PopularCityTap
 
 @Composable
@@ -67,8 +69,15 @@ fun PopularCityScreen(
                 PopularCityTap.POPULAR_CITY_TAP_ATTRACTION.num -> {
                     PopularCityAttraction(viewModel)
                 }
-                PopularCityTap.POPULAR_CITY_TAP_RESTAURANT.num -> {}
-                PopularCityTap.POPULAR_CITY_TAP_ACCOMMODATION.num -> {}
+
+                PopularCityTap.POPULAR_CITY_TAP_RESTAURANT.num -> {
+                    PopularCityRestaurant(viewModel)
+                }
+
+                PopularCityTap.POPULAR_CITY_TAP_ACCOMMODATION.num -> {
+                    PopularCityAccommodation(viewModel)
+                }
+
                 PopularCityTap.POPULAR_CITY_TAP_TRIP_NOTE.num -> {}
 
 

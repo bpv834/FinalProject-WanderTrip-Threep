@@ -1,5 +1,6 @@
 package com.lion.wandertrip.presentation.popular_city_page.components
 
+
 import android.util.Log
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
@@ -20,10 +21,10 @@ import com.lion.wandertrip.util.CustomFont
 import kotlinx.coroutines.flow.distinctUntilChanged
 
 @Composable
-fun PopularCityAttraction(
+fun PopularCityRestaurant(
     viewModel: PopularCityViewModel
 ) {
-    val attractionList by viewModel.attractionList.collectAsState()
+    val restaurantList by viewModel.restaurantList.collectAsState()
     val listState = rememberLazyListState() // 스크롤 상태
 
     // 마지막 아이템에 도달했는지 판단
@@ -41,8 +42,8 @@ fun PopularCityAttraction(
             .distinctUntilChanged()
             .collect { isAtEnd ->
                 if (isAtEnd) {
-                    Log.d("PopularCityAttraction", "스크롤 마지막 도달 → 다음 페이지 요청")
-                    viewModel.nextAttraction()
+                    Log.d("nextRestaurant", "스크롤 마지막 도달 → 다음 페이지 요청")
+                    viewModel.nextRestaurant()
                 }
             }
     }
@@ -50,15 +51,15 @@ fun PopularCityAttraction(
     LazyColumn(state = listState) {
         item {
             Text(
-                text = "관광지 목록 : ${viewModel.totalAttractionCount.value}",
+                text = "식당 목록 : ${viewModel.totalRestaurantCount.value}",
                 fontFamily = CustomFont.customFontBold,
                 fontSize = 20.sp,
                 modifier = Modifier.padding(bottom = 6.dp)
             )
         }
 
-        items(attractionList.size) { index ->
-            val item = attractionList[index]
+        items(restaurantList.size) { index ->
+            val item = restaurantList[index]
             CityTripSpotItem(item, {}, viewModel, true)
         }
     }

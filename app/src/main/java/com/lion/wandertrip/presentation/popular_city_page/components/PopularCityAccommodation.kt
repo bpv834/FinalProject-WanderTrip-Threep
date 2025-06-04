@@ -20,10 +20,10 @@ import com.lion.wandertrip.util.CustomFont
 import kotlinx.coroutines.flow.distinctUntilChanged
 
 @Composable
-fun PopularCityAttraction(
+fun PopularCityAccommodation(
     viewModel: PopularCityViewModel
 ) {
-    val attractionList by viewModel.attractionList.collectAsState()
+    val accommodationList by viewModel.accommodationList.collectAsState()
     val listState = rememberLazyListState() // 스크롤 상태
 
     // 마지막 아이템에 도달했는지 판단
@@ -41,8 +41,8 @@ fun PopularCityAttraction(
             .distinctUntilChanged()
             .collect { isAtEnd ->
                 if (isAtEnd) {
-                    Log.d("PopularCityAttraction", "스크롤 마지막 도달 → 다음 페이지 요청")
-                    viewModel.nextAttraction()
+                    Log.d("nextAccommodation", "스크롤 마지막 도달 → 다음 페이지 요청")
+                    viewModel.nextAccommodation()
                 }
             }
     }
@@ -50,15 +50,15 @@ fun PopularCityAttraction(
     LazyColumn(state = listState) {
         item {
             Text(
-                text = "관광지 목록 : ${viewModel.totalAttractionCount.value}",
+                text = "숙소 목록 : ${viewModel.totalAccommodationCount.value}",
                 fontFamily = CustomFont.customFontBold,
                 fontSize = 20.sp,
                 modifier = Modifier.padding(bottom = 6.dp)
             )
         }
 
-        items(attractionList.size) { index ->
-            val item = attractionList[index]
+        items(accommodationList.size) { index ->
+            val item = accommodationList[index]
             CityTripSpotItem(item, {}, viewModel, true)
         }
     }

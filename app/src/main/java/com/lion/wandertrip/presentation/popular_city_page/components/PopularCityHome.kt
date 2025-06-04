@@ -45,8 +45,8 @@ fun PopularCityHome(
                     .fillMaxWidth()
                     .background(Color.White)
                     .padding(8.dp),
-                onSwipeLeft = { viewModel.loadNextAttractionPage() },
-                onSwipeRight = { viewModel.loadPreAttractionPage() },
+                onSwipeLeft = { viewModel.loadNextAttractionPageAtHome() },
+                onSwipeRight = { viewModel.loadPreAttractionPageAtHome() },
                 content = {
                     Column {
                         attractionList.forEach { item ->
@@ -77,8 +77,8 @@ fun PopularCityHome(
                     .fillMaxWidth()
                     .background(Color.White)
                     .padding(8.dp),
-                onSwipeLeft = { viewModel.loadNextRestaurantPage() },
-                onSwipeRight = { viewModel.loadPreRestaurantPage() },
+                onSwipeLeft = { viewModel.loadNextRestaurantPageAtHome() },
+                onSwipeRight = { viewModel.loadPreRestaurantPageAtHome() },
                 content = {
                     Column {
                         restaurantList.forEach { item ->
@@ -107,8 +107,8 @@ fun PopularCityHome(
                    .fillMaxWidth()
                    .background(Color.White)
                    .padding(8.dp),
-               onSwipeLeft = { viewModel.loadNextAccommodationPage() },
-               onSwipeRight = { viewModel.loadPreAccommodationPage() },
+               onSwipeLeft = { viewModel.loadNextAccommodationPageAtHome() },
+               onSwipeRight = { viewModel.loadPreAccommodationPageAtHome() },
                content = {
                    Column {
                        accommodationList.forEach { item ->
