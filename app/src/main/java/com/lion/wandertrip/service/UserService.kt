@@ -9,6 +9,8 @@ import com.lion.wandertrip.repository.UserRepository
 import com.lion.wandertrip.util.LoginResult
 import com.lion.wandertrip.util.UserState
 import com.lion.wandertrip.vo.UserVO
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.callbackFlow
 
 
 class UserService (val userRepository: UserRepository) {
@@ -210,6 +212,11 @@ class UserService (val userRepository: UserRepository) {
     // 유저컬렉션에서 스케줄 서브컬렉션의 스케줄 문서 삭제
     suspend fun deleteTripScheduleItem(userDocId: String, tripScheduleDocId: String) {
         return userRepository.deleteTripScheduleItem(userDocId,tripScheduleDocId)
+    }
+
+    // 유저 좋아요 목록 플로우 가져오기
+    fun getUserLikeListFlow(userDocId: String): Flow<List<String>> {
+        return userRepository.getUserLikeListFlow(userDocId)
     }
 
 }

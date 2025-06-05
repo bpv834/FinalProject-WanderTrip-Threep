@@ -59,7 +59,7 @@ fun PopularCityAccommodation(
 
         items(accommodationList.size) { index ->
             val item = accommodationList[index]
-            CityTripSpotItem(item, {}, viewModel, true)
+            CityTripSpotItem(item, {}, viewModel, true, { viewModel.onClickTrip(item.publicData.contentId?:"") })
         }
     }
 }

@@ -1,6 +1,5 @@
 package com.lion.wandertrip.presentation.popular_city_page.components
 
-
 import android.util.Log
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
@@ -16,15 +15,17 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.lion.wandertrip.presentation.bottom.home_page.components.PopularTripNoteItem
+import com.lion.wandertrip.presentation.my_trip_note.components.TripNoteItem
 import com.lion.wandertrip.presentation.popular_city_page.PopularCityViewModel
 import com.lion.wandertrip.util.CustomFont
 import kotlinx.coroutines.flow.distinctUntilChanged
 
 @Composable
-fun PopularCityRestaurant(
+fun PopularCityTripNote(
     viewModel: PopularCityViewModel
 ) {
-    val restaurantList by viewModel.restaurantList.collectAsState()
+    val tripList = viewModel.tripNoteList
     val listState = rememberLazyListState() // 스크롤 상태
 
     // 마지막 아이템에 도달했는지 판단
@@ -42,8 +43,8 @@ fun PopularCityRestaurant(
             .distinctUntilChanged()
             .collect { isAtEnd ->
                 if (isAtEnd) {
-                    Log.d("nextRestaurant", "스크롤 마지막 도달 → 다음 페이지 요청")
-                    viewModel.nextRestaurant()
+                    /*Log.d("PopularCityTripNote", "스크롤 마지막 도달 → 다음 페이지 요청")
+                    viewModel.nextAttraction()*/
                 }
             }
     }
@@ -51,16 +52,16 @@ fun PopularCityRestaurant(
     LazyColumn(state = listState) {
         item {
             Text(
-                text = "식당 목록 : ${viewModel.totalRestaurantCount.value}",
+                text = "여행기 목록 : ${viewModel.tripNoteList.size}",
                 fontFamily = CustomFont.customFontBold,
                 fontSize = 20.sp,
                 modifier = Modifier.padding(bottom = 6.dp)
             )
         }
 
-        items(restaurantList.size) { index ->
-            val item = restaurantList[index]
-            CityTripSpotItem(item, {}, viewModel, true, { viewModel.onClickTrip(item.publicData.contentId?:"") })
+        items(tripList.size) { index ->
+            val item = tripList[index]
+            PopularTripNoteItem(item, { viewModel.onClickTripNote(item.tripNoteDocumentId) })
         }
     }
 }

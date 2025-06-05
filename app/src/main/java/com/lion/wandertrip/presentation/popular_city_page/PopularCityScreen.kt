@@ -23,6 +23,7 @@ import com.lion.wandertrip.presentation.popular_city_page.components.PopularCity
 import com.lion.wandertrip.presentation.popular_city_page.components.PopularCityAttraction
 import com.lion.wandertrip.presentation.popular_city_page.components.PopularCityHome
 import com.lion.wandertrip.presentation.popular_city_page.components.PopularCityRestaurant
+import com.lion.wandertrip.presentation.popular_city_page.components.PopularCityTripNote
 import com.lion.wandertrip.util.PopularCityTap
 
 @Composable
@@ -38,6 +39,7 @@ fun PopularCityScreen(
     val attractionList by viewModel.attractionListAtHome.collectAsState()
     val accommodationList by viewModel.accommodationListAtHome.collectAsState()
     val popularCityState by viewModel.tapViewFlow.collectAsState()
+    val userLikeList by viewModel.userLikeList.collectAsState()
     LaunchedEffect(Unit) {
     }
     Scaffold(
@@ -78,7 +80,9 @@ fun PopularCityScreen(
                     PopularCityAccommodation(viewModel)
                 }
 
-                PopularCityTap.POPULAR_CITY_TAP_TRIP_NOTE.num -> {}
+                PopularCityTap.POPULAR_CITY_TAP_TRIP_NOTE.num -> {
+                    PopularCityTripNote(viewModel)
+                }
 
 
             }

@@ -15,6 +15,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.lion.a02_boardcloneproject.component.CustomDividerComponent
+import com.lion.wandertrip.presentation.bottom.home_page.components.PopularTripNoteItem
 import com.lion.wandertrip.presentation.popular_city_page.PopularCityViewModel
 import com.lion.wandertrip.util.CustomFont
 
@@ -26,8 +27,26 @@ fun PopularCityHome(
     val restaurantList by viewModel.restaurantListAtHome.collectAsState()
     val attractionList by viewModel.attractionListAtHome.collectAsState()
     val accommodationList by viewModel.accommodationListAtHome.collectAsState()
+    val tripNoteList = viewModel.tripNoteList
 
     LazyColumn {
+        if(tripNoteList.size!=0)
+        item {
+            Text(
+                text = "추천 여행기",
+                fontFamily = CustomFont.customFontBold,
+                fontSize = 20.sp,
+                modifier = Modifier.padding(bottom = 6.dp)
+            )
+        }
+
+        // 최대 10개 제한
+        items(minOf(tripNoteList.size, 10)) { index ->
+            val item = tripNoteList[index]
+            PopularTripNoteItem(item, {viewModel.onClickTripNote(item.tripNoteDocumentId)})
+        }
+
+
         item {
             Text(
                 text = "추천 관광지",
@@ -50,7 +69,7 @@ fun PopularCityHome(
                 content = {
                     Column {
                         attractionList.forEach { item ->
-                            CityTripSpotItem(item, {}, viewModel, true)
+                            CityTripSpotItem(item, {}, viewModel, true, { viewModel.onClickTrip(item.publicData.contentId?:"") })
                         }
                     }
                 }
@@ -82,7 +101,7 @@ fun PopularCityHome(
                 content = {
                     Column {
                         restaurantList.forEach { item ->
-                            CityTripSpotItem(item, {}, viewModel, true)
+                            CityTripSpotItem(item, {}, viewModel, true, { viewModel.onClickTrip(item.publicData.contentId?:"") })
                         }
                     }
                 }
@@ -112,7 +131,7 @@ fun PopularCityHome(
                content = {
                    Column {
                        accommodationList.forEach { item ->
-                           CityTripSpotItem(item, {}, viewModel, true)
+                           CityTripSpotItem(item, {}, viewModel, true, { viewModel.onClickTrip(item.publicData.contentId?:"") })
                        }
                    }
                }

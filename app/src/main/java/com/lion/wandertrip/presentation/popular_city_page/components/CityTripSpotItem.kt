@@ -47,12 +47,13 @@ fun CityTripSpotItem(
     onFavoriteClick: (String) -> Unit,
     viewModel: PopularCityViewModel,
     isFavorite: Boolean,
+    onClickItem : ()->Unit,
 ) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .padding(6.dp)
-            .clickable { },
+            .clickable { onClickItem()},
         verticalAlignment = Alignment.CenterVertically
     ) {
         Box(

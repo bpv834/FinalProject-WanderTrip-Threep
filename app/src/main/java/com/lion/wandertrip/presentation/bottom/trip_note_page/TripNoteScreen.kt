@@ -104,20 +104,10 @@ fun TripNoteScreen(
             ) {
 
                 itemsIndexed(tripNoteViewModel.tripNoteList) { index, tripNote ->
-
-                    Card(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 10.dp),
-                        shape = RoundedCornerShape(14.dp),
-                        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
-                        colors = CardDefaults.cardColors(Gray0)
-                    ) {
                         TripNoteItem(
                             tripItem = tripNoteViewModel.tripNoteList[index],
                             onItemClick = { tripNoteViewModel.listItemOnClick(tripNoteViewModel.tripNoteList[index].tripNoteDocumentId) }
                         )
-                    }
                 }
             }
         }

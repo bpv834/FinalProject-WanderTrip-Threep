@@ -37,7 +37,7 @@ import com.skydoves.landscapist.glide.GlideImage
 @Composable
 fun PopularTripNoteItem(
     tripItem: TripNoteModel,
-    onItemClick: () -> Unit = {}
+    onItemClick: () -> Unit
 ) {
     Card(
         modifier = Modifier

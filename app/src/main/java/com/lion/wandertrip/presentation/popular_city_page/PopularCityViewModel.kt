@@ -2,7 +2,9 @@ package com.lion.wandertrip.presentation.popular_city_page
 
 import android.content.Context
 import android.util.Log
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -13,10 +15,14 @@ import com.lion.wandertrip.model.UnifiedSpotItem
 import com.lion.wandertrip.service.ContentsService
 import com.lion.wandertrip.service.TripLocationBasedItemService
 import com.lion.wandertrip.service.TripNoteService
+import com.lion.wandertrip.service.UserService
 import com.lion.wandertrip.util.ContentTypeId
+import com.lion.wandertrip.util.MainScreenName
 import com.lion.wandertrip.util.PopularCityTap
+import com.lion.wandertrip.util.TripNoteScreenName
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -32,20 +38,26 @@ class PopularCityViewModel @Inject constructor(
     val tripNoteService: TripNoteService,
     val contentsService: ContentsService,
     val tripLocationBasedItemService: TripLocationBasedItemService,
+    val userService: UserService,
     private val savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
 
     val tripApplication = context as TripApplication
 
-    private val _tripNoteList = MutableStateFlow<List<TripNoteModel>>(emptyList())
-    val tripNoteList: StateFlow<List<TripNoteModel>> get() = _tripNoteList
+    // mutableStateList 타입 ->SnapshotStateList
+    private val _tripNoteList = mutableStateListOf<TripNoteModel>()
+    val tripNoteList: SnapshotStateList<TripNoteModel> get() = _tripNoteList
 
-    fun getTripNoteList() {
+
+    fun getTripNoteListByCity() {
         viewModelScope.launch {
-            val result = tripNoteService.gettingTripNoteList()
-            _tripNoteList.value = result
+            // 지역 여행기 스크랩 내림차 정렬
+            _tripNoteList.addAll(
+                tripNoteService.gettingTripNoteByCityName(initialCityName)
+                    .sortedByDescending { it.tripNoteScrapCount })
         }
+        //Log.d("getTripNoteListByCity","${_tripNoteList.joinToString(" ")}")
     }
 
     // ViewModel 내부에 작성
@@ -59,16 +71,24 @@ class PopularCityViewModel @Inject constructor(
     private var initialLat: String = savedStateHandle.get<String>("lat") ?: ""
     private var initialLng: String = savedStateHandle.get<String>("lng") ?: ""
     private var initialRadius: String = savedStateHandle.get<String>("radius") ?: ""
-    private var cityName: String = savedStateHandle.get<String>("cityName") ?: ""
+    private var initialCityName: String = savedStateHandle.get<String>("cityName") ?: ""
+
+    // 좋아요 목록 상태 저장 변수
+    private val _userLikeList: StateFlow<List<String>> =
+        userService.getUserLikeListFlow(tripApplication.loginUserModel.userDocId)
+            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
+    val userLikeList: StateFlow<List<String>> = _userLikeList
 
 
     // 뷰페이저 상태 저장 변수
-    private val _tapViewFlow = MutableStateFlow(PopularCityTap.POPULAR_CITY_TAP_HOME.num) // 0 -> 홈 1->관광지 2-> 식당 3-> 숙소 4-> 여행기
+    private val _tapViewFlow =
+        MutableStateFlow(PopularCityTap.POPULAR_CITY_TAP_HOME.num) // 0 -> 홈 1->관광지 2-> 식당 3-> 숙소 4-> 여행기
     val tapViewFlow: StateFlow<Int> = _tapViewFlow
 
     // 뷰페이저 상태 전환 메서드
-    fun changeState(idx : Int){
-        _tapViewFlow.value=idx
+    fun changeState(idx: Int) {
+        _tapViewFlow.value = idx
     }
 
     // StateFlow 타입의 <contentId , Model>Map 변수
@@ -81,19 +101,24 @@ class PopularCityViewModel @Inject constructor(
     // 관광지 타입 변수
     private val ATTRACTION_CONTENT_TYPE_ID =
         ContentTypeId.TOURIST_ATTRACTION.contentTypeCode.toString()
+
     // 홈에서 사용하는 관광지 페이지 변수
     private val _attractionPageAtHome = MutableStateFlow(1)
-    val attractionPageAtHome : StateFlow<Int> get() = _attractionPageAtHome
+    val attractionPageAtHome: StateFlow<Int> = _attractionPageAtHome
+
     // 홈에서 사용하는 관광지 리스트
     val attractionListAtHome: StateFlow<List<UnifiedSpotItem>> =
         createUnifiedSpotItemListFlowAtHome(ATTRACTION_CONTENT_TYPE_ID, _attractionPageAtHome)
 
     // 관광지 에서 사용하는 페이지 변수
     private val _attractionPage = MutableStateFlow(1)
+
     // 식당 에서 사용하는 페이지 변수
     private val _restaurantPage = MutableStateFlow(1)
+
     //  숙소에서 사용하는 페이지 변수
     private val _accommodationPage = MutableStateFlow(1)
+
     //  여행기에서 사용하는 페이지 변수
     private val _tripNotePage = MutableStateFlow(1)
 
@@ -101,8 +126,10 @@ class PopularCityViewModel @Inject constructor(
     // 관광지 다음페이지
     fun loadNextAttractionPageAtHome() {
         // 최대 4까지 4->1
-        _attractionPageAtHome.value = if (_attractionPageAtHome.value >= 4) 1 else _attractionPageAtHome.value + 1
+        _attractionPageAtHome.value =
+            if (_attractionPageAtHome.value >= 4) 1 else _attractionPageAtHome.value + 1
     }
+
     // 관광지 이전페이지
     fun loadPreAttractionPageAtHome() {
         _attractionPageAtHome.value--
@@ -111,9 +138,11 @@ class PopularCityViewModel @Inject constructor(
 
     // 식당 컨텐트 타입 변수
     private val RESTAURANT_CONTENT_TYPE_ID = ContentTypeId.RESTAURANT.contentTypeCode.toString()
+
     // 식당 페이지 변수
     private val _restaurantPageAtHome = MutableStateFlow(1)
-    val restaurantPageAtHome : StateFlow<Int> get() = _restaurantPageAtHome
+    val restaurantPageAtHome: StateFlow<Int> get() = _restaurantPageAtHome
+
     // 홈에서 사용하는 식당 리스트
     val restaurantListAtHome: StateFlow<List<UnifiedSpotItem>> =
         createUnifiedSpotItemListFlowAtHome(RESTAURANT_CONTENT_TYPE_ID, _restaurantPageAtHome)
@@ -122,8 +151,10 @@ class PopularCityViewModel @Inject constructor(
     // 식당 다음페이지
     fun loadNextRestaurantPageAtHome() {
         // 최대 4까지 4->1
-        _restaurantPageAtHome.value = if (_restaurantPageAtHome.value >= 4) 1 else _restaurantPageAtHome.value + 1
+        _restaurantPageAtHome.value =
+            if (_restaurantPageAtHome.value >= 4) 1 else _restaurantPageAtHome.value + 1
     }
+
     // 식당 이전페이지
     fun loadPreRestaurantPageAtHome() {
         _restaurantPageAtHome.value--
@@ -132,9 +163,11 @@ class PopularCityViewModel @Inject constructor(
     // 숙소 타입 저장 변수
     private val ACCOMMODATION_CONTENT_TYPE_ID =
         ContentTypeId.ACCOMMODATION.contentTypeCode.toString()
+
     // 홈에서 사용하는 숙소 페이지 저장 변수
     private val _accommodationPageAtHome = MutableStateFlow(1)
-    val accommodationPageAtHome : StateFlow<Int> get() = _accommodationPageAtHome
+    val accommodationPageAtHome: StateFlow<Int> get() = _accommodationPageAtHome
+
     // 홈에서 사용하는 숙소 리스트
     val accommodationListAtHome: StateFlow<List<UnifiedSpotItem>> =
         createUnifiedSpotItemListFlowAtHome(ACCOMMODATION_CONTENT_TYPE_ID, _accommodationPageAtHome)
@@ -143,8 +176,10 @@ class PopularCityViewModel @Inject constructor(
     // 숙소 다음페이지
     fun loadNextAccommodationPageAtHome() {
         // 최대 4까지 4->1
-        _accommodationPageAtHome.value = if (_accommodationPageAtHome.value >= 4) 1 else _accommodationPageAtHome.value + 1
+        _accommodationPageAtHome.value =
+            if (_accommodationPageAtHome.value >= 4) 1 else _accommodationPageAtHome.value + 1
     }
+
     // 숙소 이전페이지
     fun loadPreAccommodationPageAtHome() {
         _accommodationPageAtHome.value--
@@ -160,27 +195,35 @@ class PopularCityViewModel @Inject constructor(
             pageFlow,
             allContentsMapFlow,
 
-        ) {page, allContentsMap ->
-           // 내용이 존재할때
+            ) { page, allContentsMap ->
+            // 내용이 존재할때
             if (initialLat.isNotBlank() && initialLng.isNotBlank() && initialRadius.isNotBlank()) {
                 //Log.d("createUnifiedSpotItemListFlow","$initialLat $initialLng $contentTypeId $page $initialRadius")
-               // 공공데이터 리스트와 토탈개수를 가져온다
-                val (publicItemList,totalCount) =    tripLocationBasedItemService.gettingTripLocationBasedItemList(
+                // 공공데이터 리스트와 토탈개수를 가져온다
+                val (publicItemList, totalCount) = tripLocationBasedItemService.gettingTripLocationBasedItemList(
                     lat = initialLat,
                     lng = initialLng,
                     contentTypeId = contentTypeId,
                     page = page,
                     radius = initialRadius,
-                    numOfRows= 4
+                    numOfRows = 4
                 )
                 // 토탈개수 저장
-                when(contentTypeId){
-                    ATTRACTION_CONTENT_TYPE_ID->{totalAttractionCount.value=totalCount}
-                    RESTAURANT_CONTENT_TYPE_ID->{totalRestaurantCount.value = totalCount}
-                    ACCOMMODATION_CONTENT_TYPE_ID->{totalAccommodationCount.value = totalCount}
+                when (contentTypeId) {
+                    ATTRACTION_CONTENT_TYPE_ID -> {
+                        totalAttractionCount.value = totalCount
+                    }
+
+                    RESTAURANT_CONTENT_TYPE_ID -> {
+                        totalRestaurantCount.value = totalCount
+                    }
+
+                    ACCOMMODATION_CONTENT_TYPE_ID -> {
+                        totalAccommodationCount.value = totalCount
+                    }
                 }
-             /*   Log.d("createUnifiedSpotItemListFlow","${allContentsMap} ")
-                Log.d("createUnifiedSpotItemListFlow","$publicItemList ")*/
+                /*   Log.d("createUnifiedSpotItemListFlow","${allContentsMap} ")
+                   Log.d("createUnifiedSpotItemListFlow","$publicItemList ")*/
 
 
                 publicItemList.map { publicItem ->
@@ -267,22 +310,21 @@ class PopularCityViewModel @Inject constructor(
 
     // 관광지 페이지 넘겨 리스트에 받아오기
     fun nextAttraction() {
-        Log.d("nextAttraction","nextAttraction()")
+        Log.d("nextAttraction", "nextAttraction()")
         _attractionPage.value++
     }
 
     // 식당 페이지 넘겨 리스트에 받아오기
     fun nextRestaurant() {
-        Log.d("nextRestaurant","nextRestaurant()")
+        Log.d("nextRestaurant", "nextRestaurant()")
         _restaurantPage.value++
     }
 
     // 숙소 페이지 넘겨 리스트에 받아오기
     fun nextAccommodation() {
-        Log.d("nextAccommodation","nextAccommodation()")
+        Log.d("nextAccommodation", "nextAccommodation()")
         _accommodationPage.value++
     }
-
 
 
     init {
@@ -303,6 +345,20 @@ class PopularCityViewModel @Inject constructor(
             pageFlow = _accommodationPage,
             currentList = accommodationList
         )
+
+        getTripNoteListByCity()
+
+
+    }
+
+    // 관광지 상세 페이지 이동
+    fun onClickTrip(contentId: String) {
+        tripApplication.navHostController.navigate("${MainScreenName.MAIN_SCREEN_DETAIL.name}/$contentId")
+    }
+
+    // 여행기 상세 페이지 이동
+    fun onClickTripNote(documentId: String) {
+        tripApplication.navHostController.navigate("${TripNoteScreenName.TRIP_NOTE_DETAIL.name}/${documentId}")
     }
 
     /*
@@ -320,7 +376,6 @@ class PopularCityViewModel @Inject constructor(
         }
     }
 */
-
 
 
 }

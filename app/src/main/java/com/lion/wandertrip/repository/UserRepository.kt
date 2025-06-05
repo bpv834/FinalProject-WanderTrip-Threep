@@ -8,6 +8,9 @@ import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.storage.StorageException
 import com.lion.wandertrip.util.UserState
 import com.lion.wandertrip.vo.UserVO
+import kotlinx.coroutines.channels.awaitClose
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.tasks.await
 import java.io.File
 
@@ -497,5 +500,32 @@ class UserRepository {
         }
     }
 
+    // 유저 좋아요 목록 플로우 가져오기
+    fun getUserLikeListFlow(userDocId: String): Flow<List<String>> = callbackFlow {
+        val firestore = FirebaseFirestore.getInstance()
+        val collectionReference = firestore
+            .collection("UserData")
+            .document(userDocId)
+            .collection("UserLikeList")
+
+        val listenerRegistration = collectionReference.addSnapshotListener { snapshot, exception ->
+            if (exception != null) {
+                Log.e("getUserLikeListFlow", "에러 발생", exception)
+                trySend(emptyList())  // 에러 시 빈 리스트 보내기
+                return@addSnapshotListener
+            }
+
+            if (snapshot != null) {
+                val likeList = snapshot.documents.mapNotNull { it.getString("contentId") }
+                Log.d("getUserLikeListFlow", "Flow로 받은 contentId 리스트: $likeList")
+                trySend(likeList)
+            }
+        }
+
+        // flow가 종료되면 리스너 정리
+        awaitClose {
+            listenerRegistration.remove()
+        }
+    }
 }
 

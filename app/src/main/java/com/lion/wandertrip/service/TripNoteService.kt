@@ -228,4 +228,27 @@ class TripNoteService @Inject constructor(val tripNoteRepository: TripNoteReposi
     suspend fun uploadTripNoteImageList(sourceFilePath: List<String>, serverFilePath: MutableList<String>, noteTitle: String) :List<String>  {
         return tripNoteRepository.uploadTripNoteImageList(sourceFilePath,serverFilePath,noteTitle)
     }
+
+    // 도시에 맞는 여행기 가져오기
+    suspend fun gettingTripNoteByCityName(city : String) : List<TripNoteModel>{
+        // 여행기 정보를 가져온다.
+        val tripNoteList = mutableListOf<TripNoteModel>()
+        val resultList = tripNoteRepository.gettingTripNoteList()
+
+        Log.d("gettingTripNoteByCityName","${resultList.joinToString(" ")}")
+
+
+        resultList.forEach {
+            val tripNoteVO = it["tripNoteVO"] as TripNoteVO
+            val documentId = it["documentId"] as String
+            val tripNoteModel = tripNoteVO.toTripNoteModel(documentId)
+            tripNoteModel.tripNoteDocumentId = documentId
+            tripNoteList.add(tripNoteModel)
+        }
+
+        Log.d("gettingTripNoteByCityName","${tripNoteList.filter { it.tripNoteTitle.contains(city) }}")
+        return tripNoteList.filter { it.tripNoteTitle.contains(city) }
+
+
+    }
 }
