@@ -69,7 +69,7 @@ fun PopularCityHome(
                 content = {
                     Column {
                         attractionList.forEach { item ->
-                            CityTripSpotItem(item, {}, viewModel, true, { viewModel.onClickTrip(item.publicData.contentId?:"") })
+                            CityTripSpotItem(item, {viewModel.toggleFavorite(item.publicData.contentId?:"")}, viewModel, viewModel.userLikeList.value.contains(item.publicData.contentId), { viewModel.onClickTrip(item.publicData.contentId?:"") })
                         }
                     }
                 }
@@ -101,7 +101,7 @@ fun PopularCityHome(
                 content = {
                     Column {
                         restaurantList.forEach { item ->
-                            CityTripSpotItem(item, {}, viewModel, true, { viewModel.onClickTrip(item.publicData.contentId?:"") })
+                            CityTripSpotItem(item, {viewModel.toggleFavorite(item.publicData.contentId?:"")}, viewModel, viewModel.userLikeList.value.contains(item.publicData.contentId), { viewModel.onClickTrip(item.publicData.contentId?:"") })
                         }
                     }
                 }
@@ -131,7 +131,7 @@ fun PopularCityHome(
                content = {
                    Column {
                        accommodationList.forEach { item ->
-                           CityTripSpotItem(item, {}, viewModel, true, { viewModel.onClickTrip(item.publicData.contentId?:"") })
+                           CityTripSpotItem(item, {viewModel.toggleFavorite(item.publicData.contentId?:"")}, viewModel, viewModel.userLikeList.value.contains(item.publicData.contentId), { viewModel.onClickTrip(item.publicData.contentId?:"") })
                        }
                    }
                }

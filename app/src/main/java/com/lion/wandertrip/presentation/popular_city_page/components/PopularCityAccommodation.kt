@@ -25,6 +25,7 @@ fun PopularCityAccommodation(
 ) {
     val accommodationList by viewModel.accommodationList.collectAsState()
     val listState = rememberLazyListState() // 스크롤 상태
+    val userLikeList by viewModel.userLikeList.collectAsState()
 
     // 마지막 아이템에 도달했는지 판단
     val shouldLoadMore = remember {
@@ -59,7 +60,7 @@ fun PopularCityAccommodation(
 
         items(accommodationList.size) { index ->
             val item = accommodationList[index]
-            CityTripSpotItem(item, {}, viewModel, true, { viewModel.onClickTrip(item.publicData.contentId?:"") })
+            CityTripSpotItem(item, {viewModel.toggleFavorite(item.publicData.contentId?:"")}, viewModel, userLikeList.contains(item.publicData.contentId), { viewModel.onClickTrip(item.publicData.contentId?:"") })
         }
     }
 }

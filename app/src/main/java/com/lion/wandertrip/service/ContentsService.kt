@@ -38,6 +38,7 @@ class ContentsService(val contentsRepository: ContentsRepository) {
         return contentsRepository.updateContentRatingAndRatingCount(contentsDocId)
     }
 
+    // 컨텐츠 flow로 받기
     fun getContentsModelFlowByContentId(contentId: String): Flow<ContentsModel?> {
         // Repository에서 ContentsVO Flow를 받아와 ContentsModel Flow로 변환
         return contentsRepository.getContentsFlowByContentId(contentId)
@@ -47,6 +48,7 @@ class ContentsService(val contentsRepository: ContentsRepository) {
             }
     }
 
+    // 컨텐츠 리스트 flow로 받기
     fun getAllContentsModelsFlow(): Flow<List<ContentsModel>> {
         // Repository에서 모든 ContentsVO 리스트 Flow를 받아와 ContentsModel 리스트 Flow로 변환
         return contentsRepository.getAllContentsFlow()

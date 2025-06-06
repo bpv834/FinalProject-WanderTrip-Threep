@@ -22,6 +22,8 @@ import com.lion.wandertrip.util.PopularCityTap
 import com.lion.wandertrip.util.TripNoteScreenName
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -42,14 +44,14 @@ class PopularCityViewModel @Inject constructor(
     private val savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
-
+    // context
     val tripApplication = context as TripApplication
 
-    // mutableStateList 타입 ->SnapshotStateList
+    // mutableStateList 타입 ->SnapshotStateList 여행기
     private val _tripNoteList = mutableStateListOf<TripNoteModel>()
     val tripNoteList: SnapshotStateList<TripNoteModel> get() = _tripNoteList
 
-
+    // 여행기 도시 이름으로 가져오기
     fun getTripNoteListByCity() {
         viewModelScope.launch {
             // 지역 여행기 스크랩 내림차 정렬
@@ -74,11 +76,61 @@ class PopularCityViewModel @Inject constructor(
     private var initialCityName: String = savedStateHandle.get<String>("cityName") ?: ""
 
     // 좋아요 목록 상태 저장 변수
+    // screen 에서 AsCollect로 구독
     private val _userLikeList: StateFlow<List<String>> =
         userService.getUserLikeListFlow(tripApplication.loginUserModel.userDocId)
             .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
-
     val userLikeList: StateFlow<List<String>> = _userLikeList
+
+    // 관심 지역 추가, 관심 지역 카운트 증가
+    fun addLikeItem(likeItemContentId: String) {
+        viewModelScope.launch {
+            // 유저 관식목록에 추가
+            val work1 = async(Dispatchers.IO) {
+                userService.addLikeItem(tripApplication.loginUserModel.userDocId, likeItemContentId)
+            }
+            // 관심 카운트 증가
+            val work2 = async(Dispatchers.IO) {
+                userService.addLikeCnt(likeItemContentId)
+            }
+        }
+    }
+
+    // 관심 지역 삭제, 관심 지역 카운트 감소
+    fun removeLikeItem(likeItemContentId: String) {
+        viewModelScope.launch {
+            // 유저 관식목록에 제거
+
+            val work1 = async(Dispatchers.IO) {
+                userService.removeLikeItem(
+                    tripApplication.loginUserModel.userDocId,
+                    likeItemContentId
+                )
+            }
+            work1.join()
+            // 관심 카운트 감소
+
+            val work2 = async(Dispatchers.IO) {
+                userService.removeLikeCnt(likeItemContentId)
+            }
+            work2.join()
+        }
+    }
+
+    // 좋아요 버튼 누를 때 리스너
+    fun toggleFavorite(contentId: String) {
+        viewModelScope.launch {
+            val userLikeList = _userLikeList
+            val isFav = userLikeList.value.contains(contentId)
+            // t  상태일때 누르면 f로 전환
+            if (isFav) {
+                removeLikeItem(contentId)
+            } else {
+                // f  상태일때 누르면 t로 전환
+                addLikeItem(contentId)
+            }
+        }
+    }
 
 
     // 뷰페이저 상태 저장 변수
@@ -248,11 +300,12 @@ class PopularCityViewModel @Inject constructor(
 
     }
 
+    // flow 타입의 각각 리스트 변수
     val attractionList = MutableStateFlow<List<UnifiedSpotItem>>(emptyList())
     val restaurantList = MutableStateFlow<List<UnifiedSpotItem>>(emptyList())
     val accommodationList = MutableStateFlow<List<UnifiedSpotItem>>(emptyList())
 
-
+    // 공공데이터와 DB에 있는 컨텐츠를 flow로 만드는 메서드
     private fun createUnifiedSpotItemListFlow(
         contentTypeId: String,
         pageFlow: MutableStateFlow<Int>,
@@ -328,6 +381,7 @@ class PopularCityViewModel @Inject constructor(
 
 
     init {
+        // 각각 리스트 가져오기
         createUnifiedSpotItemListFlow(
             contentTypeId = ATTRACTION_CONTENT_TYPE_ID,
             pageFlow = _attractionPage,
@@ -346,6 +400,7 @@ class PopularCityViewModel @Inject constructor(
             currentList = accommodationList
         )
 
+        // 여행기 가져오기
         getTripNoteListByCity()
 
 
