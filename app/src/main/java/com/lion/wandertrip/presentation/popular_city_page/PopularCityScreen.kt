@@ -46,7 +46,7 @@ fun PopularCityScreen(
         topBar = {
             CustomTopAppBar(
                 navigationIconOnClick = {
-
+                    viewModel.onClickBackButton()
                 },
                 navigationIconImage = ImageVector.vectorResource(R.drawable.ic_arrow_back_24px),
                 title = cityName,

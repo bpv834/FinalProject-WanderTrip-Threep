@@ -416,6 +416,11 @@ class PopularCityViewModel @Inject constructor(
         tripApplication.navHostController.navigate("${TripNoteScreenName.TRIP_NOTE_DETAIL.name}/${documentId}")
     }
 
+    // 뒤로 가기
+    fun onClickBackButton() {
+        tripApplication.navHostController.popBackStack()
+    }
+
     /*
     // Composable로부터 값을 설정받는 함수 추가 (Double을 String으로 변환)
     fun setInitialLocation(lat: String, lng: String, radius: String) {
