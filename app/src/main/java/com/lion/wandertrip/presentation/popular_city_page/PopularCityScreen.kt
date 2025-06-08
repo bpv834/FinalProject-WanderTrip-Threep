@@ -35,11 +35,7 @@ fun PopularCityScreen(
     viewModel: PopularCityViewModel = hiltViewModel()
 ) {
     // 구독 설정
-    val restaurantList by viewModel.restaurantListAtHome.collectAsState()
-    val attractionList by viewModel.attractionListAtHome.collectAsState()
-    val accommodationList by viewModel.accommodationListAtHome.collectAsState()
     val popularCityState by viewModel.tapViewFlow.collectAsState()
-    val userLikeList by viewModel.userLikeList.collectAsState()
     LaunchedEffect(Unit) {
     }
     Scaffold(
@@ -83,8 +79,6 @@ fun PopularCityScreen(
                 PopularCityTap.POPULAR_CITY_TAP_TRIP_NOTE.num -> {
                     PopularCityTripNote(viewModel)
                 }
-
-
             }
         }
 

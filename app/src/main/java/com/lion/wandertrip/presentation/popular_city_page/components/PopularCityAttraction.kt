@@ -30,7 +30,7 @@ fun PopularCityAttraction(
     // 마지막 아이템에 도달했는지 판단
     val shouldLoadMore = remember {
         derivedStateOf {
-            val lastVisibleItem = listState.layoutInfo.visibleItemsInfo.lastOrNull()
+            val lastVisibleItem = listState.layoutInfo.visibleItemsInfo.lastOrNull() //listState.layoutInfo.visibleItemsInfo: 현재 화면에 보이는 아이템들 목록
             val totalItems = listState.layoutInfo.totalItemsCount
             lastVisibleItem?.index == totalItems - 1
         }
@@ -38,8 +38,8 @@ fun PopularCityAttraction(
 
     // 마지막 도달 시 페이지 요청
     LaunchedEffect(shouldLoadMore) {
-        snapshotFlow { shouldLoadMore.value }
-            .distinctUntilChanged()
+        snapshotFlow { shouldLoadMore.value } // //  Compose의 State를 Flow로 감싸서 변화가 생길 때마다 emit합니다. // 즉, shouldLoadMore.value가 true/false로 바뀔 때마다 흘러갑니다.
+            .distinctUntilChanged() //distinctUntilChanged(): 같은 값이 연속으로 나오면 무시 (예: true → true → true 방지)
             .collect { isAtEnd ->
                 if (isAtEnd) {
                     Log.d("PopularCityAttraction", "스크롤 마지막 도달 → 다음 페이지 요청")
