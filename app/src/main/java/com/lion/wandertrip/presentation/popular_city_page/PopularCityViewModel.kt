@@ -251,7 +251,8 @@ class PopularCityViewModel @Inject constructor(
             // 내용이 존재할때
             if (initialLat.isNotBlank() && initialLng.isNotBlank() && initialRadius.isNotBlank()) {
                 //Log.d("createUnifiedSpotItemListFlow","$initialLat $initialLng $contentTypeId $page $initialRadius")
-                // 공공데이터 리스트와 토탈개수를 가져온다
+                // 공공데이터 리스트와 토탈개수를 가져온다\
+
                 val (publicItemList, totalCount) = tripLocationBasedItemService.gettingTripLocationBasedItemList(
                     lat = initialLat,
                     lng = initialLng,

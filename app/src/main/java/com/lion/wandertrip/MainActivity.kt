@@ -30,6 +30,7 @@ import com.lion.wandertrip.presentation.my_review_page.MyReviewScreen
 import com.lion.wandertrip.presentation.my_trip_note.MyTripNoteScreen
 import com.lion.wandertrip.presentation.my_trip_page.MyTripScreen
 import com.lion.wandertrip.presentation.popular_city_page.PopularCityScreen
+import com.lion.wandertrip.presentation.rotate_map_page.RotateMapScreen
 import com.lion.wandertrip.presentation.schedule_add.ScheduleAddScreen
 import com.lion.wandertrip.presentation.schedule_city_select.ScheduleCitySelectScreen
 import com.lion.wandertrip.presentation.schedule_city_select.city_roulette.RouletteCityScreen
@@ -54,6 +55,7 @@ import com.lion.wandertrip.presentation.user_sign_up_page.sign_up_step3_page.Use
 import com.lion.wandertrip.ui.theme.WanderTripTheme
 import com.lion.wandertrip.util.BotNavScreenName
 import com.lion.wandertrip.util.MainScreenName
+import com.lion.wandertrip.util.RotateMapScreenName
 import com.lion.wandertrip.util.RouletteScreenName
 import com.lion.wandertrip.util.ScheduleScreenName
 import com.lion.wandertrip.util.TripNoteScreenName
@@ -308,6 +310,26 @@ fun MyApp() {
 
 
         // 룰렛 화면 /////////////////////////////////////////////////////////////////////////////////
+
+        // 지도 돌리기 화면
+        composable(
+            route = "${RotateMapScreenName.ROTATE_MAP_SCREEN.name}?" +
+                    "scheduleTitle={scheduleTitle}&scheduleStartDate={scheduleStartDate}&scheduleEndDate={scheduleEndDate}",
+            arguments = listOf(
+                navArgument("scheduleTitle") { type = NavType.StringType },
+                navArgument("scheduleStartDate") { type = NavType.LongType },
+                navArgument("scheduleEndDate") { type = NavType.LongType }
+            )
+        ) {
+            val scheduleTitle = it.arguments?.getString("scheduleTitle") ?: ""
+            val startTimestamp = it.arguments?.getLong("scheduleStartDate") ?: 0L
+            val endTimestamp = it.arguments?.getLong("scheduleEndDate") ?: 0L
+
+            val startDate = Timestamp(startTimestamp, 0)
+            val endDate = Timestamp(endTimestamp, 0)
+
+            RotateMapScreen(scheduleTitle, startDate, endDate)
+        }
 
         // 도시 룰렛 메인 화면
         composable(

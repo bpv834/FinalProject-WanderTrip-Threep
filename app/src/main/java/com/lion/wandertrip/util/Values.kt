@@ -338,7 +338,11 @@ enum class TripNoteScreenName{
     TRIP_NOTE_SELECT_DOWN,
 }
 
+enum class RotateMapScreenName{
+    // 지도 룰렛 화면
+    ROTATE_MAP_SCREEN,
 
+}
 
 enum class RouletteScreenName{
     ROULETTE_GRAPH, // ✅ 추가된 네비게이션 그래프 이름

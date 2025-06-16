@@ -13,6 +13,7 @@ import com.lion.wandertrip.service.TripScheduleService
 import com.lion.wandertrip.service.UserService
 import com.lion.wandertrip.util.AreaCode
 import com.lion.wandertrip.util.BotNavScreenName
+import com.lion.wandertrip.util.RotateMapScreenName
 import com.lion.wandertrip.util.RouletteScreenName
 import com.lion.wandertrip.util.ScheduleScreenName
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -102,6 +103,22 @@ class ScheduleCitySelectViewModel @Inject constructor(
 
         application.navHostController.navigate(
             "${RouletteScreenName.ROULETTE_CITY_SCREEN.name}?" +
+                    "scheduleTitle=$formattedTitle" +
+                    "&scheduleStartDate=$startTimestamp" +
+                    "&scheduleEndDate=$endTimestamp"
+        )
+    }
+
+    // 한반도 돌리기 화면으로 이동
+    fun moveToRotateMapScreen(scheduleTitle: String, scheduleStartDate: Timestamp, scheduleEndDate: Timestamp) {
+        // application.navHostController.navigate(RouletteScreenName.ROULETTE_CITY_SCREEN.name)
+
+        val formattedTitle = scheduleTitle
+        val startTimestamp = scheduleStartDate.seconds // 🔹 Timestamp -> Long 변환
+        val endTimestamp = scheduleEndDate.seconds // 🔹 Timestamp -> Long 변환
+
+        application.navHostController.navigate(
+            "${RotateMapScreenName.ROTATE_MAP_SCREEN.name}?" +
                     "scheduleTitle=$formattedTitle" +
                     "&scheduleStartDate=$startTimestamp" +
                     "&scheduleEndDate=$endTimestamp"
