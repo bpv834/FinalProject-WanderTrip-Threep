@@ -140,4 +140,5 @@ dependencies {
 
     implementation("org.mindrot:jbcrypt:0.4") // 유저 정보 해쉬 암호화
 
+
 }
