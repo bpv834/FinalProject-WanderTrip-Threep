@@ -17,6 +17,8 @@ class TripScheduleVO(
     var scheduleTimeStamp: Timestamp = Timestamp.now(),
     var scheduleState: Int = 1,
     var scheduleItems: List<ScheduleItemVO> = emptyList(),
+    var lat : String? =null,
+    var lng : String? =null,
 ) {
 
     fun toTripScheduleModel(): TripScheduleModel {
@@ -33,6 +35,8 @@ class TripScheduleVO(
         tripScheduleModel.scheduleTimeStamp = scheduleTimeStamp
         tripScheduleModel.scheduleState = scheduleState
         tripScheduleModel.scheduleItems = scheduleItems.map { it.toScheduleItemModel() }
+        tripScheduleModel.lat = lat
+        tripScheduleModel.lng = lng
         return tripScheduleModel
     }
 }
