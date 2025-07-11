@@ -317,6 +317,8 @@ enum class ScheduleScreenName{
     SCHEDULE_CITY_SELECT_SCREEN,
     // 일정 상세 화면
     SCHEDULE_DETAIL_SCREEN,
+    // 랜덤 일정 상세 화면
+    SCHEDULE_DETAIL_RANDOM_SCREEN,
     // 일정 항목 선택 화면
     SCHEDULE_SELECT_ITEM_SCREEN,
     // 함께 하는 친구 목록 화면

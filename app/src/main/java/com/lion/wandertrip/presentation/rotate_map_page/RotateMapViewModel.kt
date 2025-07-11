@@ -1,6 +1,9 @@
 package com.lion.wandertrip.presentation.rotate_map_page
 
 import android.content.Context
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.unit.IntSize
 import androidx.lifecycle.SavedStateHandle
@@ -11,7 +14,6 @@ import com.lion.wandertrip.TripApplication
 import com.lion.wandertrip.model.TripScheduleModel
 import com.lion.wandertrip.service.TripLocationBasedItemService
 import com.lion.wandertrip.service.TripScheduleService
-import com.lion.wandertrip.util.AreaCode
 import com.lion.wandertrip.util.BotNavScreenName
 import com.lion.wandertrip.util.ContentTypeId
 import com.lion.wandertrip.util.ScheduleScreenName
@@ -37,8 +39,22 @@ class RotateMapViewModel @Inject constructor(
     // context
     val tripApplication = context as TripApplication
 
+    // set 제한 lat 변수
+    var initLat by mutableStateOf("")
+        private set
+
+    // set 제한 lng 변수
+    var initLng by mutableStateOf("")
+        private set
+
+    // 위도경도 설정 메서드
+    fun setLatLng(lat: String, lng: String) {
+        initLat = lat
+        initLng = lng
+    }
+
     // 일정 모델
-    val tripScheduleModel = TripScheduleModel()
+    val tripScheduleModel = mutableStateOf(TripScheduleModel())
 
     // 회전상태
     private val _isSpinning = MutableStateFlow(false)
@@ -48,6 +64,7 @@ class RotateMapViewModel @Inject constructor(
     fun startSpinning() {
         _isSpinning.value = true
     }
+
     fun stopSpinning() {
         _isSpinning.value = false
     }
@@ -111,7 +128,7 @@ class RotateMapViewModel @Inject constructor(
 
         viewModelScope.launch {
             val hasAttractions = isFindAttraction(lat, lon)
-            delay(1000)
+            delay(2100)
 
             if (hasAttractions) {
                 showAttractionDialog()
@@ -156,14 +173,12 @@ class RotateMapViewModel @Inject constructor(
     }
 
     // 일정 상세 화면 으로 이동
-    fun moveToScheduleDetailScreen(areaName: String) {
-        // 도시 이름 으로 도시 코드 찾기
-        val areaCode = AreaCode.entries.find { it.areaName == areaName }?.areaCode
+    fun moveToScheduleDetailRandomScreen(lat: String, lng: String) {
 
         // 일정 상세 화면 이동
         tripApplication.navHostController.navigate(
-            "${ScheduleScreenName.SCHEDULE_DETAIL_SCREEN.name}?" +
-                    "tripScheduleDocId=${tripScheduleModel.tripScheduleDocId}&areaName=${areaName}&areaCode=${areaCode}",
+            "${ScheduleScreenName.SCHEDULE_DETAIL_RANDOM_SCREEN.name}?" +
+                    "tripScheduleDocId=${tripScheduleModel.value.tripScheduleDocId}&lat=${lat}&lng=${lng}",
         ) {
             popUpTo(BotNavScreenName.BOT_NAV_SCREEN_HOME.name) { inclusive = false }
             launchSingleTop = true
@@ -177,7 +192,8 @@ class RotateMapViewModel @Inject constructor(
 
         while (currentTimestamp.seconds <= endDate.seconds) {
             dateList.add(currentTimestamp)
-            currentTimestamp = Timestamp(currentTimestamp.seconds + 86400, 0) // 하루(24시간 = 86400초) 추가
+            currentTimestamp =
+                Timestamp(currentTimestamp.seconds + 86400, 0) // 하루(24시간 = 86400초) 추가
         }
 
         return dateList
@@ -189,33 +205,45 @@ class RotateMapViewModel @Inject constructor(
         scheduleStartDate: Timestamp,
         scheduleEndDate: Timestamp,
         areaName: String,
+        lat: String,
+        lng: String
     ) {
-        val scheduleDateList = generateDateList(scheduleStartDate, scheduleEndDate)
-        tripScheduleModel.userID = tripApplication.loginUserModel.userId
-        tripScheduleModel.userNickName = tripApplication.loginUserModel.userNickName
-        tripScheduleModel.scheduleCity = areaName
-        tripScheduleModel.scheduleTitle = scheduleTitle
-        tripScheduleModel.scheduleStartDate = scheduleStartDate
-        tripScheduleModel.scheduleEndDate = scheduleEndDate
-        tripScheduleModel.scheduleDateList = scheduleDateList
-        tripScheduleModel.scheduleInviteList += tripApplication.loginUserModel.userDocId
 
+        hideAttractionDialog()
+        hideNoAttractionDialog()
+
+        val scheduleDateList = generateDateList(scheduleStartDate, scheduleEndDate)
+
+        val tripScheduleItem = TripScheduleModel().let {
+            it.userID = tripApplication.loginUserModel.userId
+            it.userNickName = tripApplication.loginUserModel.userNickName
+            it.scheduleCity = areaName
+            it.scheduleTitle = scheduleTitle
+            it.scheduleStartDate = scheduleStartDate
+            it.scheduleEndDate = scheduleEndDate
+            it.scheduleDateList = scheduleDateList
+            it.scheduleInviteList += tripApplication.loginUserModel.userDocId
+            it.lat = lat
+            it.lng = lng
+            it
+        }
+        tripScheduleModel.value = tripScheduleItem
 
         viewModelScope.launch {
             val work = async(Dispatchers.IO) {
-                tripScheduleService.addTripSchedule(tripScheduleModel)
+                tripScheduleService.addTripSchedule(tripScheduleModel.value)
             }.await()
-            tripScheduleModel.tripScheduleDocId = work
+            tripScheduleModel.value.tripScheduleDocId = work
 
             val work2 = async(Dispatchers.IO) {
                 tripScheduleService.addTripDocIdToUserScheduleList(
                     tripApplication.loginUserModel.userDocId,
-                    tripScheduleModel.tripScheduleDocId
+                    tripScheduleModel.value.tripScheduleDocId
                 )
             }.await()
 
             // 일정 상세 화면 으로 이동
-            moveToScheduleDetailScreen(areaName)
+            moveToScheduleDetailRandomScreen(lat, lng)
         }
     }
 }

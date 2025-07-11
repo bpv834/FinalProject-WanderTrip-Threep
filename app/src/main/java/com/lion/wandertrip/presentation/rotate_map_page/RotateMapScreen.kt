@@ -45,6 +45,7 @@ fun RotateMapScreen(
     val context = viewModel.tripApplication
     val image = painterResource(id = R.drawable.img_south_korea_map)
 
+
     // ViewModel 상태
     val isSpinning by viewModel.isSpinning.collectAsState()
     val targetRotation by viewModel.targetRotation.collectAsState()
@@ -110,11 +111,13 @@ fun RotateMapScreen(
                                 relativeClick = correctedOffset
 
                                 val (lat, lon) = viewModel.toLatLng(correctedOffset)
+                                viewModel.setLatLng(lat.toString(),lon.toString())
                                 viewModel.stopSpinning()
 
                                 val current = animRotation.value % 360f
                                 val target = animRotation.value + (360f - current) + 360f
                                 viewModel.setTargetRotation(target)
+                                // 회전 종료 메서드
                                 viewModel.onRotationFinished(lat.toString(), lon.toString())
                             }
                         }
@@ -150,7 +153,7 @@ fun RotateMapScreen(
 
                     if (showAttractionDialog) {
                         TravelConfirmDialog(
-                            onYesClick = { viewModel.hideAttractionDialog() },
+                            onYesClick = { viewModel.addTripSchedule(scheduleTitle,scheduleStartDate,scheduleEndDate,"name", viewModel.initLat,viewModel.initLng)},
                             onRetryClick = { viewModel.hideAttractionDialog() },
                             onDismiss = { viewModel.hideAttractionDialog() }
                         )

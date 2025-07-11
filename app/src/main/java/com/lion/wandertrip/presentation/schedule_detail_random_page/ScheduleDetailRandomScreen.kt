@@ -31,7 +31,6 @@ import com.lion.wandertrip.ui.theme.NanumSquareRound
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ScheduleDetailRandomScreen(
-
     viewModel: ScheduleDetailRandomViewModel = hiltViewModel(),
 ) {
     val isFirstLaunch = rememberSaveable { mutableStateOf(true) } // ✅ 처음 실행 여부 저장

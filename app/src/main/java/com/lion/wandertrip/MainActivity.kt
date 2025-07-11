@@ -37,6 +37,7 @@ import com.lion.wandertrip.presentation.schedule_city_select.city_roulette.Roule
 import com.lion.wandertrip.presentation.schedule_city_select.city_roulette.roulette_city_select.RouletteCitySelectScreen
 import com.lion.wandertrip.presentation.schedule_detail_friends.ScheduleDetailFriendsScreen
 import com.lion.wandertrip.presentation.schedule_detail_page.ScheduleDetailScreen
+import com.lion.wandertrip.presentation.schedule_detail_random_page.ScheduleDetailRandomScreen
 import com.lion.wandertrip.presentation.schedule_item_review.ScheduleItemReviewScreen
 import com.lion.wandertrip.presentation.schedule_select_item.ScheduleSelectItemScreen
 import com.lion.wandertrip.presentation.schedule_select_item.roulette_item.RouletteItemScreen
@@ -256,6 +257,23 @@ fun MyApp() {
             val areaCode = it.arguments?.getInt("areaCode") ?: 0
             ScheduleDetailScreen(tripScheduleDocId, areaName, areaCode)
         }
+
+        // 일정 상세 랜덤 화면
+        composable(
+            route = "${ScheduleScreenName.SCHEDULE_DETAIL_RANDOM_SCREEN.name}?" +
+                    "tripScheduleDocId={tripScheduleDocId}&lat={lat}&lng={lng}",
+            arguments = listOf(
+                navArgument("tripScheduleDocId") { type = NavType.StringType },
+                navArgument("lat") { type = NavType.StringType },
+                navArgument("lng") { type = NavType.StringType }
+            )
+        ) {
+        /*    val tripScheduleDocId = it.arguments?.getString("tripScheduleDocId") ?: ""
+            val lat = it.arguments?.getString("lat") ?: ""
+            val lng = it.arguments?.getString("lng") ?: ""*/
+            ScheduleDetailRandomScreen()
+        }
+
 
         // 일정 항목 선택 화면
         composable(
