@@ -19,6 +19,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -53,6 +54,28 @@ class ScheduleDetailRandomViewModel @Inject constructor(
     // 이전 화면 으로 이동 (메인 일정 화면)
     fun backScreen() {
         application.navHostController.popBackStack()
+    }
+
+    init {
+        getTripSchedule()
+    }
+
+    // 일정 상세 정보 가져오기
+    fun getTripSchedule() {
+        viewModelScope.launch {
+            // isLoading.value = true // ✅ 로딩 시작
+
+            val work1 = async(Dispatchers.IO) {
+                tripScheduleService.getTripSchedule(tripScheduleDocId)
+            }.await()
+
+            if (work1 != null) {
+                tripSchedule.value = work1
+            } else {
+                Log.d("ScheduleViewModel", "해당 문서가 없습니다.")
+            }
+            _isLoading.value = false
+        }
     }
 
     // 함께 하는 친구 목록으로 이동

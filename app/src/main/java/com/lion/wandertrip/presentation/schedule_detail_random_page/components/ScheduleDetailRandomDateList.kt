@@ -96,7 +96,9 @@ fun ScheduleDetailRandomDateList(
                             viewModel = viewModel,
                             onTouch = { touched -> isMapTouched = touched },
                             mapScheduleDate = tripSchedule.scheduleDateList[index],
-                            selectedLocation = viewModel.selectedLocation.value
+                            selectedLocation =  LatLng(tripSchedule.lat?.toDouble()?:0.0,
+                                tripSchedule.lng?.toDouble()?:0.0
+                                )
                         )
                     }
                 }
@@ -332,7 +334,6 @@ fun ScheduleDetailRandomDateList(
 
             // 각 날짜 그룹 하단에 '추가' 버튼들
             item {
-
                 if (!isReorderMode) {
                     Row(
                         modifier = Modifier

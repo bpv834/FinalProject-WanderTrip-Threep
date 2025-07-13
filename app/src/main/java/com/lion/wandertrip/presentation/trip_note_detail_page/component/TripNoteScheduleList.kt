@@ -45,7 +45,7 @@ import com.lion.a02_boardcloneproject.component.CustomDividerComponent
 import com.lion.wandertrip.R
 import com.lion.wandertrip.model.TripScheduleModel
 import com.lion.wandertrip.presentation.schedule_detail_page.ScheduleDetailViewModel
-import com.lion.wandertrip.presentation.schedule_detail_page.component.ScheduleDetailDropDawn
+import com.lion.wandertrip.presentation.schedule_detail_page.component.   ScheduleDetailDropDawn
 import com.lion.wandertrip.presentation.schedule_detail_page.component.ScheduleDetailGoogleMap
 import com.lion.wandertrip.presentation.trip_note_detail_page.TripNoteDetailViewModel
 import com.lion.wandertrip.ui.theme.NanumSquareRound

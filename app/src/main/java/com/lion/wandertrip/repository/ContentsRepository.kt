@@ -180,6 +180,7 @@ class ContentsRepository {
     }
 
     // 특정 contentId에 해당하는 ContentsVO를 Flow로 반환
+    // callbackFlow는 '변경 감지를 외부 리스너에서 하고', 그 값을 Flow로 흘려주는 역할을 해줌!"
     fun getContentsFlowByContentId(contentId: String): Flow<ContentsVO?> = callbackFlow {
         val db = FirebaseFirestore.getInstance()
         val contentsCollection = db.collection("ContentsData")
@@ -200,7 +201,7 @@ class ContentsRepository {
             }
         }
         awaitClose { registration.remove() }
-    }.flowOn(Dispatchers.IO)
+    }.flowOn(Dispatchers.IO) // callbackFlow 내부 코드가 IO 스레드에서 실행되도록 지정할 수 있음
 
     // 모든 ContentsVO 리스트를 Flow로 반환 (ViewModel에서 Map 구성을 위해 필요)
     fun getAllContentsFlow(): Flow<List<ContentsVO>> = callbackFlow {

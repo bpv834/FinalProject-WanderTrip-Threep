@@ -36,8 +36,7 @@ fun ScheduleDetailRandomGoogleMap(
     // 구글 맵 카메라 상태
     val cameraPositionState = rememberCameraPositionState()
 
-    // areaName에 따른 기본 위치 설정
-    val defaultLocation = LatLng(0.0,0.0)
+    val defaultLocation = selectedLocation!!
     // 스케줄 아이템이 있다면 첫 번째 아이템의 위치
     val centerLocation = if (scheduleItems.isNotEmpty()) {
         LatLng(scheduleItems.first().itemLatitude, scheduleItems.first().itemLongitude)
