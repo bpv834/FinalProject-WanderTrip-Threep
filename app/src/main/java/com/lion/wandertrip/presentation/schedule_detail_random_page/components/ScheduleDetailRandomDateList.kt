@@ -40,6 +40,7 @@ import com.lion.wandertrip.ui.theme.NanumSquareRoundRegular
 import com.lion.wandertrip.util.ContentTypeId
 import com.google.firebase.Timestamp
 import com.lion.a02_boardcloneproject.component.CustomDividerComponent
+import com.lion.wandertrip.model.ScheduleItem
 import com.lion.wandertrip.presentation.schedule_detail_random_page.ScheduleDetailRandomViewModel
 import org.burnoutcrew.reorderable.ReorderableItem
 import org.burnoutcrew.reorderable.detectReorder
@@ -58,6 +59,7 @@ fun ScheduleDetailRandomDateList(
     // 재정렬 모드 상태 (초기엔 false)
     var isReorderMode by remember { mutableStateOf(false) }
 
+    val tripScheduleItems by viewModel.tripScheduleItems.collectAsState()
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
@@ -90,7 +92,7 @@ fun ScheduleDetailRandomDateList(
                     ) {
                         // 해당 날짜의 스케줄 항목 필터링 후 지도에 전달
                         ScheduleDetailRandomGoogleMap(
-                            scheduleItems = viewModel.tripScheduleItems
+                            scheduleItems = tripScheduleItems
                                 .filter { it.itemDate.seconds == date.seconds }
                                 .sortedBy { it.itemIndex },
                             viewModel = viewModel,
@@ -107,18 +109,18 @@ fun ScheduleDetailRandomDateList(
             // 해당 날짜 그룹의 일정 항목들을 재정렬할 수 있는 리스트 부분
             item {
                 Log.d("ScheduleDetailDateList", "----------------------------------")
-                viewModel.tripScheduleItems.forEach {
+                tripScheduleItems.forEach {
                     Log.d("ScheduleDetailDateList", "${it.itemTitle} ${it.itemIndex}")
                 }
                 Log.d("ScheduleDetailDateList", "----------------------------------")
                 // 날짜 그룹에 해당하는 항목 필터링
-                val filteredItems = viewModel.tripScheduleItems
+                val filteredItems = tripScheduleItems
                     .filter { it.itemDate.seconds == date.seconds }
                     .sortedBy { it.itemIndex }
                 if (filteredItems.isNotEmpty()) {
 
                     // 재정렬 작업을 위한 임시 리스트(드래그 시 바로 viewModel에 반영하지 않음)
-                    val tempList = remember { mutableStateListOf(*filteredItems.toTypedArray()) }
+                    val tempList = remember { mutableStateListOf<ScheduleItem>() }
                     // filteredItems가 바뀔 때 tempList도 갱신
                     LaunchedEffect(filteredItems) {
                         tempList.clear()
@@ -151,7 +153,7 @@ fun ScheduleDetailRandomDateList(
                                 )
                         ) {
                             items(
-                                items = tempList,
+                                items = tempList, // db에 있는 리스트가 아니고 tempList 기반으로 리스트 출력
                                 key = { it.itemDocId }
                             ) { scheduleItem ->
                                 ReorderableItem(reorderState, key = scheduleItem.itemDocId) {

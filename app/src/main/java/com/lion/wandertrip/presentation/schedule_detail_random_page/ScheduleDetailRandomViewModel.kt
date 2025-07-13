@@ -45,7 +45,23 @@ class ScheduleDetailRandomViewModel @Inject constructor(
     // val tripSchedule = TripScheduleModel()
     // 일정 데이터
     val tripSchedule = mutableStateOf(TripScheduleModel())
-    val tripScheduleItems = mutableStateListOf<ScheduleItem>()
+
+    // 일정 목록들 flow 변수
+    private val _tripScheduleItems = MutableStateFlow<List<ScheduleItem>>(emptyList())
+    val tripScheduleItems: StateFlow<List<ScheduleItem>> = _tripScheduleItems
+
+    // 일정 목록 flow 메서드
+    fun startObservingTripItems() {
+        viewModelScope.launch {
+            // 서비스에서 흐름을 받아오고 collect로 stateFlow로 저장한다.
+            // flow는 상태를 보관할수 없다.
+            // stateFlow는 상태를 보관한다.
+            tripScheduleService.getTripScheduleItemModelsFlow(tripScheduleDocId)
+                .collect { items ->
+                    _tripScheduleItems.value = items
+                }
+        }
+    }
 
     // 로딩상태변수
     private val _isLoading = MutableStateFlow(false)
@@ -57,7 +73,11 @@ class ScheduleDetailRandomViewModel @Inject constructor(
     }
 
     init {
+        // 스케줄 가져오는 메서드 suspend 타입
         getTripSchedule()
+
+        // 일정 목록 flow 메서드
+        startObservingTripItems()
     }
 
     // 일정 상세 정보 가져오기
@@ -116,20 +136,21 @@ class ScheduleDetailRandomViewModel @Inject constructor(
 
     // 완료 버튼 클릭 시, 임시 리스트 기준으로 각 항목의 itemIndex를 1부터 업데이트
     fun updateItemsOrderForDate(tempList : SnapshotStateList<ScheduleItem>, date: Timestamp) {
-        // 완료 버튼 클릭 시, 임시 리스트 기준으로 각 항목의 itemIndex를 1부터 업데이트
+     // 완료 버튼 클릭 시, 임시 리스트 기준으로 각 항목의 itemIndex를 1부터 업데이트
         tempList.forEachIndexed { index, item ->
             item.itemIndex = index + 1
         }
         // viewModel의 전체 리스트에서 해당 날짜 그룹만 새 순서로 반영
-        tripScheduleItems.replaceAll { item ->
-            if (item.itemDate.seconds == date.seconds) {
-                tempList.find { it.itemDocId == item.itemDocId } ?: item
-            } else {
-                item
+        // 2. 기존 목록 중 해당 날짜만 교체
+        _tripScheduleItems.value = _tripScheduleItems.value
+            .map { item ->
+                if (item.itemDate.seconds == date.seconds) {
+                    tempList.find { it.itemDocId == item.itemDocId } ?: item
+                } else {
+                    item
+                }
             }
-        }
-        // 전체 리스트를 날짜와 itemIndex 기준으로 정렬
-        tripScheduleItems.sortWith(compareBy({ it.itemDate.seconds }, { it.itemIndex }))
+            .sortedWith(compareBy({ it.itemDate.seconds }, { it.itemIndex }))
 
         // 변경한 위치를 데이터베이스에 업데이트
         updateItemsPosition(tempList)
@@ -148,8 +169,7 @@ class ScheduleDetailRandomViewModel @Inject constructor(
     fun moveToScheduleSelectItemScreen(itemCode: Int, scheduleDate: Timestamp) {
         application.navHostController.navigate(
             "${ScheduleScreenName.SCHEDULE_SELECT_ITEM_SCREEN.name}?" +
-                    "itemCode=${itemCode}&areaName=${areaName.value}&areaCode=${areaCode.intValue}&scheduleDate=${scheduleDate.seconds}&tripScheduleDocId=${tripScheduleDocId.value}")
-    }
-    */
+                    "itemCode=${itemCode}&areaName=${areaName.value}&areaCode=${areaCode.intValue}&scheduleDate=${scheduleDate.seconds}&tripScheduleDocId=${tripScheduleDocId}")
+    }*/
 
 }

@@ -1,0 +1,4 @@
+package com.lion.wandertrip.presentation.schedule_detail_random_page.schedule_random_select_item
+
+class ScheduleRandomSelectItemViewModel {
+}

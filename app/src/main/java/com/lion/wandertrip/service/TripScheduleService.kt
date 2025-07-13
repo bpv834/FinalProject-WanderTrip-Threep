@@ -8,6 +8,8 @@ import com.lion.wandertrip.model.TripItemModel
 import com.lion.wandertrip.model.TripScheduleModel
 import com.lion.wandertrip.model.UserModel
 import com.lion.wandertrip.repository.TripScheduleRepository
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 
 class TripScheduleService(val tripScheduleRepository: TripScheduleRepository) {
 
@@ -40,6 +42,12 @@ class TripScheduleService(val tripScheduleRepository: TripScheduleRepository) {
     suspend fun getTripScheduleItems(docId: String): List<ScheduleItem>? {
         val itemVOList = tripScheduleRepository.getTripScheduleItems(docId) ?: emptyList()
         return itemVOList.map { it.toScheduleItemModel() }
+    }
+
+    // flow 타입으로 리턴하는 메서드
+    fun getTripScheduleItemModelsFlow(docId: String): Flow<List<ScheduleItem>> {
+        return tripScheduleRepository.getTripScheduleItemsFlow(docId) // Flow<voList> -> flow<modelList> 작업
+            .map { voList -> voList.map { it.toScheduleItemModel() } }
     }
 
     // 일정에 여행지 항목 추가

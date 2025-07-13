@@ -12,6 +12,11 @@ import com.lion.wandertrip.vo.ScheduleItemVO
 import com.lion.wandertrip.vo.TripItemVO
 import com.lion.wandertrip.vo.TripScheduleVO
 import com.lion.wandertrip.vo.UserVO
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.channels.awaitClose
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.tasks.await
 import kotlinx.serialization.json.Json
 import java.io.ByteArrayOutputStream
@@ -69,6 +74,30 @@ class TripScheduleRepository {
         }
         return emptyList()
     }
+    // flow를 사용해 실시간 tripScheduleItems 가져오기
+    fun getTripScheduleItemsFlow(docId: String): Flow<List<ScheduleItemVO>> = callbackFlow {
+        val firestore = FirebaseFirestore.getInstance()
+        val subCollectionRef = firestore.collection("TripSchedule")
+            .document(docId)
+            .collection("TripScheduleItem")
+
+        val listenerRegistration = subCollectionRef.addSnapshotListener { snapshot, error ->
+            if (error != null) {
+                close(error)
+                return@addSnapshotListener
+            }
+
+            if (snapshot != null && !snapshot.isEmpty) {
+                val items = snapshot.toObjects(ScheduleItemVO::class.java)
+                trySend(items).isSuccess
+            } else {
+                trySend(emptyList()).isSuccess
+            }
+        }
+
+        awaitClose { listenerRegistration.remove() }
+    }.flowOn(Dispatchers.IO)
+
 
 
     // ✅ 일정에 여행지 항목 추가 함수
