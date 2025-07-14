@@ -39,6 +39,9 @@ class ScheduleDetailRandomViewModel @Inject constructor(
     // 일정 문서 ID
     val tripScheduleDocId: String = savedStateHandle["tripScheduleDocId"] ?: ""
 
+    val lat = savedStateHandle["lat"]?:""
+    val lng = savedStateHandle["lng"]?:""
+
     var selectedLocation = mutableStateOf<LatLng?>(null)
     var selectedDate = mutableStateOf<Timestamp?>(null)
 
@@ -165,11 +168,11 @@ class ScheduleDetailRandomViewModel @Inject constructor(
         }
     }
 
-/*    // 일정 항목 선택 화면 으로 이동
-    fun moveToScheduleSelectItemScreen(itemCode: Int, scheduleDate: Timestamp) {
+    // 일정 항목 선택 화면 으로 이동
+    fun moveToScheduleRandomSelectItemScreen(itemCode: Int, scheduleDate: Timestamp) {
         application.navHostController.navigate(
-            "${ScheduleScreenName.SCHEDULE_SELECT_ITEM_SCREEN.name}?" +
-                    "itemCode=${itemCode}&areaName=${areaName.value}&areaCode=${areaCode.intValue}&scheduleDate=${scheduleDate.seconds}&tripScheduleDocId=${tripScheduleDocId}")
-    }*/
+            "${ScheduleScreenName.SCHEDULE_RANDOM_SELECT_ITEM_SCREEN.name}?" +
+                    "itemCode=${itemCode}&lat=${lat}&lng=${lng}&scheduleDate=${scheduleDate.seconds}&tripScheduleDocId=${tripScheduleDocId}")
+    }
 
 }

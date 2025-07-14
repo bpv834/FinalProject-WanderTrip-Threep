@@ -38,6 +38,7 @@ import com.lion.wandertrip.presentation.schedule_city_select.city_roulette.roule
 import com.lion.wandertrip.presentation.schedule_detail_friends.ScheduleDetailFriendsScreen
 import com.lion.wandertrip.presentation.schedule_detail_page.ScheduleDetailScreen
 import com.lion.wandertrip.presentation.schedule_detail_random_page.ScheduleDetailRandomScreen
+import com.lion.wandertrip.presentation.schedule_detail_random_page.schedule_random_select_item.ScheduleRandomSelectItemScreen
 import com.lion.wandertrip.presentation.schedule_item_review.ScheduleItemReviewScreen
 import com.lion.wandertrip.presentation.schedule_select_item.ScheduleSelectItemScreen
 import com.lion.wandertrip.presentation.schedule_select_item.roulette_item.RouletteItemScreen
@@ -294,6 +295,24 @@ fun MyApp() {
             val tripScheduleDocId = it.arguments?.getString("tripScheduleDocId") ?: ""
             ScheduleSelectItemScreen(itemCode, areaName, areaCode, scheduleDate, tripScheduleDocId)
         }
+
+        // 일정 랜덤화면 항목 선택 화면
+        composable(
+
+            route = "${ScheduleScreenName.SCHEDULE_RANDOM_SELECT_ITEM_SCREEN.name}?" +
+                    "itemCode={itemCode}&lat={lat}&lng={lng}&scheduleDate={scheduleDate}&tripScheduleDocId={tripScheduleDocId}",
+            arguments = listOf(
+                navArgument("itemCode") { type = NavType.IntType },
+                navArgument("lat") { type = NavType.StringType },
+                navArgument("lng") { type = NavType.StringType },
+                navArgument("scheduleDate") { type = NavType.LongType },
+                navArgument("tripScheduleDocId") { type = NavType.StringType },
+            )
+        ) {
+            ScheduleRandomSelectItemScreen()
+        }
+
+
 
         // 일정 초대한 친구 목록 화면
         composable(

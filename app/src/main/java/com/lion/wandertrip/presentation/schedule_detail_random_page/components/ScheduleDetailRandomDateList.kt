@@ -98,9 +98,10 @@ fun ScheduleDetailRandomDateList(
                             viewModel = viewModel,
                             onTouch = { touched -> isMapTouched = touched },
                             mapScheduleDate = tripSchedule.scheduleDateList[index],
-                            selectedLocation =  LatLng(tripSchedule.lat?.toDouble()?:0.0,
-                                tripSchedule.lng?.toDouble()?:0.0
-                                )
+                            selectedLocation = LatLng(
+                                tripSchedule.lat?.toDouble() ?: 0.0,
+                                tripSchedule.lng?.toDouble() ?: 0.0
+                            )
                         )
                     }
                 }
@@ -158,9 +159,13 @@ fun ScheduleDetailRandomDateList(
                             ) { scheduleItem ->
                                 ReorderableItem(reorderState, key = scheduleItem.itemDocId) {
                                     Row(
-                                        modifier = Modifier.height(IntrinsicSize.Min)
+                                        modifier = Modifier
+                                            .height(IntrinsicSize.Min)
                                             .clickable {
-                                                viewModel.selectedLocation.value = LatLng(scheduleItem.itemLatitude, scheduleItem.itemLongitude)
+                                                viewModel.selectedLocation.value = LatLng(
+                                                    scheduleItem.itemLatitude,
+                                                    scheduleItem.itemLongitude
+                                                )
                                                 viewModel.selectedDate.value = scheduleItem.itemDate
                                             }
                                     ) {
@@ -210,8 +215,12 @@ fun ScheduleDetailRandomDateList(
                                                         }
                                                         // 두번째 if: 로딩 상태일 때 새 painter2를 생성해 최신 상태를 반영하고, 이미지가 로드되면 이를 표시
                                                         if (painter.state is AsyncImagePainter.State.Loading) {
-                                                            val painter2 = rememberAsyncImagePainter(model = imageUrl)
-                                                            Log.d("ScheduleDetailDateList3", "imageUrl: $imageUrl")
+                                                            val painter2 =
+                                                                rememberAsyncImagePainter(model = imageUrl)
+                                                            Log.d(
+                                                                "ScheduleDetailDateList3",
+                                                                "imageUrl: $imageUrl"
+                                                            )
                                                             Image(
                                                                 painter = painter2,
                                                                 contentDescription = "후기 이미지",
@@ -345,10 +354,11 @@ fun ScheduleDetailRandomDateList(
                     ) {
                         OutlinedButton(
                             onClick = {
-                         /*       viewModel.moveToScheduleSelectItemScreen(
+                                viewModel.moveToScheduleRandomSelectItemScreen(
                                     ContentTypeId.TOURIST_ATTRACTION.contentTypeCode,
                                     date
-                                )*/
+                                )
+
                             },
                             contentPadding = PaddingValues(horizontal = 8.dp, vertical = 8.dp)
                         ) {
@@ -360,10 +370,10 @@ fun ScheduleDetailRandomDateList(
                         }
                         OutlinedButton(
                             onClick = {
-                             /*   viewModel.moveToScheduleSelectItemScreen(
+                                viewModel.moveToScheduleRandomSelectItemScreen(
                                     ContentTypeId.RESTAURANT.contentTypeCode,
                                     date
-                                )*/
+                                )
                             },
                             contentPadding = PaddingValues(horizontal = 8.dp, vertical = 8.dp)
                         ) {
@@ -375,10 +385,10 @@ fun ScheduleDetailRandomDateList(
                         }
                         OutlinedButton(
                             onClick = {
-                          /*      viewModel.moveToScheduleSelectItemScreen(
+                                viewModel.moveToScheduleRandomSelectItemScreen(
                                     ContentTypeId.ACCOMMODATION.contentTypeCode,
                                     date
-                                )*/
+                                )
                             },
                             contentPadding = PaddingValues(horizontal = 8.dp, vertical = 8.dp)
                         ) {

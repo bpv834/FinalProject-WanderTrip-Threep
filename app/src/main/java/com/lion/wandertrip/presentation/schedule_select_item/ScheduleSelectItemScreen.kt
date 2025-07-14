@@ -99,14 +99,14 @@ fun ScheduleSelectItemScreen(
                     onClearQuery = { searchQuery = "" }
                 )
 
-                // 🎯 카테고리 칩 버튼 추가
+      /*          // 🎯 카테고리 칩 버튼 추가
                 ScheduleItemCategoryChips(
                     itemCode = itemCode,
                     selectedCategoryCode = selectedCategoryCode,
                     onCategorySelected = { newCategoryCode ->
                         selectedCategoryCode = newCategoryCode
                     }
-                )
+                )*/
 
                 // 룰렛 이동 버튼
                 Button(
