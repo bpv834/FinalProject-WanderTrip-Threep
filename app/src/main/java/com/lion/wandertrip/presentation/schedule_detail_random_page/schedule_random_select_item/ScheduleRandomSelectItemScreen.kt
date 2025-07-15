@@ -1,9 +1,7 @@
 package com.lion.wandertrip.presentation.schedule_detail_random_page.schedule_random_select_item
 
 
-import ScheduleItemCategoryChips
 import ScheduleItemSearchBar
-import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
@@ -18,17 +16,12 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.google.firebase.Timestamp
 import com.lion.a02_boardcloneproject.component.CustomDividerComponent
 import com.lion.wandertrip.R
 import com.lion.wandertrip.component.LottieLoadingIndicator
 import com.lion.wandertrip.presentation.schedule_detail_random_page.schedule_random_select_item.components.ScheduleRandomItemList
-import com.lion.wandertrip.presentation.schedule_select_item.ScheduleSelectItemViewModel
-import com.lion.wandertrip.presentation.schedule_select_item.component.ScheduleItemList
 import com.lion.wandertrip.ui.theme.NanumSquareRound
 import com.lion.wandertrip.ui.theme.NanumSquareRoundRegular
-import com.lion.wandertrip.util.ContentTypeId
-import com.lion.wandertrip.util.SharedTripItemList
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -68,13 +61,6 @@ fun ScheduleRandomSelectItemScreen(
             }
         ) {
             Column(modifier = Modifier.padding(it)) {
-                // 🔍 검색 바 추가
-                ScheduleItemSearchBar(
-                    query = searchQuery,
-                    onSearchQueryChanged = { searchQuery = it },
-                    onSearchClicked = {},
-                    onClearQuery = { searchQuery = "" }
-                )
                 // 룰렛 이동 버튼
                 Button(
                     onClick = { /*viewModel.moveToRouletteItemScreen(tripScheduleDocId, areaName, areaCode)*/ },
@@ -104,7 +90,8 @@ fun ScheduleRandomSelectItemScreen(
 
                 ScheduleRandomItemList(
                     viewModel,
-                    onItemClick = { selectItem -> viewModel.addTripItemToSchedule(selectItem) }
+                    onClickAddSchedule = { selectItem -> viewModel.addTripItemToSchedule(selectItem) },
+                    onClickShowItemDetail = {str->viewModel.moveToDetailScreen(str)}
                 )
             }
         }

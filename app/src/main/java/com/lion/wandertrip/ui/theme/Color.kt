@@ -11,6 +11,7 @@ val PurpleGrey40 = Color(0xFF625b71)
 val Pink40 = Color(0xFF7D5260)
 
 val wanderBlueColor = Color(0xFF0077B6)
+val starColor = Color(0xFFFFD700)
 
 val LightGray1 = Color(0xFFD9D9D9) // Medium Light Gray
 val LightGray2 = Color(0xFFE5E5E5) // Lighter Gray

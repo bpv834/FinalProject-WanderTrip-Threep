@@ -9,7 +9,6 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.Timestamp
-import com.google.firebase.firestore.FirebaseFirestore
 import com.lion.wandertrip.TripApplication
 import com.lion.wandertrip.model.ContentsModel
 import com.lion.wandertrip.model.ScheduleItem
@@ -20,11 +19,11 @@ import com.lion.wandertrip.service.TripLocationBasedItemService
 import com.lion.wandertrip.service.TripScheduleService
 import com.lion.wandertrip.service.UserService
 import com.lion.wandertrip.util.ContentTypeId
+import com.lion.wandertrip.util.MainScreenName
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -106,9 +105,13 @@ class ScheduleRandomSelectItemViewModel @Inject constructor(
             }
     }*/
 
+    // 디테일페이지로 이동
+    fun moveToDetailScreen(contentId: String) {
+       application.navHostController.navigate("${MainScreenName.MAIN_SCREEN_DETAIL.name}/$contentId")
+    }
+
     // 일정에 여행지 항목 추가
     fun addTripItemToSchedule(tripItemModel: TripLocationBasedItem) {
-
         viewModelScope.launch {
             val work1 = async(Dispatchers.IO) {
                 val scheduleItem = ScheduleItem(
@@ -243,7 +246,7 @@ class ScheduleRandomSelectItemViewModel @Inject constructor(
                     contentTypeId = contentTypeId,
                     page = page,
                     radius = "8",
-                    numOfRows = 10
+                    numOfRows = 1000
                 )
 
                 // 새로운 UnifiedSpotItem 생성 (최신 맵은 allContentsMapFlow에서 갱신해주므로 여기서는 privateData null 가능)
