@@ -19,6 +19,8 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.lion.a02_boardcloneproject.component.CustomDividerComponent
 import com.lion.wandertrip.R
 import com.lion.wandertrip.component.LottieLoadingIndicator
+import com.lion.wandertrip.presentation.schedule_detail_random_page.schedule_random_select_item.components.AddItemDialog
+import com.lion.wandertrip.presentation.schedule_detail_random_page.schedule_random_select_item.components.RouletteDialog
 import com.lion.wandertrip.presentation.schedule_detail_random_page.schedule_random_select_item.components.ScheduleRandomItemList
 import com.lion.wandertrip.ui.theme.NanumSquareRound
 import com.lion.wandertrip.ui.theme.NanumSquareRoundRegular
@@ -28,15 +30,9 @@ import com.lion.wandertrip.ui.theme.NanumSquareRoundRegular
 fun ScheduleRandomSelectItemScreen(
     viewModel: ScheduleRandomSelectItemViewModel = hiltViewModel()
 ) {
-    // 🔍 검색어 상태
-    var searchQuery by remember { mutableStateOf("") }
-    // 선택된 카태고리 상태
-    var selectedCategoryCode by remember { mutableStateOf<String?>(null) }
-
     val isLoading by viewModel.isLoading // ✅ 로딩 상태 가져오기
-
-    val isFirstLaunch = rememberSaveable { mutableStateOf(true) } // ✅ 처음 실행 여부 저장
-
+    val showRouletteDialog = remember { mutableStateOf(false) }
+    val showAddPlaceDialog = remember { mutableStateOf(false) } // 여행지 추가 다이얼로그도 필요시
     LaunchedEffect(Unit) {
 
     }
@@ -61,9 +57,9 @@ fun ScheduleRandomSelectItemScreen(
             }
         ) {
             Column(modifier = Modifier.padding(it)) {
-                // 룰렛 이동 버튼
+                // 룰렛 다이얼로그 띄우기
                 Button(
-                    onClick = { /*viewModel.moveToRouletteItemScreen(tripScheduleDocId, areaName, areaCode)*/ },
+                    onClick = {showRouletteDialog.value = true },
                     modifier = Modifier
                         .fillMaxWidth(),
                     colors = ButtonDefaults.buttonColors(
@@ -94,6 +90,26 @@ fun ScheduleRandomSelectItemScreen(
                     onClickShowItemDetail = {str->viewModel.moveToDetailScreen(str)}
                 )
             }
+        }
+
+        if (showRouletteDialog.value) {
+            RouletteDialog(
+                onDismiss = { showRouletteDialog.value = false },
+                onConfirm = {  },
+                onAddPlaceClick = { showAddPlaceDialog.value = true },
+                viewModel = viewModel
+            )
+        }
+
+        if (showAddPlaceDialog.value) {
+            AddItemDialog( // <- 따로 만들고 여기에 추가
+                viewModel = viewModel,
+                onAdd = { item ->
+                    viewModel.addItemToRoulette(item) // 또는 필요한 동작 수행
+                },
+                onDismiss = { showAddPlaceDialog.value = false },
+
+            )
         }
 
         // ✅ 로딩 화면 추가 (투명 오버레이)

@@ -2,7 +2,6 @@ package com.lion.wandertrip.presentation.schedule_detail_random_page.schedule_ra
 
 
 import android.content.Context
-import android.util.Log
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.SavedStateHandle
@@ -207,7 +206,9 @@ class ScheduleRandomSelectItemViewModel @Inject constructor(
     }
 
     // flow 타입의 각각 리스트 변수
-    val itemList = MutableStateFlow<List<UnifiedSpotItem>>(emptyList())
+    private val _itemList = MutableStateFlow<List<UnifiedSpotItem>>(emptyList())
+    val itemList : StateFlow<List<UnifiedSpotItem>> = _itemList
+
     // 공공데이터와 DB에 있는 컨텐츠를 flow로 만드는 메서드
     private fun createUnifiedSpotItemListFlow(
         contentTypeId: String,
@@ -267,16 +268,18 @@ class ScheduleRandomSelectItemViewModel @Inject constructor(
     //  페이지 변수
     private val _page = MutableStateFlow(1)
 
+    // 룰렛에 담는 리스트 관리 변수
+    private val _rouletteList = MutableStateFlow<List<TripLocationBasedItem>>(emptyList())
+    val rouletteList: StateFlow<List<TripLocationBasedItem>> = _rouletteList
 
-    // 페이지 넘겨 리스트에 받아오기
-    fun nextAttraction() {
-        Log.d("nextAttraction", "nextAttraction()")
-        _page.value++
+    fun addItemToRoulette(items: List<TripLocationBasedItem>) {
+        val current = _rouletteList.value.toMutableList()
+        current.addAll(items.filterNot { current.contains(it) }) // 중복 방지
+        _rouletteList.value = current
     }
 
-
     init {
-        createUnifiedSpotItemListFlow(contentTypeId = itemCode.toString(), currentList = itemList, pageFlow = _page)
+        createUnifiedSpotItemListFlow(contentTypeId = itemCode.toString(), currentList = _itemList, pageFlow = _page)
     }
 
 

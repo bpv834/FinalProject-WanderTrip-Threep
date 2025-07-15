@@ -10,9 +10,13 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.defaultMinSize
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
@@ -31,6 +35,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import com.lion.wandertrip.model.TripItemModel
+import com.lion.wandertrip.model.TripLocationBasedItem
+import com.lion.wandertrip.presentation.schedule_detail_random_page.schedule_random_select_item.ScheduleRandomSelectItemViewModel
 import com.lion.wandertrip.presentation.schedule_select_item.roulette_item.component.RoulettePointerForTripItems
 import com.lion.wandertrip.presentation.schedule_select_item.roulette_item.component.RouletteWheelForTripItems
 import com.lion.wandertrip.util.SharedTripItemList
@@ -39,53 +45,60 @@ import kotlin.random.Random
 
 @Composable
 fun RouletteDialog(
+    viewModel : ScheduleRandomSelectItemViewModel,
     onDismiss: () -> Unit,
-    onConfirm: (TripItemModel) -> Unit
+    onConfirm: (TripLocationBasedItem) -> Unit,
+    onAddPlaceClick: () -> Unit // 여행지 추가 다이얼로그 띄우기용 콜백 추가
 ) {
     val coroutineScope = rememberCoroutineScope()
     val animatedRotation = remember { Animatable(0f) }
-    var selectedItem by remember { mutableStateOf<TripItemModel?>(null) }
+    var selectedItem by remember { mutableStateOf<TripLocationBasedItem?>(null) }
     var showResultDialog by remember { mutableStateOf(false) }
+    val sh = viewModel.application.screenHeight
 
     Dialog(onDismissRequest = onDismiss) {
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(Color.White, shape = CircleShape)
+                .fillMaxWidth()
+                .defaultMinSize(minHeight = (sh / 7).dp)
+                .background(Color.White)
                 .padding(24.dp)
         ) {
             Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center
+                verticalArrangement = Arrangement.SpaceBetween,
+                modifier = Modifier.fillMaxHeight()
             ) {
-                Text("룰렛 돌리기", fontSize = 20.sp)
-
-                Spacer(modifier = Modifier.height(20.dp))
-
-                Box(contentAlignment = Alignment.Center) {
-                    RouletteWheelForTripItems(
-                        items = SharedTripItemList.rouletteItemList,
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .aspectRatio(1f), // 정사각형으로 유지 (룰렛용)
+                    contentAlignment = Alignment.Center
+                ) {
+                    // 회전하는 룰렛 휠
+                    RouletteWheelForLocationBasedItem(
+                        viewModel = viewModel,
                         rotationAngle = animatedRotation.value
                     )
+
+                    // 고정된 포인터 (12시 방향)
                     RoulettePointerForTripItems()
                 }
-
                 Spacer(modifier = Modifier.height(16.dp))
 
-                Row {
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    // 여행지 추가하기 버튼
                     Button(
-                        onClick = onDismiss,
-                        shape = CircleShape,
-                        modifier = Modifier.padding(8.dp),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = Color.White,
-                            contentColor = Color(0xFF435C8F)
-                        ),
-                        border = BorderStroke(1.dp, Color(0xFF435C8F))
+                        onClick = onAddPlaceClick,
+                        shape = CircleShape
                     ) {
-                        Text("닫기")
+                        Text("여행지 추가하기")
                     }
 
+                    // 룰렛 돌리기 버튼
                     Button(
                         onClick = {
                             coroutineScope.launch {
@@ -103,13 +116,12 @@ fun RouletteDialog(
                                 else -1
 
                                 if (selectedIndex >= 0) {
-                                    selectedItem = SharedTripItemList.rouletteItemList[selectedIndex]
+                                   // selectedItem = SharedTripItemList.rouletteItemList[selectedIndex]
                                 }
                                 showResultDialog = true
                             }
                         },
                         enabled = SharedTripItemList.rouletteItemList.isNotEmpty(),
-                        modifier = Modifier.padding(8.dp),
                         shape = CircleShape
                     ) {
                         Text("룰렛 돌리기")
@@ -118,12 +130,10 @@ fun RouletteDialog(
             }
         }
     }
-
-    // 결과 다이얼로그
     if (showResultDialog && selectedItem != null) {
         AlertDialog(
             onDismissRequest = { showResultDialog = false },
-            title = { Text("🎉 선택된 도시") },
+            title = { Text("🎉 선택된 여행지") },
             text = { Text("당신의 여행지는 \"${selectedItem?.title}\" 입니다!") },
             confirmButton = {
                 Button(
