@@ -9,7 +9,9 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -25,29 +27,35 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.imageResource
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
+import com.lion.wandertrip.R
 import com.lion.wandertrip.model.TripLocationBasedItem
 import com.lion.wandertrip.presentation.schedule_detail_random_page.schedule_random_select_item.ScheduleRandomSelectItemViewModel
 import com.lion.wandertrip.ui.theme.NanumSquareRound
+import com.skydoves.landscapist.CircularReveal
+import com.skydoves.landscapist.glide.GlideImage
 
 @Composable
 fun AddItemDialog(
     viewModel: ScheduleRandomSelectItemViewModel,
-    onAdd: (List<TripLocationBasedItem>) -> Unit, // ✅ 여러 개 추가
-    onDismiss: () -> Unit
+    onDismiss: () -> Unit,
+    onClickAddAll : ()->Unit,
+    onClickResetToSelectedItems : ()->Unit,
 ) {
     val itemList by viewModel.itemList.collectAsState()
+    val contentsMap by viewModel.allContentsMapFlow.collectAsState()
     val sh = viewModel.application.screenHeight
 
-    // ✅ 선택 상태 저장용 StateList
-    val isChecked = remember {
-        mutableStateListOf<Boolean>().apply {
-            repeat(itemList.size) { add(false) }
-        }
-    }
+    val selectedMap by viewModel.selectedMap.collectAsState()
+
 
     Dialog(onDismissRequest = onDismiss) {
         Surface(
@@ -55,41 +63,73 @@ fun AddItemDialog(
             color = Color.White,
             modifier = Modifier
                 .fillMaxWidth()
-                .height((sh / 2).dp) // 높이 조금 넉넉하게
+                .heightIn((sh / 12).dp) // 높이 조금 넉넉하게
                 .padding(16.dp)
         ) {
             Column(modifier = Modifier.padding(16.dp)) {
-                LazyColumn(modifier = Modifier.weight(1f)) {
+                LazyColumn(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .wrapContentHeight()
+                        .weight(1f)
+                ) {
                     items(itemList.size) { idx ->
                         val item = itemList[idx].publicData
-                        val selected = isChecked[idx]
-
-                        // ✅ 클릭 시 선택 상태 토글
+                        val isSelected = selectedMap.containsKey(item.contentId)
                         Row(
                             modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(vertical = 6.dp)
-                                .height(48.dp)
-                                .then(
-                                    if (selected) Modifier.padding(4.dp).background(Color(0xFFE0F7FA)) // 선택된 배경
-                                    else Modifier
+                                .background(
+                                    color = if (isSelected) Color(0xFFE0F7FA) else Color.Transparent,
+                                    shape = RoundedCornerShape(8.dp) // 선택적으로 모서리 둥글게
                                 )
-                                .padding(horizontal = 8.dp)
-                                .clickable {
-                                    isChecked[idx] = !isChecked[idx]
-                                },
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.SpaceBetween
+                                .fillMaxWidth()
+                                .padding(vertical = 8.dp)
+                                .clickable { viewModel.toggleItem(item) },
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Text(
-                                text = item.title ?: "제목 없음",
-                                fontSize = 15.sp,
-                                modifier = Modifier.weight(1f)
-                            )
+                            // ✅ 왼쪽 텍스트 영역
+                            Column(
+                                modifier = Modifier
+                                    .weight(3f)
+                                    .padding(end = 8.dp)
+                            ) {
+                                Text(
+                                    text = item.title ?: "제목 없음",
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis, // ✅ 이걸 추가해야 말줄임표 처리됨
+                                    fontSize = 15.sp,
+                                    fontFamily = NanumSquareRound,
+                                )
 
-                            if (selected) {
-                                Text("✔", color = Color(0xFF00796B), fontSize = 14.sp)
+                                Spacer(modifier = Modifier.height(4.dp))
+
+                                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                    Text(
+                                        text = "❤️ ${contentsMap[item.contentId]?.interestingCount ?: 0}",
+                                        fontSize = 13.sp,
+                                        fontFamily = NanumSquareRound
+                                    )
+                                    Text(
+                                        text = "⭐ ${contentsMap[item.contentId]?.ratingScore ?: 0}",
+                                        fontSize = 13.sp,
+                                        fontFamily = NanumSquareRound
+                                    )
+                                }
                             }
+
+                            // ✅ 오른쪽 이미지 영역
+                            if (item.firstImage != "")
+                                GlideImage(
+                                    imageModel = item.firstImage,
+                                    contentScale = ContentScale.Crop,
+                                    modifier = Modifier
+                                        .height((sh / 24).dp)
+                                        .weight(2f)
+                                        .clip(RoundedCornerShape(8.dp)),  // 이미지 둥글게 만들기
+                                    circularReveal = CircularReveal(duration = 250),
+                                    placeHolder = ImageBitmap.imageResource(R.drawable.img_image_holder),
+                                )
                         }
 
                         HorizontalDivider(thickness = 0.5.dp, color = Color.LightGray)
@@ -99,26 +139,29 @@ fun AddItemDialog(
                 Spacer(modifier = Modifier.height(16.dp))
 
                 Row(
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.End,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Button(onClick = onDismiss) {
-                        Text("닫기")
+                    Button(
+                        onClick = { onClickResetToSelectedItems() }, // 전체 제거
+                        modifier = Modifier.padding(end = 8.dp)
+                    ) {
+                        Text("clear")
                     }
 
                     Button(
-                        onClick = {
-                            // ✅ 선택된 아이템만 필터링해서 onAdd 전달
-                            val selectedItems = itemList
-                                .filterIndexed { index, _ -> isChecked.getOrNull(index) == true }
-                                .map { it.publicData }
-                            onAdd(selectedItems)
-                            onDismiss()
-                        }
+                        onClick = { onClickAddAll() }, // 전체 추가
+                        modifier = Modifier.padding(end = 8.dp)
                     ) {
-                        Text("추가하기")
+                        Text("addAll")
+                    }
+
+                    Button(onClick = onDismiss) { // 닫기
+                        Text("X")
                     }
                 }
+
             }
         }
     }

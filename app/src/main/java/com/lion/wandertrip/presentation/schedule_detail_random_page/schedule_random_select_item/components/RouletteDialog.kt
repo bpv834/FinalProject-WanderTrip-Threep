@@ -1,5 +1,6 @@
 package com.lion.wandertrip.presentation.schedule_detail_random_page.schedule_random_select_item.components
 
+import android.util.Log
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.tween
@@ -18,11 +19,13 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -54,20 +57,23 @@ fun RouletteDialog(
     val animatedRotation = remember { Animatable(0f) }
     var selectedItem by remember { mutableStateOf<TripLocationBasedItem?>(null) }
     var showResultDialog by remember { mutableStateOf(false) }
+    val rouletteList by viewModel.rouletteList.collectAsState()
+
+
+
     val sh = viewModel.application.screenHeight
 
     Dialog(onDismissRequest = onDismiss) {
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .fillMaxWidth()
-                .defaultMinSize(minHeight = (sh / 7).dp)
-                .background(Color.White)
+                .defaultMinSize(minHeight = (sh / 6).dp)
+                .background(Color.White, shape = RoundedCornerShape(8.dp)) // 배경에 둥근 사각형 적용
                 .padding(24.dp)
         ) {
             Column(
                 verticalArrangement = Arrangement.SpaceBetween,
-                modifier = Modifier.fillMaxHeight()
+                modifier = Modifier.matchParentSize(), // Box 높이만큼 Column이 확장됨
             ) {
                 Box(
                     modifier = Modifier
@@ -84,7 +90,7 @@ fun RouletteDialog(
                     // 고정된 포인터 (12시 방향)
                     RoulettePointerForTripItems()
                 }
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.weight(1f)) // 여기에 내용 들어올 수 있음
 
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -109,19 +115,22 @@ fun RouletteDialog(
                                 )
 
                                 val finalRotation = animatedRotation.value % 360
-                                val itemCount = SharedTripItemList.rouletteItemList.size
+                                val itemCount = rouletteList.size
                                 val sliceAngle = if (itemCount > 0) 360f / itemCount else 360f
                                 val selectedIndex = if (itemCount > 0)
                                     (((270f - finalRotation + 360) % 360) / sliceAngle).toInt() % itemCount
                                 else -1
 
                                 if (selectedIndex >= 0) {
-                                   // selectedItem = SharedTripItemList.rouletteItemList[selectedIndex]
+                                    selectedItem = rouletteList[selectedIndex]
                                 }
                                 showResultDialog = true
+                                Log.d("selectedIndex","selectedIndex:$selectedIndex")
+
+                                Log.d("selectedItem","selectedItem:$selectedItem")
                             }
                         },
-                        enabled = SharedTripItemList.rouletteItemList.isNotEmpty(),
+                        enabled = rouletteList.isNotEmpty(),
                         shape = CircleShape
                     ) {
                         Text("룰렛 돌리기")

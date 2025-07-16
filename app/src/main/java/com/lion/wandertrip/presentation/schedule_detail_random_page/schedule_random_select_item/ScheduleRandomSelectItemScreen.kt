@@ -95,7 +95,7 @@ fun ScheduleRandomSelectItemScreen(
         if (showRouletteDialog.value) {
             RouletteDialog(
                 onDismiss = { showRouletteDialog.value = false },
-                onConfirm = {  },
+                onConfirm = {    },
                 onAddPlaceClick = { showAddPlaceDialog.value = true },
                 viewModel = viewModel
             )
@@ -104,10 +104,9 @@ fun ScheduleRandomSelectItemScreen(
         if (showAddPlaceDialog.value) {
             AddItemDialog( // <- 따로 만들고 여기에 추가
                 viewModel = viewModel,
-                onAdd = { item ->
-                    viewModel.addItemToRoulette(item) // 또는 필요한 동작 수행
-                },
                 onDismiss = { showAddPlaceDialog.value = false },
+                onClickAddAll = {viewModel.onClickAddAllItem()},
+                onClickResetToSelectedItems = {viewModel.onClickResetToSelectedItems()}
 
             )
         }

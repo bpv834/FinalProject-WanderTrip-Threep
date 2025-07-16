@@ -74,7 +74,7 @@ fun RouletteWheelForLocationBasedItem(
                         textX,
                         textY,
                         Paint().apply {
-                            color = android.graphics.Color.WHITE
+                            color = android.graphics.Color.DKGRAY
                             textSize = 45f
                             textAlign = Paint.Align.CENTER
                             typeface = Typeface.DEFAULT_BOLD
