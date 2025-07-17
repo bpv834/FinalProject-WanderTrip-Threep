@@ -4,7 +4,6 @@ package com.lion.wandertrip.presentation.schedule_detail_random_page.schedule_ra
 import android.content.Context
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.toMutableStateList
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -114,35 +113,6 @@ class ScheduleRandomSelectItemViewModel @Inject constructor(
     fun moveToDetailScreen(contentId: String) {
         application.navHostController.navigate("${MainScreenName.MAIN_SCREEN_DETAIL.name}/$contentId")
     }
-
-    // 일정에 여행지 항목 추가
-    fun addTripItemToSchedule(tripItemModel: TripLocationBasedItem) {
-        viewModelScope.launch {
-            val work1 = async(Dispatchers.IO) {
-                val scheduleItem = ScheduleItem(
-                    itemTitle = tripItemModel.title ?: "타이틀",
-                    itemType = when (tripItemModel.contentTypeId) {
-                        ContentTypeId.TOURIST_ATTRACTION.contentTypeCode.toString() -> "관광지"
-                        ContentTypeId.RESTAURANT.contentTypeCode.toString() -> "음식점"
-                        ContentTypeId.ACCOMMODATION.contentTypeCode.toString() -> "숙소"
-                        else -> ""
-                    },
-                    itemDate = Timestamp(scheduleDate, 0),
-                    itemLatitude = tripItemModel.mapLat!!.toDouble(),
-                    itemLongitude = tripItemModel.mapLng!!.toDouble(),
-                    itemContentId = tripItemModel.contentId!!,
-                )
-
-                tripScheduleService.addTripItemToSchedule(
-                    tripScheduleDocId,
-                    Timestamp(scheduleDate, 0),
-                    scheduleItem
-                )
-            }.await()
-            application.navHostController.popBackStack()
-        }
-    }
-
     // 룰렛 화면으로 이동
     fun moveToRouletteItemScreen(tripScheduleDocId: String, lat: String, lng: Int) {
 
@@ -319,6 +289,30 @@ class ScheduleRandomSelectItemViewModel @Inject constructor(
         _selectedMap.value = emptyMap() // ✅ 선택된 항목 전체 제거
         // rouletteList도 동시에 업데이트
         _rouletteList.value = _selectedMap.value.values.toList()
+    }
+
+    // 룰렛으로 결정된 아이템 스케줄에 넣는 메서드
+    fun addItemToSchedule(item: TripLocationBasedItem) {
+        viewModelScope.launch {
+            val work1 = async(Dispatchers.IO) {
+                val scheduleItem = ScheduleItem(
+                    itemTitle = item.title?:"",
+                    itemType = when(item.contentTypeId) {
+                        ContentTypeId.TOURIST_ATTRACTION.contentTypeCode.toString() -> "관광지"
+                        ContentTypeId.RESTAURANT.contentTypeCode.toString() -> "음식점"
+                        ContentTypeId.ACCOMMODATION.contentTypeCode.toString() -> "숙소"
+                        else -> ""
+                    },
+                    itemDate = Timestamp(scheduleDate,0),
+                    itemLongitude = lng.toDouble(),
+                    itemLatitude = lat.toDouble(),
+                    itemContentId = item.contentId!!,
+                )
+
+                tripScheduleService.addTripItemToSchedule(tripScheduleDocId, Timestamp(scheduleDate,0), scheduleItem)
+            }.await()
+            application.navHostController.popBackStack()
+        }
     }
 
     init {

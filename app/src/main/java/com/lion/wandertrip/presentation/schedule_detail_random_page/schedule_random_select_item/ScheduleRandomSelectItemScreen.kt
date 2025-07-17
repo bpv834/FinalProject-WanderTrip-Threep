@@ -19,6 +19,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.lion.a02_boardcloneproject.component.CustomDividerComponent
 import com.lion.wandertrip.R
 import com.lion.wandertrip.component.LottieLoadingIndicator
+import com.lion.wandertrip.model.TripLocationBasedItem
 import com.lion.wandertrip.presentation.schedule_detail_random_page.schedule_random_select_item.components.AddItemDialog
 import com.lion.wandertrip.presentation.schedule_detail_random_page.schedule_random_select_item.components.RouletteDialog
 import com.lion.wandertrip.presentation.schedule_detail_random_page.schedule_random_select_item.components.ScheduleRandomItemList
@@ -86,7 +87,7 @@ fun ScheduleRandomSelectItemScreen(
 
                 ScheduleRandomItemList(
                     viewModel,
-                    onClickAddSchedule = { selectItem -> viewModel.addTripItemToSchedule(selectItem) },
+                    onClickAddSchedule = { selectItem -> viewModel.addItemToSchedule(selectItem) },
                     onClickShowItemDetail = {str->viewModel.moveToDetailScreen(str)}
                 )
             }
@@ -95,7 +96,7 @@ fun ScheduleRandomSelectItemScreen(
         if (showRouletteDialog.value) {
             RouletteDialog(
                 onDismiss = { showRouletteDialog.value = false },
-                onConfirm = {    },
+                onConfirm = { item-> viewModel.addItemToSchedule(item)  },
                 onAddPlaceClick = { showAddPlaceDialog.value = true },
                 viewModel = viewModel
             )

@@ -50,7 +50,7 @@ import kotlin.random.Random
 fun RouletteDialog(
     viewModel : ScheduleRandomSelectItemViewModel,
     onDismiss: () -> Unit,
-    onConfirm: (TripLocationBasedItem) -> Unit,
+    onConfirm: (item:TripLocationBasedItem) -> Unit,
     onAddPlaceClick: () -> Unit // 여행지 추가 다이얼로그 띄우기용 콜백 추가
 ) {
     val coroutineScope = rememberCoroutineScope()
