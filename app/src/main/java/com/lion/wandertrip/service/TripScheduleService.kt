@@ -158,6 +158,11 @@ class TripScheduleService(val tripScheduleRepository: TripScheduleRepository) {
         return result
     }
 
+    fun getMyTripSchedulesFlow(userNickName: String):Flow<List<TripScheduleModel>>{
+        return tripScheduleRepository.getMyTripSchedulesFlow(userNickName).map { it.map { it.toTripScheduleModel() } }
+    }
+
+
     //hj
     //닉네임 바꿀 때 사용하기
     // 닉변 전 게시물의 닉네임을 변경한 닉네임으로 update

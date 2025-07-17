@@ -14,6 +14,7 @@ import com.lion.wandertrip.TripApplication
 import com.lion.wandertrip.model.TripScheduleModel
 import com.lion.wandertrip.service.TripLocationBasedItemService
 import com.lion.wandertrip.service.TripScheduleService
+import com.lion.wandertrip.service.UserService
 import com.lion.wandertrip.util.BotNavScreenName
 import com.lion.wandertrip.util.ContentTypeId
 import com.lion.wandertrip.util.ScheduleScreenName
@@ -34,6 +35,7 @@ class RotateMapViewModel @Inject constructor(
     @ApplicationContext val context: Context,
     val tripScheduleService: TripScheduleService,
     val tripLocationBasedItemService: TripLocationBasedItemService,
+    val userService : UserService,
     private val savedStateHandle: SavedStateHandle
 ) : ViewModel() {
     // context
@@ -208,7 +210,6 @@ class RotateMapViewModel @Inject constructor(
         lat: String,
         lng: String
     ) {
-
         hideAttractionDialog()
         hideNoAttractionDialog()
 
@@ -236,7 +237,7 @@ class RotateMapViewModel @Inject constructor(
             tripScheduleModel.value.tripScheduleDocId = work
 
             val work2 = async(Dispatchers.IO) {
-                tripScheduleService.addTripDocIdToUserScheduleList(
+                userService.addTripScheduleToUserSubCollection(
                     tripApplication.loginUserModel.userDocId,
                     tripScheduleModel.value.tripScheduleDocId
                 )

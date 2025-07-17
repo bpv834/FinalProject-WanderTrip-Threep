@@ -68,49 +68,56 @@ fun TripNoteScreen(
     tripNoteViewModel: TripNoteViewModel = hiltViewModel()
 ) {
     val isLoading by tripNoteViewModel.isLoading.collectAsState()
+
     LaunchedEffect(Unit) {
-        // 여행기 초기화
         tripNoteViewModel.gettingTripNoteData()
     }
 
-    if (isLoading) LottieLoadingIndicator()
-    else {
-        Scaffold(
-            topBar = {
-                CustomTopAppBar(
-                    title = tripNoteViewModel.topAppBarTitle.value,
-                    menuItems = {},
-                    navigationIconOnClick = {}
-                )
-            },
-            containerColor = Color.White,
-            floatingActionButton = {
-                FloatingActionButton(
-                    onClick = { tripNoteViewModel.addButtonOnClick() },
-                    modifier = Modifier
-                        .padding(bottom = 16.dp)
-                        .navigationBarsPadding(), // 시스템 UI 위로 안전하게
-                    content = {
-                        Icon(imageVector = Icons.Default.Add, contentDescription = "+")
-                    }
-                )
-            }
-        ) {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+    ) {
+        Column(modifier = Modifier.fillMaxSize()) {
+            // TopAppBar
+            Text(
+                text = tripNoteViewModel.topAppBarTitle.value,
+                fontSize = 22.sp,
+                modifier = Modifier
+                    .padding(top = 16.dp,start = 8.dp, bottom = 12.dp),
+                fontFamily = NanumSquareRound,
+                color = Color.Black
+            )
+            // 여행기 리스트
             LazyColumn(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(it)
                     .padding(10.dp)
             ) {
-
                 itemsIndexed(tripNoteViewModel.tripNoteList) { index, tripNote ->
-                        TripNoteItem(
-                            tripItem = tripNoteViewModel.tripNoteList[index],
-                            onItemClick = { tripNoteViewModel.listItemOnClick(tripNoteViewModel.tripNoteList[index].tripNoteDocumentId) }
-                        )
+                    TripNoteItem(
+                        tripItem = tripNote,
+                        onItemClick = {
+                            tripNoteViewModel.listItemOnClick(tripNote.tripNoteDocumentId)
+                        }
+                    )
                 }
             }
         }
-    }
 
+        // 플로팅 액션 버튼
+        FloatingActionButton(
+            onClick = { tripNoteViewModel.addButtonOnClick() },
+            modifier = Modifier
+                .align(Alignment.BottomEnd)
+                .padding(end = 16.dp, bottom = 16.dp)
+                .navigationBarsPadding()
+        ) {
+            Icon(imageVector = Icons.Default.Add, contentDescription = "+")
+        }
+
+        // 로딩 중일 때 로띠
+        if (isLoading) {
+            LottieLoadingIndicator()
+        }
+    }
 }

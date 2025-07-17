@@ -57,9 +57,6 @@ fun ScheduleCitySelectScreen(
 
     val isLoading by remember { viewModel.isLoading }
 
-    // 검색어
-    var searchQuery by remember { mutableStateOf("") }
-
     Box(modifier = Modifier.fillMaxSize()) {
         Scaffold(
             containerColor = Color.White,
@@ -81,22 +78,6 @@ fun ScheduleCitySelectScreen(
                         )
                     },
             ) {
-                // 검색 바
-                ScheduleCitySelectSearchBar(
-                    query = searchQuery,
-                    onSearchQueryChanged = {
-                        searchQuery = it
-                        // 검색어 변경 시 필터링 실행
-                        viewModel.updateFilteredCities(it)
-                    },
-                    onSearchClicked = {
-                        Log.d("ScheduleCitySelectScreen","검색 실행: $searchQuery")
-                    },
-                    onClearQuery = {
-                        searchQuery = "" // ✅ 검색어 초기화
-                        viewModel.updateFilteredCities("") // X 버튼 클릭 시 전체 도시 목록 복원
-                    }
-                )
                 // 한반도 돌리기 @@@@@
                 Button(
                     onClick = {
@@ -122,34 +103,6 @@ fun ScheduleCitySelectScreen(
                         color = Color.Black
                     )
                 }
-
-
-                Button(
-                    onClick = {
-                        // 도시 룰렛 화면 으로 이동
-                        viewModel.moveToRouletteCityScreen(scheduleTitle, scheduleStartDate, scheduleEndDate)
-                    },
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = Color.White, // ✅ 버튼 배경색: 흰색
-                        contentColor = Color(0xFF435C8F) // ✅ 버튼 텍스트 색상: 파란색 (변경 가능)
-                    ),
-                    shape = RectangleShape // ✅ 버튼을 사각형으로 변경
-                ) {
-                    Image(
-                        painter = painterResource(id = R.drawable.roulette_picture), // ✅ drawable 리소스 추가
-                        contentDescription = "룰렛 이미지",
-                        modifier = Modifier.size(70.dp).padding(end = 16.dp) // ✅ 아이콘 크기 조정 가능
-                    )
-                    Text(
-                        text = "룰렛 돌리기",
-                        fontFamily = NanumSquareRoundRegular,
-                        fontSize = 35.sp,
-                        color = Color.Black
-                    )
-                }
-
-
                 // 도시 목록
                 ScheduleCitySelectList(
                     dataList = viewModel.filteredCities,

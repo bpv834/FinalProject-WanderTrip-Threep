@@ -33,6 +33,7 @@ import com.lion.a02_boardcloneproject.component.CustomTopAppBar
 import com.lion.wandertrip.R
 import com.lion.wandertrip.presentation.rotate_map_page.components.NoAttractionDialog
 import com.lion.wandertrip.presentation.rotate_map_page.components.TravelConfirmDialog
+import com.lion.wandertrip.util.Tools
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 @Composable
@@ -152,8 +153,9 @@ fun RotateMapScreen(
                     }
 
                     if (showAttractionDialog) {
+                        val regionName  = Tools.getRegionNameFromLatLng(viewModel.tripApplication,viewModel.initLat.toDouble(),viewModel.initLng.toDouble())
                         TravelConfirmDialog(
-                            onYesClick = { viewModel.addTripSchedule(scheduleTitle,scheduleStartDate,scheduleEndDate,"name", viewModel.initLat,viewModel.initLng)},
+                            onYesClick = { viewModel.addTripSchedule(scheduleTitle,scheduleStartDate,scheduleEndDate,regionName?:"region", viewModel.initLat,viewModel.initLng)},
                             onRetryClick = { viewModel.hideAttractionDialog() },
                             onDismiss = { viewModel.hideAttractionDialog() }
                         )

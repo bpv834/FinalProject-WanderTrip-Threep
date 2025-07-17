@@ -508,6 +508,33 @@ class TripScheduleRepository {
         // 결과 반환
         return tripSchedules
     }
+
+    // flow 내일정 가져오기
+    fun getMyTripSchedulesFlow(userNickName: String): Flow<List<TripScheduleVO>> = callbackFlow {
+        val firestore = FirebaseFirestore.getInstance()
+        val collRef = firestore.collection("TripSchedule")
+
+        // whereEqualTo 쿼리와 snapshotListener 설정
+        val listenerRegistration = collRef
+            .whereEqualTo("userNickName", userNickName)
+            .addSnapshotListener { snapshot, error ->
+                if (error != null) {
+                    close(error) // 에러 발생 시 flow 종료
+                    return@addSnapshotListener
+                }
+
+                if (snapshot != null && !snapshot.isEmpty) {
+                    val tripSchedules = snapshot.toObjects(TripScheduleVO::class.java)
+                    trySend(tripSchedules).isSuccess
+                } else {
+                    trySend(emptyList()).isSuccess
+                }
+            }
+
+        // 리스너 해제
+        awaitClose { listenerRegistration.remove() }
+    }.flowOn(Dispatchers.IO)
+
     // hj
     //닉네임 바꿀 때 사용하기
     // 닉변 전 게시물의 닉네임을 변경한 닉네임으로 update

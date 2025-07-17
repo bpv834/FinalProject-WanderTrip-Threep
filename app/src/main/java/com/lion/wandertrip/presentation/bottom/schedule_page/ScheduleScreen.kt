@@ -38,53 +38,45 @@ fun ScheduleScreen(
 ) {
     val isLoading by viewModel.isLoading.collectAsState()
     // 일정 데이터 가져오기
-    LaunchedEffect(Unit) {
-        viewModel.fetchUserScheduleList()
-    }
-
+    val myScheduleList by viewModel.userSchedules.collectAsState()
     if(isLoading){
         LottieLoadingIndicator()
     }
     else{
-        Scaffold(
-            containerColor = Color.White
-        ) { innerPadding ->
-            Column(
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+        ) {
+            // 상단 제목 + 추가 버튼
+            Row(
                 modifier = Modifier
-                    .padding(innerPadding)
-                    .fillMaxSize()
+                    .padding(horizontal = 16.dp, vertical = 16.dp)
             ) {
-                // 상단 제목 + 추가 버튼
-                Row(
+                Text(
+                    text = "내 일정",
+                    fontFamily = NanumSquareRound,
+                    fontSize = 22.sp,
                     modifier = Modifier
-                        .padding(horizontal = 16.dp, vertical = 16.dp)
-                ) {
-                    Text(
-                        text = "내 일정",
-                        fontFamily = NanumSquareRound,
-                        fontSize = 22.sp,
-                        modifier = Modifier
-                            .weight(1f)
-                    )
+                        .weight(1f)
+                )
 
-                    // 일정 추가 버튼
-                    ScheduleIconButton(
-                        icon = Icons.Filled.Add,
-                        size = 30,
-                        iconButtonOnClick = { viewModel.addIconButtonEvent() }
-                    )
-                }
-
-                // LazyColumn으로 일정 목록 출력
-                ScheduleItemList(
-                    dataList = viewModel.myScheduleList,
-                    scheduleType = 0,
-                    viewModel = viewModel,
-                    onRowClick = { userSchedule ->
-                        viewModel.moveToScheduleDetailScreen(userSchedule)
-                    }
+                // 일정 추가 버튼
+                ScheduleIconButton(
+                    icon = Icons.Filled.Add,
+                    size = 30,
+                    iconButtonOnClick = { viewModel.addIconButtonEvent() }
                 )
             }
+
+            // LazyColumn으로 일정 목록 출력
+            ScheduleItemList(
+                dataList = myScheduleList,
+                scheduleType = 0,
+                viewModel = viewModel,
+                onRowClick = { userSchedule ->
+                    viewModel.moveToScheduleDetailScreen(userSchedule)
+                }
+            )
         }
     }
 }

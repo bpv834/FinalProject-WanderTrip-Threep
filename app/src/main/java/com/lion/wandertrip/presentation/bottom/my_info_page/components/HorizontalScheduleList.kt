@@ -14,6 +14,8 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -27,7 +29,8 @@ import com.lion.wandertrip.util.Tools
 import kotlin.random.Random
 
 @Composable
-fun HorizontalScheduleList(viewModel : MyInfoViewModel,schedules: List<TripScheduleModel>) {
+fun HorizontalScheduleList(viewModel : MyInfoViewModel) {
+    val schedules by viewModel.userSchedules.collectAsState()
     LazyRow(
         modifier = Modifier
             .fillMaxWidth()

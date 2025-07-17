@@ -1,5 +1,6 @@
 package com.lion.wandertrip.presentation.bottom.my_info_page
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.net.Uri
 import android.util.Log
@@ -23,6 +24,8 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -34,16 +37,12 @@ class MyInfoViewModel @Inject constructor(
 ) : ViewModel(){
 
     // userModelState
-    val userModel = UserModel()
-    val userModelValue = mutableStateOf(userModel)
+    val userModelValue = mutableStateOf(UserModel())
     // context
     val tripApplication = context as TripApplication
 
     // 보여줄 이미지의 Uri
     val showImageUri = mutableStateOf<Uri?>(null)
-
-    // 최근 일정 목록
-    val upComingScheduleList = mutableStateListOf<TripScheduleModel>()
 
     // 최근 본 아이템 목록
     val recentTripItemList = mutableStateListOf<RecentTripItemModel>()
@@ -103,24 +102,8 @@ class MyInfoViewModel @Inject constructor(
         }
     }
 
-    // 화면 열 때 여행 일정 리스트 가져오기
-    fun getTripScheduleList() {
-        upComingScheduleList.clear()
-        viewModelScope.launch {
-            val work1 = async(Dispatchers.IO){
-                tripScheduleService.gettingMyTripSchedules(tripApplication.loginUserModel.userNickName)
-            }
-            val myScheduleList = work1.await()
-            // 다가오는 일정만 가져오기
-            val result = myScheduleList.filter { it.scheduleEndDate> Timestamp.now() }
-            upComingScheduleList.addAll(
-                result
-            )
-        }
-
-    }
-
     // 화면 열 때 최근 본 목록 가져오기
+    @SuppressLint("SuspiciousIndentation")
     fun getRecentTripItemList() {
         recentTripItemList.clear()
      val recentList = Tools.getRecentItemList(tripApplication)
@@ -128,6 +111,27 @@ class MyInfoViewModel @Inject constructor(
             recentList
         )
     }
+
+    // flow 유저 스케줄 상태 변수
+    private val _userSchedules = MutableStateFlow<List<TripScheduleModel>>(emptyList())
+    val userSchedules: StateFlow<List<TripScheduleModel>> = _userSchedules
+
+    // flow 유저 스케줄 collect 메서드
+    private fun flowMySchedule() {
+        viewModelScope.launch {
+            tripScheduleService.getMyTripSchedulesFlow(tripApplication.loginUserModel.userNickName)
+                .collect() { schedule ->
+                    _userSchedules.value = schedule.filter { it.scheduleStartDate> Timestamp.now() }.sortedBy { it.scheduleStartDate }
+                }
+        }
+    }
+
+    init {
+        gettingUserModel()
+        getRecentTripItemList()
+        flowMySchedule()
+    }
+
 
 
 }

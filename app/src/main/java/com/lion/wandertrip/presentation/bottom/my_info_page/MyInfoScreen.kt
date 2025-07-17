@@ -32,13 +32,6 @@ import kotlinx.coroutines.flow.collectLatest
 @Composable
 fun MyInfoScreen(myInfoViewModel: MyInfoViewModel = hiltViewModel()) {
     Log.d("myScreen", "마이페이지")
-    LaunchedEffect(Unit) {
-        myInfoViewModel.gettingUserModel()
-        // 화면 열때 리스트 가져오기
-        myInfoViewModel.getTripScheduleList()
-        // 최근 본 목록 가져오기
-        myInfoViewModel.getRecentTripItemList()
-    }
 
      val navController = myInfoViewModel.tripApplication.navHostController
          var backStackRoutes by remember { mutableStateOf<List<String>>(emptyList()) }
@@ -82,7 +75,7 @@ fun MyInfoScreen(myInfoViewModel: MyInfoViewModel = hiltViewModel()) {
             Spacer(modifier = Modifier.height(16.dp))  // 프로필 카드와 일정 리스트 사이 간격
 
             // 일정 리스트
-            HorizontalScheduleList(myInfoViewModel, myInfoViewModel.upComingScheduleList)
+            HorizontalScheduleList(myInfoViewModel)
 
             Column {
                 Text("최근 본 항목", fontFamily = CustomFont.customFontBold)

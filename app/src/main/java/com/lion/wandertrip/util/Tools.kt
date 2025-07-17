@@ -5,6 +5,7 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.ImageDecoder
 import android.graphics.Matrix
+import android.location.Geocoder
 import android.media.ExifInterface
 import android.net.Uri
 import android.os.Build
@@ -786,6 +787,24 @@ class Tools {
             val gson = Gson()
             val type = object : TypeToken<List<RecentTripItemModel>>() {}.type
             return gson.fromJson(json, type)
+        }
+
+        // lat, lng 으로 지역명 불러오기
+        fun getRegionNameFromLatLng(context: Context, latitude: Double, longitude: Double): String? {
+            return try {
+                val geocoder = Geocoder(context, Locale.KOREA)
+                val addresses = geocoder.getFromLocation(latitude, longitude, 1)
+
+                if (!addresses.isNullOrEmpty()) {
+                    val address = addresses[0]
+                    address.locality  // 예: 청주시, 인천시, 대구시 등
+                } else {
+                    null
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+                null
+            }
         }
 
     }
