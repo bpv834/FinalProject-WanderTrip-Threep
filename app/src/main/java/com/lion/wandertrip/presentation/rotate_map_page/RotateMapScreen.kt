@@ -50,13 +50,13 @@ fun RotateMapScreen(
     val context = viewModel.tripApplication
     val image = painterResource(id = R.drawable.img_south_korea_map)
 
-    val animRotation = remember { Animatable(0f) }
+    val animRotation = remember { Animatable(0f) } // 현재 회전 상태를 기억하고 애니메이션으로 변경할 수 있도록 하는 객체
 
     val isSpinning by viewModel.isSpinning.collectAsState()
-    val targetRotation by viewModel.targetRotation.collectAsState()
+    val targetRotation by viewModel.targetRotation.collectAsState() // 목표 회전각.
 
     val scope = rememberCoroutineScope()
-    var mapSize by remember { mutableStateOf(IntSize.Zero) }
+    var mapSize by remember { mutableStateOf(IntSize.Zero) } // 박스 사이즈 저장변수
     var relativeClick by remember { mutableStateOf<Offset?>(null) }
     var wanderTripCount by remember { mutableStateOf(1) }
     var retryCount by remember { mutableStateOf(3) }
@@ -64,13 +64,13 @@ fun RotateMapScreen(
     val showAttractionDialog by viewModel.showAttractionDialog.collectAsState()
     val showNoAttractionDialog by viewModel.showNoAttractionDialog.collectAsState()
 
+    // targetRotation 값이 변경될때마다 각도를 변환시킨다.
     LaunchedEffect(targetRotation) {
         animRotation.animateTo(
             targetValue = targetRotation,
             animationSpec = tween(2000, easing = LinearOutSlowInEasing)
         )
     }
-
     Scaffold(
         containerColor = Color.White,
         topBar = {
@@ -100,18 +100,19 @@ fun RotateMapScreen(
                     .fillMaxWidth()
                     .aspectRatio(1f)
                     .graphicsLayer {
-                        rotationZ = animRotation.value
-                        transformOrigin = TransformOrigin.Center
+                        rotationZ = animRotation.value // 2D 평면에서 시계 방향 회전 각도
+                        transformOrigin = TransformOrigin.Center //회전할 때 중심을 기준으로 돌겠다
                     }
                     .onSizeChanged { mapSize = it }
                     .pointerInput(Unit) {
                         detectTapGestures { tap ->
                             if (mapSize.width > 0 && mapSize.height > 0 && isSpinning) {
                                 // 역회전 보정
+                                // 돌린만큼 거꾸로 돌리기 그래야 정위치 포인터값을 알기때문
                                 val correctedOffset = viewModel.rotatePointBack(
                                     tap,
                                     mapSize,
-                                    animRotation.value
+                                    animRotation.value // 전체 회전각도 몇바퀴 얼마나 돌았는지
                                 )
                                 relativeClick = correctedOffset
 
@@ -119,8 +120,8 @@ fun RotateMapScreen(
                                 viewModel.setLatLng(lat.toString(), lon.toString())
                                 viewModel.stopSpinning()
 
-                                val current = animRotation.value % 360f
-                                val target = animRotation.value + (360f - current) + 360f
+                                val current = animRotation.value % 360f //  (예: 725도 → 5도).
+                                val target = animRotation.value + (360f - current) + 360f // (예: 5도면 → 355도) 나머지 회전후 정위치에서 멈추는 각도
                                 viewModel.setTargetRotation(target)
 
                                 viewModel.onRotationFinished(lat.toString(), lon.toString())
@@ -155,36 +156,6 @@ fun RotateMapScreen(
                             )
                         }
                     }
-
-                    if (showAttractionDialog) {
-                        val regionName = Tools.getRegionNameFromLatLng(
-                            viewModel.tripApplication,
-                            viewModel.initLat.toDouble(),
-                            viewModel.initLng.toDouble()
-                        )
-                        TravelConfirmDialog(
-                            onYesClick = {
-                                viewModel.addTripSchedule(
-                                    scheduleTitle,
-                                    scheduleStartDate,
-                                    scheduleEndDate,
-                                    regionName ?: "region",
-                                    viewModel.initLat,
-                                    viewModel.initLng
-                                )
-                            },
-                            onRetryClick = { viewModel.hideAttractionDialog() },
-                            onDismiss = { viewModel.hideAttractionDialog() }
-                        )
-                    }
-
-                    if (showNoAttractionDialog) {
-                        NoAttractionDialog(
-                            onYesClick = { viewModel.hideNoAttractionDialog() },
-                            onNoClick = { viewModel.hideNoAttractionDialog() },
-                            onDismiss = { viewModel.hideNoAttractionDialog() }
-                        )
-                    }
                 }
             }
 
@@ -203,8 +174,8 @@ fun RotateMapScreen(
                             scope.launch {
                                 while (viewModel.isSpinning.value) {
                                     val current = animRotation.value
-                                    animRotation.snapTo(current + 10f)
-                                    delay(16L)
+                                    animRotation.snapTo(current + 10f) // 현재각에서 10도씩 회전
+                                    delay(16L) // 60fps 프레임 16/1000ms
                                 }
                             }
                         }
@@ -220,4 +191,35 @@ fun RotateMapScreen(
             }
         }
     }
+    // 다이얼로그는 스케폴드 바깥에 배치
+    if (showAttractionDialog) {
+        val regionName = Tools.getRegionNameFromLatLng(
+            viewModel.tripApplication,
+            viewModel.initLat.toDouble(),
+            viewModel.initLng.toDouble()
+        )
+        TravelConfirmDialog(
+            onYesClick = {
+                viewModel.addTripSchedule(
+                    scheduleTitle,
+                    scheduleStartDate,
+                    scheduleEndDate,
+                    regionName ?: "region",
+                    viewModel.initLat,
+                    viewModel.initLng
+                )
+            },
+            onRetryClick = { viewModel.hideAttractionDialog() },
+            onDismiss = { viewModel.hideAttractionDialog() }
+        )
+    }
+
+    if (showNoAttractionDialog) {
+        NoAttractionDialog(
+            onYesClick = { viewModel.hideNoAttractionDialog() },
+            onNoClick = { viewModel.hideNoAttractionDialog() },
+            onDismiss = { viewModel.hideNoAttractionDialog() }
+        )
+    }
+
 }

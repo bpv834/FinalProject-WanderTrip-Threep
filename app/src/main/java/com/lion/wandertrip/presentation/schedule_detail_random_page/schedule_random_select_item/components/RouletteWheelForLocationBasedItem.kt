@@ -39,45 +39,56 @@ fun RouletteWheelForLocationBasedItem(
         Color(0xFFFFC107), Color(0xFFFF5722), Color(0xFFE91E63), Color(0xFF3F51B5),
         Color(0xFF009688), Color(0xFF8BC34A), Color(0xFFFF9800), Color(0xFF673AB7)
     )
-
     Canvas(
         modifier = Modifier.size(320.dp)
     ) {
         if (items.isEmpty()) {
+            // 아이템이 없으면 전체를 회색 원으로 그림
+
+            // drawArc : Canvas에서 원호(Arc)를 그리는 함수예요
             drawArc(
-                color = Color.LightGray,
-                startAngle = 0f,
-                sweepAngle = 360f,
-                useCenter = true
+                color = Color.Red,         // 그릴 색상
+                startAngle = 0f,           // 시작 각도 (0도는 오른쪽)
+                sweepAngle = 90f,          // 몇 도까지 그릴 것인지 (90도면 1/4원)
+                useCenter = true,          // true면 중심을 연결해 파이 모양 / false면 둥근 호만 그림
             )
         } else {
+            // 아이템이 있을 때 각 아이템마다 룰렛 조각을 그림
             items.forEachIndexed { index, tripItem ->
+                // 각 조각의 시작 각도를 계산 (현재 인덱스 * 조각 각도 + 전체 회전각)
                 val startAngle = index * sliceAngle + rotationAngle
+
+                // 텍스트를 배치하기 위한 중간 각도 계산
                 val midAngle = startAngle + (sliceAngle / 2)
 
+                // 회전된 상태에서 해당 조각을 그림
                 rotate(startAngle) {
                     drawArc(
-                        color = colors[index % colors.size],
-                        startAngle = 0f,
-                        sweepAngle = sliceAngle,
-                        useCenter = true
+                        color = colors[index % colors.size], // 색상 리스트를 반복하여 적용
+                        startAngle = 0f, // 회전된 좌표계 기준으로 시작
+                        sweepAngle = sliceAngle, // 하나의 조각에 해당하는 각도
+                        useCenter = true // 원 중심부터 조각을 채우는 형태로 그림 (파이 조각처럼)
                     )
                 }
 
+                // 텍스트를 배치할 반지름 위치 계산 (중심에서 약간 안쪽으로)
                 val textRadius = radius * 0.7f
+
+                // 중간 각도를 기준으로 텍스트 좌표 계산 (삼각함수로 위치 구함)
                 val textX = center.x + textRadius * cos(Math.toRadians(midAngle.toDouble())).toFloat()
                 val textY = center.y + textRadius * sin(Math.toRadians(midAngle.toDouble())).toFloat()
 
+                // 텍스트를 해당 위치에 그림 (Android의 native Canvas 사용)
                 drawContext.canvas.nativeCanvas.apply {
                     drawText(
-                        tripItem.title!!,
-                        textX,
-                        textY,
+                        tripItem.title!!, // 아이템 제목
+                        textX, // X좌표
+                        textY, // Y좌표
                         Paint().apply {
-                            color = android.graphics.Color.DKGRAY
-                            textSize = 45f
-                            textAlign = Paint.Align.CENTER
-                            typeface = Typeface.DEFAULT_BOLD
+                            color = android.graphics.Color.DKGRAY // 텍스트 색상
+                            textSize = 45f // 텍스트 크기 (픽셀 단위)
+                            textAlign = Paint.Align.CENTER // 텍스트 가운데 정렬
+                            typeface = Typeface.DEFAULT_BOLD // 볼드체
                         }
                     )
                 }
