@@ -103,7 +103,6 @@ class MyInfoViewModel @Inject constructor(
     }
 
     // 화면 열 때 최근 본 목록 가져오기
-    @SuppressLint("SuspiciousIndentation")
     fun getRecentTripItemList() {
         recentTripItemList.clear()
      val recentList = Tools.getRecentItemList(tripApplication)
@@ -127,8 +126,9 @@ class MyInfoViewModel @Inject constructor(
     }
 
     init {
+        // 플로우만 넣어야 하는게
+        // mutableState 같은 상태는 화면일 리컴퍼지션 될때마다 get해줘야 상태 변경이 됨
         gettingUserModel()
-        getRecentTripItemList()
         flowMySchedule()
     }
 

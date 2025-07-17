@@ -140,26 +140,40 @@ class RotateMapViewModel @Inject constructor(
         }
     }
 
-
-    // 회전 보정 함수
+    /**
+     * 회전된 UI 위에서 터치한 좌표(tap)를 원래 회전되지 않은 상태로 보정하고,
+     * 정규화된 비율 좌표 (0~1 범위)로 반환하는 함수
+     *
+     * @param tap 사용자가 터치한 위치 (화면 상의 Offset 좌표, px 단위)
+     * @param size 현재 UI 컴포넌트의 크기 (IntSize, width/height는 px 단위)
+     * @param rotationDegrees UI가 시계방향으로 회전된 각도 (도 단위)
+     * @return 정규화된 보정 좌표 (0~1 사이의 비율로 표현된 Offset)
+     */
     fun rotatePointBack(tap: Offset, size: IntSize, rotationDegrees: Float): Offset {
+        // 1. 컴포넌트의 중심 좌표 계산 (회전의 기준점)
         val center = Offset(size.width / 2f, size.height / 2f)
 
+        // 2. 터치 위치(tap)를 중심 기준 상대 좌표로 변환
         val dx = tap.x - center.x
         val dy = tap.y - center.y
 
+        // 3. 회전을 보정하기 위해 입력 각도의 반대 방향(음수)로 변환 (도 -> 라디안)
         val radians = Math.toRadians(-rotationDegrees.toDouble())
 
+        // 4. 회전 행렬을 사용하여 원래 좌표계로 보정된 상대 위치 계산
         val rotatedX = (dx * cos(radians) - dy * sin(radians)).toFloat()
         val rotatedY = (dx * sin(radians) + dy * cos(radians)).toFloat()
 
+        // 5. 중심 좌표를 다시 더해 절대 좌표계 기준으로 복원
         val corrected = Offset(rotatedX + center.x, rotatedY + center.y)
 
+        // 6. 최종 보정된 좌표를 정규화 (0~1 비율로 변환)해서 반환
         return Offset(
             corrected.x / size.width,
             corrected.y / size.height
         )
     }
+
 
     // 위도/경도 변환 함수
     fun toLatLng(relativeOffset: Offset): Pair<Double, Double> {

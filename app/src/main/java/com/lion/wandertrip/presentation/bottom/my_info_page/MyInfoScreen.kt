@@ -22,6 +22,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.lion.wandertrip.presentation.bottom.my_info_page.components.HorizontalRecentPostsList
 import com.lion.wandertrip.presentation.bottom.my_info_page.components.HorizontalScheduleList
 import com.lion.wandertrip.presentation.bottom.my_info_page.components.ProfileCardBasicImage
@@ -33,26 +34,29 @@ import kotlinx.coroutines.flow.collectLatest
 fun MyInfoScreen(myInfoViewModel: MyInfoViewModel = hiltViewModel()) {
     Log.d("myScreen", "마이페이지")
 
-     val navController = myInfoViewModel.tripApplication.navHostController
-         var backStackRoutes by remember { mutableStateOf<List<String>>(emptyList()) }
+    val navController = myInfoViewModel.tripApplication.navHostController
+    var backStackRoutes by remember { mutableStateOf<List<String>>(emptyList()) }
+    LaunchedEffect(Unit) {
+        myInfoViewModel.getRecentTripItemList()
+    }
+    LaunchedEffect(navController) {
+        navController.currentBackStackEntryFlow.collectLatest { backStackEntry ->
+            // 현재 백스택을 안전하게 가져옴
+            val backStackList =
+                navController.currentBackStack.value.mapNotNull { it.destination.route }
 
-         LaunchedEffect(navController) {
-             navController.currentBackStackEntryFlow.collectLatest { backStackEntry ->
-                 // 현재 백스택을 안전하게 가져옴
-                 val backStackList = navController.currentBackStack.value.mapNotNull { it.destination.route }
+            backStackRoutes = backStackList // 최신 백스택 반영
+        }
+    }
 
-                 backStackRoutes = backStackList // 최신 백스택 반영
-             }
-         }
-
-         // 백스택 로그 출력
-         LaunchedEffect(backStackRoutes) {
-             Log.d("BackStack", "===== Current BackStack =====")
-             backStackRoutes.forEach { route ->
-                 Log.d("BackStack", "Route: $route")
-             }
-             Log.d("BackStack", "=============================")
-         }
+    // 백스택 로그 출력
+    LaunchedEffect(backStackRoutes) {
+        Log.d("BackStack", "===== Current BackStack =====")
+        backStackRoutes.forEach { route ->
+            Log.d("BackStack", "Route: $route")
+        }
+        Log.d("BackStack", "=============================")
+    }
 
 
     val userModel = myInfoViewModel.userModelValue.value
@@ -85,7 +89,6 @@ fun MyInfoScreen(myInfoViewModel: MyInfoViewModel = hiltViewModel()) {
                     myInfoViewModel
                 )
             }
-
 
 
         }

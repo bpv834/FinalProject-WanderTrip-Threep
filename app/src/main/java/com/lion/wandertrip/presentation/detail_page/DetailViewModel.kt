@@ -311,6 +311,7 @@ class DetailViewModel @Inject constructor(
             imageUri = imageUri,
             contentID = contentID,
         )
+        Log.d("addRecentItem","$recentModel")
         Tools.addRecentItemList(tripApplication, recentModel)
     }
 

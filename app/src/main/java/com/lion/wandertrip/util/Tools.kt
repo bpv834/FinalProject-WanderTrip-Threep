@@ -771,22 +771,33 @@ class Tools {
             editor.apply()
         }
 
+        // 내부저장소에서 최근목록 가져오는 메서드
         fun getRecentItemList(context: Context): List<RecentTripItemModel> {
-            // SharedPreferences 인스턴스 가져오기
             val sharedPreferences = context.getSharedPreferences("RecentItem", Context.MODE_PRIVATE)
-
-            // 저장된 JSON 문자열을 가져오기
             val json = sharedPreferences.getString("recentItemList", null)
 
-            // JSON이 없으면 빈 리스트 반환
             if (json == null) {
+                Log.d("RecentItem", "저장된 recentItemList가 없습니다. 빈 리스트를 반환합니다.")
                 return emptyList()
             }
 
-            // Gson을 사용해 JSON을 List<RecentTripItemModel>로 변환
-            val gson = Gson()
-            val type = object : TypeToken<List<RecentTripItemModel>>() {}.type
-            return gson.fromJson(json, type)
+            Log.d("RecentItem", "저장된 JSON 문자열: $json")
+
+            return try {
+                val gson = Gson()
+                val type = object : TypeToken<List<RecentTripItemModel>>() {}.type
+                val itemList: List<RecentTripItemModel> = gson.fromJson(json, type)
+
+                Log.d("RecentItem", "파싱된 리스트 크기: ${itemList.size}")
+                itemList.forEachIndexed { index, item ->
+                    Log.d("RecentItem", "[$index] 아이템: $item")
+                }
+
+                itemList
+            } catch (e: Exception) {
+                Log.e("RecentItem", "JSON 파싱 중 오류 발생: ${e.message}", e)
+                emptyList()
+            }
         }
 
         // lat, lng 으로 지역명 불러오기
