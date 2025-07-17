@@ -58,27 +58,6 @@ class RotateMapViewModel @Inject constructor(
     // 일정 모델
     val tripScheduleModel = mutableStateOf(TripScheduleModel())
 
-    // 회전상태
-    private val _isSpinning = MutableStateFlow(false)
-    val isSpinning: StateFlow<Boolean> = _isSpinning
-
-    // 회전 상태 변경
-    fun startSpinning() {
-        _isSpinning.value = true
-    }
-
-    fun stopSpinning() {
-        _isSpinning.value = false
-    }
-
-    // 회전각 상태
-    private val _targetRotation = MutableStateFlow(0f)
-    val targetRotation: StateFlow<Float> = _targetRotation
-
-    // ratation set 메서드
-    fun setTargetRotation(target: Float) {
-        _targetRotation.value = target
-    }
 
     // 관광지 타입 변수
     private val ATTRACTION_CONTENT_TYPE_ID =
@@ -124,6 +103,28 @@ class RotateMapViewModel @Inject constructor(
         )
         return totalCount != 0
     }
+    // 회전상태
+    private val _isSpinning = MutableStateFlow(false)
+    val isSpinning: StateFlow<Boolean> = _isSpinning
+
+    // 회전 상태 변경
+    fun startSpinning() {
+        _isSpinning.value = true
+    }
+
+    fun stopSpinning() {
+        _isSpinning.value = false
+    }
+
+    // 회전각 상태
+    private val _targetRotation = MutableStateFlow(0f)
+    val targetRotation: StateFlow<Float> = _targetRotation
+
+    // ratation set 메서드
+    fun setTargetRotation(target: Float) {
+        _targetRotation.value = target
+    }
+
 
     fun onRotationFinished(lat: String, lon: String) {
         _isSpinning.value = false

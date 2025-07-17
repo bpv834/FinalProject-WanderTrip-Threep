@@ -50,28 +50,20 @@ fun RotateMapScreen(
     val context = viewModel.tripApplication
     val image = painterResource(id = R.drawable.img_south_korea_map)
 
-    //  애니메이션 상태
-    val animRotation = remember { Animatable(0f) } // 0f는 초기값 (회전 각도 0도에서 시작)
+    val animRotation = remember { Animatable(0f) }
 
-/*  animateTo(target) 목표값까지 부드럽게 애니메이션
-    snapTo(value)	즉시 값 설정 (애니메이션 없음)
-    updateBounds()	값의 범위 제한 설정
-    value	현재 값 가져오기*/
-
-    // ViewModel 상태
     val isSpinning by viewModel.isSpinning.collectAsState()
     val targetRotation by viewModel.targetRotation.collectAsState()
-    // 지역 상태
+
     val scope = rememberCoroutineScope()
-    var mapSize by remember { mutableStateOf(IntSize.Zero) } // 지도 크기 width/height
-    var relativeClick by remember { mutableStateOf<Offset?>(null) } //클릭시 찍히는 점 상태
+    var mapSize by remember { mutableStateOf(IntSize.Zero) }
+    var relativeClick by remember { mutableStateOf<Offset?>(null) }
     var wanderTripCount by remember { mutableStateOf(1) }
     var retryCount by remember { mutableStateOf(3) }
 
     val showAttractionDialog by viewModel.showAttractionDialog.collectAsState()
     val showNoAttractionDialog by viewModel.showNoAttractionDialog.collectAsState()
 
-    // 애니메이션 트리거
     LaunchedEffect(targetRotation) {
         animRotation.animateTo(
             targetValue = targetRotation,
@@ -107,16 +99,15 @@ fun RotateMapScreen(
                     .padding(16.dp)
                     .fillMaxWidth()
                     .aspectRatio(1f)
-                    .onSizeChanged { mapSize = it } // 맵 사이즈의 크기를 구한다.
-                    .border(
-                        width = 2.dp,
-                        brush = SolidColor(Color.Red),
-                        shape = androidx.compose.foundation.shape.RoundedCornerShape(0.dp),
-                        // 점선 효과 적용
-                    )
+                    .graphicsLayer {
+                        rotationZ = animRotation.value
+                        transformOrigin = TransformOrigin.Center
+                    }
+                    .onSizeChanged { mapSize = it }
                     .pointerInput(Unit) {
                         detectTapGestures { tap ->
-                            if (mapSize.width > 0 && mapSize.height > 0 && isSpinning) { // 맵사이즈가 양수가 회전중인경우 클릭 가능하도록
+                            if (mapSize.width > 0 && mapSize.height > 0 && isSpinning) {
+                                // 역회전 보정
                                 val correctedOffset = viewModel.rotatePointBack(
                                     tap,
                                     mapSize,
@@ -125,25 +116,25 @@ fun RotateMapScreen(
                                 relativeClick = correctedOffset
 
                                 val (lat, lon) = viewModel.toLatLng(correctedOffset)
-                                viewModel.setLatLng(lat.toString(),lon.toString())
+                                viewModel.setLatLng(lat.toString(), lon.toString())
                                 viewModel.stopSpinning()
 
                                 val current = animRotation.value % 360f
                                 val target = animRotation.value + (360f - current) + 360f
                                 viewModel.setTargetRotation(target)
-                                // 회전 종료 메서드
+
                                 viewModel.onRotationFinished(lat.toString(), lon.toString())
                             }
                         }
                     }
+                    .border(
+                        width = 2.dp,
+                        brush = SolidColor(Color.Red),
+                        shape = androidx.compose.foundation.shape.RoundedCornerShape(0.dp),
+                    )
             ) {
                 Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .graphicsLayer {
-                            rotationZ = animRotation.value
-                            transformOrigin = TransformOrigin.Center
-                        }
+                    modifier = Modifier.fillMaxSize()
                 ) {
                     Image(
                         painter = image,
@@ -166,9 +157,22 @@ fun RotateMapScreen(
                     }
 
                     if (showAttractionDialog) {
-                        val regionName  = Tools.getRegionNameFromLatLng(viewModel.tripApplication,viewModel.initLat.toDouble(),viewModel.initLng.toDouble())
+                        val regionName = Tools.getRegionNameFromLatLng(
+                            viewModel.tripApplication,
+                            viewModel.initLat.toDouble(),
+                            viewModel.initLng.toDouble()
+                        )
                         TravelConfirmDialog(
-                            onYesClick = { viewModel.addTripSchedule(scheduleTitle,scheduleStartDate,scheduleEndDate,regionName?:"region", viewModel.initLat,viewModel.initLng)},
+                            onYesClick = {
+                                viewModel.addTripSchedule(
+                                    scheduleTitle,
+                                    scheduleStartDate,
+                                    scheduleEndDate,
+                                    regionName ?: "region",
+                                    viewModel.initLat,
+                                    viewModel.initLng
+                                )
+                            },
                             onRetryClick = { viewModel.hideAttractionDialog() },
                             onDismiss = { viewModel.hideAttractionDialog() }
                         )
@@ -193,14 +197,14 @@ fun RotateMapScreen(
                 Button(
                     onClick = {
                         if (!isSpinning) {
-                            viewModel.startSpinning() // 상태를 회전상태임으로 변경
-                            relativeClick = null // 회전시키면 있던점을 우선 없앤다. 다시 돌리는경우
+                            viewModel.startSpinning()
+                            relativeClick = null
                             wanderTripCount += 1
                             scope.launch {
                                 while (viewModel.isSpinning.value) {
-                                    val current = animRotation.value // 현재 회전각도 값
-                                    animRotation.snapTo(current + 10f) //  애니메이션 없이 즉시 값 변경
-                                    delay(16L) // , 16ms 마다 회전 각도를 갱신 → 부드러운 60fps 회전처럼 보임 (1000ms / 60 ≈ 16.67ms)
+                                    val current = animRotation.value
+                                    animRotation.snapTo(current + 10f)
+                                    delay(16L)
                                 }
                             }
                         }
