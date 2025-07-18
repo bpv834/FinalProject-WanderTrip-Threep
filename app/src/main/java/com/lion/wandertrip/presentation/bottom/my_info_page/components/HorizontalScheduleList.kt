@@ -48,7 +48,7 @@ fun HorizontalScheduleList(viewModel : MyInfoViewModel) {
 fun ScheduleItemView(viewModel :MyInfoViewModel, scheduleItem: TripScheduleModel) {
     Row(
         modifier = Modifier.clickable {
-            viewModel.onClickScheduleItemGoScheduleDetail(scheduleItem.tripScheduleDocId,scheduleItem.scheduleCity)
+            viewModel.onClickScheduleItemGoScheduleDetail(scheduleItem)
         }
             .width(330.dp)
             .height(50.dp) // 아이템 높이 조정

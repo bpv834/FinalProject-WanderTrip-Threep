@@ -437,19 +437,16 @@ fun MyApp() {
         }
         // 리뷰 수정 화면
         composable(
-            route = "${MainScreenName.MAIN_SCREEN_DETAIL_REVIEW_MODIFY.name}/{contentDocID}/{contentsID}/{reviewDocID}",
+            route = "${MainScreenName.MAIN_SCREEN_DETAIL_REVIEW_MODIFY.name}/{contentsID}/{reviewDocID}",
             arguments = listOf(
-                navArgument("contentDocID") { type = NavType.StringType },
                 navArgument("contentsID") { type = NavType.StringType },
                 navArgument("reviewDocID") { type = NavType.StringType }
             )
         ) { backStackEntry ->
-            val contentDocID = backStackEntry.arguments?.getString("contentDocID") ?: ""
             val contentsID = backStackEntry.arguments?.getString("contentsID") ?: ""
             val reviewDocID = backStackEntry.arguments?.getString("reviewDocID") ?: ""
 
             DetailReviewModifyScreen(
-                contentDocID = contentDocID,
                 contentsID = contentsID,
                 reviewDocID = reviewDocID
             )

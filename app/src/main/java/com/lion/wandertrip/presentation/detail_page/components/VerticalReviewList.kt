@@ -14,13 +14,13 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ChatBubbleOutline
-import androidx.compose.material.icons.filled.FavoriteBorder
-import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -36,7 +36,6 @@ import com.lion.a02_boardcloneproject.component.CustomDividerComponent
 import com.lion.a02_boardcloneproject.component.CustomIconButton
 import com.lion.wandertrip.R
 import com.lion.wandertrip.component.CustomRatingBar
-import com.lion.wandertrip.component.LottieLoadingIndicator
 import com.lion.wandertrip.model.ReviewModel
 import com.lion.wandertrip.presentation.detail_page.DetailViewModel
 import com.skydoves.landscapist.CircularReveal
@@ -52,7 +51,6 @@ fun VerticalReviewList(detailViewModel: DetailViewModel) {
         ) {
             items(detailViewModel.filteredReviewList) {
                 CustomDividerComponent(3.dp)
-                Log.d("test100"," it : ${it.contentsDocId}")
                 ReviewItem(
                     it,
                     detailViewModel,
@@ -67,8 +65,16 @@ fun VerticalReviewList(detailViewModel: DetailViewModel) {
 
 @Composable
 fun ReviewItem(reviewModel: ReviewModel, detailViewModel: DetailViewModel, pos: Int) {
-    Log.d("test ReviewModel ","reviewModel.contentDocId: ${reviewModel.contentsDocId}")
     val sh = detailViewModel.tripApplication.screenHeight
+
+    var count by remember { mutableStateOf(0) }
+
+    // LaunchedEffect(reviewModel.reviewWriterNickname) 이렇게 쓰면
+    // 리뷰 아이템이 바뀔 때마다 LaunchedEffect가 다시 실행되어, count 값이 새로 갱신됩니다.
+    LaunchedEffect(reviewModel.reviewWriterNickname) {
+        count = detailViewModel.getCountUserReview(reviewModel.reviewWriterNickname)
+    }
+
 
     Column(
         modifier = Modifier
@@ -97,8 +103,11 @@ fun ReviewItem(reviewModel: ReviewModel, detailViewModel: DetailViewModel, pos: 
                 // 등록자 이름, 리뷰 개수
                 Column {
                     Text(text = reviewModel.reviewWriterNickname, fontWeight = FontWeight.Bold)
-                    Text(text = "20개의 리뷰", color = Color.Gray)
+                    Text(text = "${count}개의 리뷰", color = Color.Gray)
                 }
+                //  추후 최적화 가능
+                //ViewModel에 캐시(Map) 저장해서 중복 호출 방지
+                //또는 한번에 전체 리뷰 수를 받아오는 API 설계 가능
             }
 
             // 수정 / 삭제 버튼 (우측 정렬)
@@ -108,9 +117,9 @@ fun ReviewItem(reviewModel: ReviewModel, detailViewModel: DetailViewModel, pos: 
                 CustomIconButton(
                     ImageVector.vectorResource(R.drawable.ic_edit_24px),
                     iconButtonOnClick = {
+                        // TODO 컨텐츠 독 없애야함 매인액티비티도 수정
                         detailViewModel.onClickIconReviewModify(
-                            reviewModel.contentsDocId,
-                            reviewModel.contentsId,
+                            reviewModel.contentId,
                             reviewModel.reviewDocId
                         )
                     })
@@ -119,7 +128,7 @@ fun ReviewItem(reviewModel: ReviewModel, detailViewModel: DetailViewModel, pos: 
                 CustomIconButton(
                     ImageVector.vectorResource(R.drawable.ic_delete_24px),
                     iconButtonOnClick = {
-                        detailViewModel.deleteReview(contentDocId = reviewModel.contentsDocId, reviewModel.reviewDocId)
+                        detailViewModel.deleteReview(contentDocId = "", reviewModel.reviewDocId)
                     })
             }
         }

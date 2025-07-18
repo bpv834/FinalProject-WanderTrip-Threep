@@ -311,7 +311,7 @@ class DetailViewModel @Inject constructor(
             imageUri = imageUri,
             contentID = contentID,
         )
-        Log.d("addRecentItem","$recentModel")
+        Log.d("addRecentItem", "$recentModel")
         Tools.addRecentItemList(tripApplication, recentModel)
     }
 
@@ -616,8 +616,8 @@ class DetailViewModel @Inject constructor(
     }
 
     // 리뷰 수정 버튼 리스너
-    fun onClickIconReviewModify(contentDocID: String, contentsID: String, reviewDocID: String) {
-        tripApplication.navHostController.navigate("${MainScreenName.MAIN_SCREEN_DETAIL_REVIEW_MODIFY.name}/${contentDocID}/${contentsID}/${reviewDocID}")
+    fun onClickIconReviewModify(contentsID: String, reviewDocID: String) {
+        tripApplication.navHostController.navigate("${MainScreenName.MAIN_SCREEN_DETAIL_REVIEW_MODIFY.name}/${contentsID}/${reviewDocID}")
     }
 
 
@@ -627,7 +627,7 @@ class DetailViewModel @Inject constructor(
         viewModelScope.launch {
             // 삭제 진행
             val work1 = async(Dispatchers.IO) {
-                contentsReviewService.deleteContentsReview(contentDocId, contentsReviewDocId)
+                contentsReviewService.deleteContentsReview(contentsReviewDocId)
             }
             work1.join()
             // 컨텐츠 별점 수정
@@ -640,7 +640,11 @@ class DetailViewModel @Inject constructor(
         }
 
     }
-    // ------------------------------------------------------------------
+
+    // 유저 리뷰 개수 가져오기
+    suspend fun getCountUserReview(nickName: String): Int {
+        return contentsReviewService.getCountUserReview(nickName)
+    }
 
 
 }

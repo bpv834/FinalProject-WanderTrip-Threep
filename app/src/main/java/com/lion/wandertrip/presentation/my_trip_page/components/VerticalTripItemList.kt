@@ -67,7 +67,7 @@ fun VerticalTripItemList(myTripViewModel: MyTripViewModel) {
 fun TripItem(trip: TripScheduleModel,myTripViewModel: MyTripViewModel,pos : Int) {
     Row(
         modifier = Modifier.clickable {
-            myTripViewModel.onClickScheduleItemGoScheduleDetail(trip.tripScheduleDocId,trip.scheduleCity)
+            myTripViewModel.onClickScheduleItemGoScheduleDetail(trip)
         }
             .fillMaxWidth()
             .padding(10.dp)

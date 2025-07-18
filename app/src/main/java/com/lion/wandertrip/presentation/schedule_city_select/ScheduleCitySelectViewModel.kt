@@ -24,6 +24,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.checkerframework.checker.units.qual.Area
 import javax.inject.Inject
 
@@ -94,22 +95,6 @@ class ScheduleCitySelectViewModel @Inject constructor(
         return dateList
     }
 
-    // 도시 룰렛 화면 으로 이동
-    fun moveToRouletteCityScreen(scheduleTitle: String, scheduleStartDate: Timestamp, scheduleEndDate: Timestamp) {
-        // application.navHostController.navigate(RouletteScreenName.ROULETTE_CITY_SCREEN.name)
-
-        val formattedTitle = scheduleTitle
-        val startTimestamp = scheduleStartDate.seconds // 🔹 Timestamp -> Long 변환
-        val endTimestamp = scheduleEndDate.seconds // 🔹 Timestamp -> Long 변환
-
-        application.navHostController.navigate(
-            "${RouletteScreenName.ROULETTE_CITY_SCREEN.name}?" +
-                    "scheduleTitle=$formattedTitle" +
-                    "&scheduleStartDate=$startTimestamp" +
-                    "&scheduleEndDate=$endTimestamp"
-        )
-    }
-
     // 한반도 돌리기 화면으로 이동
     fun moveToRotateMapScreen(scheduleTitle: String, scheduleStartDate: Timestamp, scheduleEndDate: Timestamp) {
         // application.navHostController.navigate(RouletteScreenName.ROULETTE_CITY_SCREEN.name)
@@ -124,18 +109,6 @@ class ScheduleCitySelectViewModel @Inject constructor(
                     "&scheduleStartDate=$startTimestamp" +
                     "&scheduleEndDate=$endTimestamp"
         )
-    }
-
-    // 일정 상세 화면 으로 이동
-    fun moveToScheduleDetailScreen(areaName: String, areaCode: Int) {
-        Log.d("ScheduleCitySelectViewModel", "도시 이름: $areaName, 도시 코드: $areaCode")
-        application.navHostController.navigate(
-            "${ScheduleScreenName.SCHEDULE_DETAIL_SCREEN.name}?" +
-                    "tripScheduleDocId=${tripScheduleModel.tripScheduleDocId}&areaName=${areaName}&areaCode=${areaCode}"
-        ) {
-            popUpTo(BotNavScreenName.BOT_NAV_SCREEN_HOME.name) { inclusive = false }
-            launchSingleTop = true
-        }
     }
 
     // 이전 화면 으로 돌아 가기
@@ -169,6 +142,7 @@ class ScheduleCitySelectViewModel @Inject constructor(
     // 일정 상세 화면 으로 이동
     fun moveToScheduleDetailRandomScreen(lat: String, lng: String) {
 
+        Log.d("moveDetail","tripScheduleModel.tripScheduleDocId: ${tripScheduleModel.tripScheduleDocId}")
         // 일정 상세 화면 이동
         application.navHostController.navigate(
             "${ScheduleScreenName.SCHEDULE_DETAIL_RANDOM_SCREEN.name}?" +
@@ -201,29 +175,26 @@ class ScheduleCitySelectViewModel @Inject constructor(
         tripScheduleModel.lat = latLng.latitude.toString()
         tripScheduleModel.lng = latLng.longitude.toString()
 
-        Log.d("ScheduleCitySelectViewModel", "userDocId: ${application.loginUserModel.userDocId}")
-
-
         viewModelScope.launch {
-            val work = async(Dispatchers.IO) {
+            // tripScheduleModel 생성 및 Firestore에 추가
+            val tripScheduleDocId = withContext(Dispatchers.IO) {
                 tripScheduleService.addTripSchedule(tripScheduleModel)
-            }.await()
-            tripScheduleModel.tripScheduleDocId = work
-            Log.d("ScheduleCitySelectViewModel", "tripScheduleModel.tripScheduleDocId: ${tripScheduleModel.tripScheduleDocId}")
-            Log.d("ScheduleCitySelectViewModel", "tripScheduleModel.userID: ${application.loginUserModel.userId}")
+            }
+            tripScheduleModel.tripScheduleDocId = tripScheduleDocId
 
-            val work2 = async(Dispatchers.IO) {
+            // 사용자의 서브컬렉션에 추가
+            withContext(Dispatchers.IO) {
                 userService.addTripScheduleToUserSubCollection(
                     application.loginUserModel.userDocId,
-                    tripScheduleModel.tripScheduleDocId
+                    tripScheduleDocId
                 )
-            }.await()
+            }
 
-            delay(2000)
-
-            // 일정 상세 화면 으로 이동
-            moveToScheduleDetailRandomScreen(latLng.latitude.toString(), latLng.longitude.toString())
-
+            // 모든 작업이 끝난 뒤 화면 전환
+            moveToScheduleDetailRandomScreen(
+                latLng.latitude.toString(),
+                latLng.longitude.toString()
+            )
         }
     }
 }

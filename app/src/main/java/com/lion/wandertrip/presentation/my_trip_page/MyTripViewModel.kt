@@ -1,7 +1,6 @@
 package com.lion.wandertrip.presentation.my_trip_page
 
 import android.content.Context
-import android.util.Log
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
@@ -10,10 +9,8 @@ import androidx.lifecycle.viewModelScope
 import com.google.firebase.Timestamp
 import com.lion.wandertrip.TripApplication
 import com.lion.wandertrip.model.TripScheduleModel
-import com.lion.wandertrip.presentation.my_trip_page.used_dummy_data.ComeAndPastScheduleDummyData
 import com.lion.wandertrip.service.TripScheduleService
 import com.lion.wandertrip.service.UserService
-import com.lion.wandertrip.util.AreaCode
 import com.lion.wandertrip.util.ScheduleScreenName
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -155,16 +152,13 @@ class MyTripViewModel @Inject constructor(
     }
 
     // 내 여행 상세로 화면 전환 메서드
-    fun onClickScheduleItemGoScheduleDetail(tripScheduleDocId: String, areaName: String) {
-
-        // scheduleCity와 일치하는 AreaCode 찾기 (없으면 0 반환)
-        val areaCodeValue = AreaCode.entries.firstOrNull { it.areaName == areaName }?.areaCode ?: 0
-        Log.d("ScheduleViewModel", "areaCodeValue: $areaCodeValue")
-
-
+    fun onClickScheduleItemGoScheduleDetail(tripSchedule: TripScheduleModel) {
         tripApplication.navHostController.navigate(
-            "${ScheduleScreenName.SCHEDULE_DETAIL_SCREEN.name}?" +
-                    "tripScheduleDocId=${tripScheduleDocId}&areaName=${areaName}&areaCode=$areaCodeValue"
-        )
+            "${ScheduleScreenName.SCHEDULE_DETAIL_RANDOM_SCREEN.name}?" +
+                    "tripScheduleDocId=${tripSchedule.tripScheduleDocId}&lat=${tripSchedule.lat}&lng=${tripSchedule.lng}",
+        ) {
+            // 예를 들어 버튼 연타할 때 같은 화면이 여러 번 쌓이는 것 방지
+            launchSingleTop = true // 새 인스턴스를 만들지 않고, 기존 인스턴스를 재사용함
+        }
     }
 }

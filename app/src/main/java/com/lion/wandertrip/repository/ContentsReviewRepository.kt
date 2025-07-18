@@ -2,9 +2,7 @@ package com.lion.wandertrip.repository
 
 import android.net.Uri
 import android.util.Log
-import com.google.firebase.Firebase
 import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.firestore
 import com.google.firebase.storage.FirebaseStorage
 import com.lion.wandertrip.vo.ReviewVO
 import kotlinx.coroutines.tasks.await
@@ -13,35 +11,19 @@ import java.io.File
 class ContentsReviewRepository {
 
     // 사용자의 리뷰 문서 가져오기
-    suspend fun getContentsMyReview(contentsWriterNickName: String): List<ReviewVO> {
+    // 중앙 컬렉션에서 사용자 리뷰만 가져오기
+    suspend fun getContentsUserReviewByNickName(contentsWriterNickName: String): List<ReviewVO> {
         return try {
             val db = FirebaseFirestore.getInstance()
-            Log.d("Firestore", "Fetching all documents from ContentsData...")
 
-            val contentsDataSnapshot = db.collection("ContentsData").get().await()
-            Log.d("Firestore", "Fetched ${contentsDataSnapshot.documents.size} documents from ContentsData.")
+            val reviewsSnapshot = db.collection("ContentsReview")
+                .whereEqualTo("reviewWriterNickname", contentsWriterNickName)
+                .get()
+                .await()
 
-            val allReviews = mutableListOf<ReviewVO>()
+            val reviews = reviewsSnapshot.documents.mapNotNull { it.toObject(ReviewVO::class.java) }
 
-            for (document in contentsDataSnapshot.documents) {
-                Log.d("Firestore", "Checking document: ${document.id}")
-
-                val reviewsSnapshot = document.reference
-                    .collection("ContentsReview")
-                    .whereEqualTo("reviewWriterNickname", contentsWriterNickName)
-                    .get()
-                    .await()
-
-                Log.d("Firestore", "Fetched ${reviewsSnapshot.documents.size} reviews from ${document.id} matching nickname: $contentsWriterNickName")
-
-                val reviews = reviewsSnapshot.documents.mapNotNull { it.toObject(ReviewVO::class.java) }
-                Log.d("Firestore", "Converted ${reviews.size} reviews to ReviewVO objects.")
-
-                allReviews.addAll(reviews)
-            }
-
-            Log.d("Firestore", "Total reviews found: ${allReviews.size}")
-            allReviews
+            reviews
         } catch (e: Exception) {
             Log.e("Firestore", "Error fetching reviews: ${e.message}", e)
             emptyList()
@@ -49,89 +31,58 @@ class ContentsReviewRepository {
     }
 
 
+
     // 리뷰 문서 1개 가져오기
-    suspend fun getContentsReviewByDocId(
-        contentsDocId: String,
-        contentsReviewDocId: String
-    ): ReviewVO {
+    suspend fun getContentsReviewByDocId(contentsReviewDocId: String): ReviewVO {
         return try {
-            Log.d("FirestoreDebug", "리뷰 문서를 가져오는 중: contentsDocId = $contentsDocId, contentsReviewDocId = $contentsReviewDocId")
+            Log.d("FirestoreDebug", "리뷰 문서를 가져오는 중: contentsReviewDocId = $contentsReviewDocId")
 
             val db = FirebaseFirestore.getInstance()
-            val document = db.collection("ContentsData")
-                .document(contentsDocId)
-                .collection("ContentsReview") // 서브컬렉션 접근
+            val document = db.collection("ContentsReview")
                 .document(contentsReviewDocId)
                 .get()
                 .await()
 
-            // 문서가 존재하는지 여부 체크
             if (document.exists()) {
                 Log.d("FirestoreDebug", "문서 찾음: ${document.id}")
-                document.toObject(ReviewVO::class.java)?.let {
-                    Log.d("FirestoreDebug", "리뷰 데이터: $it")
-                } ?: Log.d("FirestoreDebug", "문서에 데이터가 없음.")
-
-                document.toObject(ReviewVO::class.java) ?: ReviewVO()
+                val review = document.toObject(ReviewVO::class.java)
+                Log.d("FirestoreDebug", "리뷰 데이터: $review")
+                review ?: ReviewVO()
             } else {
                 Log.d("FirestoreDebug", "문서가 존재하지 않음.")
                 ReviewVO()
             }
         } catch (e: Exception) {
             Log.e("FirestoreDebug", "리뷰 문서 가져오기 오류", e)
-            e.printStackTrace()
-            ReviewVO() // 예외 발생 시 기본값 반환
+            ReviewVO()
         }
     }
+
     // 컨텐츠 모든 리뷰 가져오기
     suspend fun getAllReviewsWithContents(contentId: String): MutableList<ReviewVO> {
         val reviewList = mutableListOf<ReviewVO>()
 
-        //Log.d("test100", "ContentsReviewRepository -> getAllReviewsWithContents 호출됨: $contentId")
-
         try {
             val db = FirebaseFirestore.getInstance()
 
-            // ContentsData 컬렉션에서 contentsId가 같은 문서 찾기
-            val contentsQuerySnapshot = db.collection("ContentsData")
+            val reviewsQuerySnapshot = db.collection("ContentsReview")
                 .whereEqualTo("contentId", contentId)
                 .get()
                 .await()
 
-            if (contentsQuerySnapshot.isEmpty) {
-                Log.w("test100", "ContentsReviewRepository -> 해당 contentsId를 가진 문서가 없음: $contentId")
-                return reviewList
-            }
-
-            // 첫 번째 문서 가져오기 (보통 contentsId가 유일하다고 가정)
-            val document = contentsQuerySnapshot.documents.first()
-            //Log.d("test100", "ContentsReviewRepository -> 찾은 문서 ID: ${document.id}")
-
-            // 리뷰 서브컬렉션에서 모든 문서 가져오기
-            val reviewsQuerySnapshot = document.reference.collection("ContentsReview").get().await()
-
-            //Log.d("test100", "ContentsReviewRepository -> 리뷰 문서 개수: ${reviewsQuerySnapshot.size()}")
-
-            // 모든 리뷰 문서 처리
             for (reviewDoc in reviewsQuerySnapshot.documents) {
                 val reviewVO = reviewDoc.toObject(ReviewVO::class.java)
-                //Log.d("test100", "ContentsReviewRepository -> 변환된 ReviewVO: $reviewVO")
-
                 if (reviewVO != null) {
                     reviewList.add(reviewVO)
                 } else {
-                    Log.w("test100", "ContentsReviewRepository -> 변환 실패한 문서 ID: ${reviewDoc.id}")
+                    Log.w("test100", "리뷰 변환 실패: ${reviewDoc.id}")
                 }
             }
 
-            //Log.d("test100", "ContentsReviewRepository -> 모든 리뷰 문서 가져오기 성공: $contentId, 총 개수: ${reviewList.size}")
+            Log.d("test100", "리뷰 ${reviewList.size}개 가져옴 (contentId=$contentId)")
 
         } catch (e: Exception) {
-            Log.e(
-                "test100",
-                "ContentsReviewRepository -> getAllReviewsWithContents 실패: $contentId",
-                e
-            )
+            Log.e("test100", "리뷰 가져오기 실패 (contentId=$contentId)", e)
         }
 
         return reviewList
@@ -139,108 +90,87 @@ class ContentsReviewRepository {
 
 
     // 리뷰 등록
-    suspend fun addContentsReview(contentsId: String, reviewVO: ReviewVO): String {
+    suspend fun addContentsReview(reviewVO: ReviewVO): String {
         try {
             val db = FirebaseFirestore.getInstance()
-            val contentsQuery =
-                db.collection("ContentsData").whereEqualTo("contentId", contentsId).get().await()
-
-            if (contentsQuery.isEmpty) {
-                // Log.e("test100", "ContentsReviewRepository -> addContentsReview 해당 contentsId를 가진 문서 없음: $contentsId")
-                return ""
-            }
-
-            val document = contentsQuery.documents.first() // 첫 번째 문서 사용
-            val contentsRef = db.collection("ContentsData").document(document.id)
+            val contentsRef = db.collection("ContentsReview")
 
             // 리뷰 추가
-            val reviewRef = contentsRef.collection("ContentsReview").document()
-            reviewVO.reviewDocId = reviewRef.id
-            reviewVO.contentsDocId = document.id // 찾은 문서 ID 저장
-            reviewRef.set(reviewVO).await()
+            val document = contentsRef.document()
+            reviewVO.reviewDocId = document.id
+            document.set(reviewVO).await()
 
             // Log.d("test100", "ContentsReviewRepository -> addContentsReview 리뷰 등록 성공: ${reviewRef.id} (ContentsID: $contentsId)")
 
             return document.id
         } catch (e: Exception) {
-            Log.e("test100", "리뷰 등록 실패: $contentsId", e)
+            Log.e("test100", "리뷰 등록 실패: ", e)
             return ""
         }
     }
 
 // 리뷰 수정
-// 리뷰 수정
-suspend fun modifyContentsReview(contentsDocId: String, reviewVO: ReviewVO): Boolean {
+suspend fun modifyContentsReview(reviewVO: ReviewVO): Boolean {
     return try {
-        Log.d("ContentsReviewRepository", "docId : $contentsDocId reviewVO : ${reviewVO.contentsId} , ReviewContent : ${reviewVO.reviewContent}")
-
-        // Firestore 인스턴스 가져오기
-        val db = FirebaseFirestore.getInstance()
-        Log.d("ContentsReviewRepository", "Firestore 인스턴스 가져오기 성공")
+        Log.d("ContentsReviewRepository", "수정할 리뷰: reviewDocId = ${reviewVO.reviewDocId}, contentId = ${reviewVO.contentId}, 내용 = ${reviewVO.reviewContent}")
 
         // 🔥 리뷰 문서 ID 검증 (빈 값이면 오류 방지)
         if (reviewVO.reviewDocId.isNullOrEmpty()) {
-            Log.e("ContentsReviewRepository", "리뷰 문서 ID가 없음! reviewVO.reviewDocId = ${reviewVO.reviewDocId}")
+            Log.e("ContentsReviewRepository", "리뷰 문서 ID가 없음! reviewDocId = ${reviewVO.reviewDocId}")
             return false
         }
 
-        // ContentsData 컬렉션의 해당 문서 참조
-        val contentsRef = db.collection("ContentsData").document(contentsDocId)
-        Log.d("ContentsReviewRepository", "ContentsData 문서 참조 성공: contentsDocId = $contentsDocId")
+        // Firestore 인스턴스에서 바로 'ContentsReview' 컬렉션 접근
+        val db = FirebaseFirestore.getInstance()
+        val reviewRef = db.collection("ContentsReview").document(reviewVO.reviewDocId)
 
-        // 리뷰 문서 참조
-        val reviewRef = contentsRef.collection("ContentsReview").document(reviewVO.reviewDocId)
-        Log.d("ContentsReviewRepository", "ContentsReview 컬렉션의 문서 참조 성공: reviewDocId = ${reviewVO.reviewDocId}")
-
-        // 🔥 Firestore에 업데이트
+        // 문서 덮어쓰기 (수정)
         reviewRef.set(reviewVO).await()
-        Log.d("ContentsReviewRepository", "리뷰 덮어쓰기 성공: ${reviewVO.reviewDocId}")
+        Log.d("ContentsReviewRepository", "리뷰 수정 성공: ${reviewVO.reviewDocId}")
 
-        // 수정 성공
         true
     } catch (e: Exception) {
-        // 예외 발생 시 에러 로그
-        Log.e("ContentsReviewRepository", "리뷰 덮어쓰기 실패: ${reviewVO.reviewDocId}", e)
+        Log.e("ContentsReviewRepository", "리뷰 수정 실패: ${reviewVO.reviewDocId}", e)
         false
     }
 }
+
 
 
         //닉네임 바꿀 때 사용하기
         // 닉변 전 게시물의 닉네임을 변경한 닉네임으로 update
         suspend fun changeReviewNickName(oldNickName: String, newNickName: String) {
             val firestore = FirebaseFirestore.getInstance()
-            val collRef = firestore.collection("ContentsData")
+            val reviewCollection = firestore.collection("ContentsReview")
 
             try {
                 Log.d("test100", "📌 닉네임 변경 시작: $oldNickName → $newNickName")
 
-                // 1. 모든 ContentsData 컬렉션의 문서 가져오기
-                val contentsDocs = collRef.get().await()
+                // 1. reviewWriterNickname이 oldNickName인 리뷰 문서들 찾기
+                val snapshot = reviewCollection
+                    .whereEqualTo("reviewWriterNickname", oldNickName)
+                    .get()
+                    .await()
 
-                for (contentDoc in contentsDocs) {
-                    val contentId = contentDoc.id
-                    Log.d("test100", "📌 현재 탐색 중인 문서 ID: $contentId")
+                // 2. 각 문서에 대해 reviewWriterNickname 필드만 업데이트
+                for (doc in snapshot.documents) {
+                    val docId = doc.id
+                    Log.d("test100", "🔄 닉네임 변경할 리뷰 ID: $docId")
 
-                    // 2. 해당 문서의 ContentsReview 서브컬렉션 접근
-                    val reviewCollectionRef = collRef.document(contentId).collection("ContentsReview")
-                    val reviews = reviewCollectionRef.whereEqualTo("reviewWriterNickname", oldNickName).get().await()
+                    reviewCollection.document(docId)
+                        .update("reviewWriterNickname", newNickName)
+                        .await()
 
-                    for (reviewDoc in reviews) {
-                        val reviewId = reviewDoc.id
-                        Log.d("test100", "🔄 닉네임 변경할 리뷰 ID: $reviewId")
-
-                        // 3. reviewWriterNickname 필드를 새로운 닉네임으로 업데이트
-                        reviewCollectionRef.document(reviewId).update("reviewWriterNickname", newNickName).await()
-                        Log.d("test100", "✅ 닉네임 변경 완료: $reviewId")
-                    }
+                    Log.d("test100", "✅ 닉네임 변경 완료: $docId")
                 }
 
-                Log.d("test100", "🎉 닉네임 변경 완료: $oldNickName → $newNickName")
+                Log.d("test100", "🎉 전체 닉네임 변경 완료: $oldNickName → $newNickName")
+
             } catch (e: Exception) {
                 Log.e("test100", "❌ 닉네임 변경 실패: $oldNickName → $newNickName", e)
             }
         }
+
 
 
     // 이미지 데이터를 서버로 업로드 하는 메서드
@@ -314,31 +244,27 @@ suspend fun modifyContentsReview(contentsDocId: String, reviewVO: ReviewVO): Boo
     }
 
     // 삭제 메서드
-    suspend fun deleteContentsReview(contentsDocId: String, contentsReviewDocId: String) {
+    suspend fun deleteContentsReview(contentsReviewDocId: String) {
         try {
-            // Firestore 인스턴스 가져오기
             val db = FirebaseFirestore.getInstance()
+            val storage = FirebaseStorage.getInstance()
 
-            // ContentsData 컬렉션에서 contentsDocId 문서 접근
-            // 그 하위 ContentsReview 서브컬렉션에서 특정 리뷰 문서 삭제
-            db.collection("ContentsData")
-                .document(contentsDocId)
-                .collection("ContentsReview")
+            // 🔥 최상위 컬렉션에서 리뷰 문서 삭제
+            db.collection("ContentsReview")
                 .document(contentsReviewDocId)
                 .delete()
-                .await()  // 비동기 처리
+                .await()
 
-            // Firebase Storage에서 관련 이미지 삭제 (예시)
-            val storageReference = FirebaseStorage.getInstance().reference
-            val imageRef = storageReference.child("reviews/$contentsDocId/$contentsReviewDocId.jpg")  // 이미지 경로
-            imageRef.delete().await()  // 이미지 삭제
+            // 🔥 관련 이미지 삭제 (경로에 contentsDocId가 포함되지 않는다고 가정)
+            val imageRef = storage.reference.child("reviews/$contentsReviewDocId.jpg")
+            imageRef.delete().await()
 
-            Log.d("Firestore", "Review and related image deleted successfully.")
+            Log.d("Firestore", "✅ 리뷰 및 이미지 삭제 성공: $contentsReviewDocId")
+
         } catch (e: Exception) {
-            Log.e("Firestore", "Error deleting review or image", e)
+            Log.e("Firestore", "❌ 리뷰 또는 이미지 삭제 실패: $contentsReviewDocId", e)
         }
     }
-
 
 
 }

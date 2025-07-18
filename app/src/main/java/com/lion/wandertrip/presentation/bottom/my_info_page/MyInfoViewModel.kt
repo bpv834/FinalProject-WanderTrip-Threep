@@ -16,6 +16,7 @@ import com.lion.wandertrip.model.UserModel
 import com.lion.wandertrip.service.TripScheduleService
 import com.lion.wandertrip.service.UserService
 import com.lion.wandertrip.util.AreaCode
+import com.lion.wandertrip.util.BotNavScreenName
 import com.lion.wandertrip.util.MainScreenName
 import com.lion.wandertrip.util.ScheduleScreenName
 import com.lion.wandertrip.util.Tools
@@ -75,16 +76,18 @@ class MyInfoViewModel @Inject constructor(
     }
 
     // 내 여행 상세로 화면 전환 메서드
-    fun onClickScheduleItemGoScheduleDetail(tripScheduleDocId : String, areaName:String ) {
-
-        // scheduleCity와 일치하는 AreaCode 찾기 (없으면 0 반환)
-        val areaCodeValue = AreaCode.entries.firstOrNull { it.areaName == areaName }?.areaCode ?: 0
-        Log.d("ScheduleViewModel", "areaCodeValue: $areaCodeValue")
-
-
-        tripApplication.navHostController.navigate("${ScheduleScreenName.SCHEDULE_DETAIL_SCREEN.name}?" +
-                "tripScheduleDocId=${tripScheduleDocId}&areaName=${areaName}&areaCode=$areaCodeValue")
+    fun onClickScheduleItemGoScheduleDetail(tripSchedule: TripScheduleModel) {
+        tripApplication.navHostController.navigate(
+            "${ScheduleScreenName.SCHEDULE_DETAIL_RANDOM_SCREEN.name}?" +
+                    "tripScheduleDocId=${tripSchedule.tripScheduleDocId}&lat=${tripSchedule.lat}&lng=${tripSchedule.lng}",
+        ) {
+            popUpTo(BotNavScreenName.BOT_NAV_SCREEN_HOME.name) { inclusive = false }
+            // 예를 들어 버튼 연타할 때 같은 화면이 여러 번 쌓이는 것 방지
+            launchSingleTop = true // 새 인스턴스를 만들지 않고, 기존 인스턴스를 재사용함
+        }
     }
+
+
 
     // userModel 가져오기
     fun gettingUserModel() {

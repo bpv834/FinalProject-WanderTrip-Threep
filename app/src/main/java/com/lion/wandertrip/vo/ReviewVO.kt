@@ -5,7 +5,6 @@ import com.lion.wandertrip.model.ReviewModel
 
 class ReviewVO {
     var reviewDocId: String = ""
-    var contentsDocId: String = ""
     var reviewWriterNickname: String = ""
     var reviewContent: String = ""
     var reviewTimeStamp: Timestamp = Timestamp.now()
@@ -14,14 +13,13 @@ class ReviewVO {
     var reviewTitle :String = "" // 리뷰 제목
     var reviewState : Int = 1 // 리뷰 상태 1: 노출 , 2: 삭제됨
     var reviewWriterProfileImgURl : String =""
-    var contentsId : String = ""
+    var contentId : String = ""
 
 
 
     fun toReviewItemModel(): ReviewModel {
         val reviewItemModel = ReviewModel()
         reviewItemModel.reviewDocId = reviewDocId
-        reviewItemModel.contentsDocId = contentsDocId
         reviewItemModel.reviewWriterNickname = reviewWriterNickname
         reviewItemModel.reviewContent = reviewContent
         reviewItemModel.reviewTimeStamp = reviewTimeStamp
@@ -30,7 +28,7 @@ class ReviewVO {
         reviewItemModel.reviewTitle = reviewTitle
         reviewItemModel.reviewState = reviewState
         reviewItemModel.reviewWriterProfileImgURl = reviewWriterProfileImgURl
-        reviewItemModel.contentsId = contentsId
+        reviewItemModel.contentId = contentId
         return reviewItemModel
     }
 }

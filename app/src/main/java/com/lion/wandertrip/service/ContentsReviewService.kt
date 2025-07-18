@@ -8,8 +8,8 @@ import com.lion.wandertrip.repository.ContentsReviewRepository
 class ContentsReviewService(val contentsReviewRepository: ContentsReviewRepository) {
 
     // 사용자의 리뷰 문서 가져오기
-    suspend fun getContentsMyReview(contentsWriterNickName: String): MutableList<ReviewModel> {
-        val voList = contentsReviewRepository.getContentsMyReview(contentsWriterNickName)
+    suspend fun getContentsUserReviewByNickName(contentsWriterNickName: String): MutableList<ReviewModel> {
+        val voList = contentsReviewRepository.getContentsUserReviewByNickName(contentsWriterNickName)
         val resultList = mutableListOf<ReviewModel>()
         voList.forEach {
             resultList.add(it.toReviewItemModel())
@@ -19,11 +19,11 @@ class ContentsReviewService(val contentsReviewRepository: ContentsReviewReposito
 
 
     // 해당 리뷰 가져오기
-    suspend fun getContentsReviewByDocId(contentsDocId: String, contentsReviewDocId: String): ReviewModel {
+    suspend fun getContentsReviewByDocId( contentsReviewDocId: String): ReviewModel {
         var reviewModel = ReviewModel()
 
         try {
-            val reviewVO = contentsReviewRepository.getContentsReviewByDocId(contentsDocId, contentsReviewDocId)
+            val reviewVO = contentsReviewRepository.getContentsReviewByDocId(contentsReviewDocId)
 
             // 변환 성공 시
             reviewModel = reviewVO.toReviewItemModel()
@@ -61,29 +61,29 @@ class ContentsReviewService(val contentsReviewRepository: ContentsReviewReposito
     }
 
     // 리뷰 등록
-    suspend fun addContentsReview(contentsId: String, contentsReviewModel: ReviewModel): String {
+    suspend fun addContentsReview(contentsReviewModel: ReviewModel): String {
          try {
             // 리뷰 추가를 위한 repository 메서드 호출
-            val result = contentsReviewRepository.addContentsReview(contentsId, contentsReviewModel.toReviewItemVO())
+            val result = contentsReviewRepository.addContentsReview(contentsReviewModel.toReviewItemVO())
 
             // 리뷰 추가 성공 시 로그 출력
 
             return result // 성공한 경우 true 반환
         } catch (e: Exception) {
              // 예외 발생 시 로그에 오류 메시지 출력
-             Log.e("ContentsReviewService", "리뷰 등록 실패: $contentsId", e)
+             Log.e("ContentsReviewService", "리뷰 등록 실패: ", e)
             return ""
          }
     }
 
     // 리뷰 수정하기
-    suspend fun modifyContentsReview(contentsDocID: String, reviewModel: ReviewModel): Boolean {
+    suspend fun modifyContentsReview(reviewModel: ReviewModel): Boolean {
         return try {
             // 리뷰 수정 요청을 위한 repository 메서드 호출 전 로그 추가
             //Log.d("ContentsReviewService", "리뷰 수정 시작: contentsDocID = $contentsDocID, reviewModel = $reviewModel")
 
             // 리뷰 수정 요청
-            val result = contentsReviewRepository.modifyContentsReview(contentsDocID, reviewModel.toReviewItemVO())
+            val result = contentsReviewRepository.modifyContentsReview(reviewModel.toReviewItemVO())
 
             // 성공 로그
             if (result) {
@@ -95,7 +95,6 @@ class ContentsReviewService(val contentsReviewRepository: ContentsReviewReposito
             result // 성공한 경우 true 반환
         } catch (e: Exception) {
             // 예외 발생 시 에러 로그에 구체적인 메시지 출력
-            Log.e("test100", "리뷰 수정 실패: contentsDocID = $contentsDocID", e)
             // 예외를 출력하여 문제 파악에 도움을 줍니다.
             Log.e("test100", "에러 메시지: ${e.message}")
             Log.e("test100", "스택 트레이스: ${Log.getStackTraceString(e)}")
@@ -117,8 +116,8 @@ class ContentsReviewService(val contentsReviewRepository: ContentsReviewReposito
     }
 
     // 리뷰 삭제 메서드
-    suspend fun deleteContentsReview(contentsDocId: String, contentsReviewDocId: String) {
-        contentsReviewRepository.deleteContentsReview(contentsDocId,contentsReviewDocId)
+    suspend fun deleteContentsReview( contentsReviewDocId: String) {
+        contentsReviewRepository.deleteContentsReview(contentsReviewDocId)
     }
 
     // 해당 컨텐츠에 리뷰 문서 개수 리턴받기
@@ -149,6 +148,11 @@ class ContentsReviewService(val contentsReviewRepository: ContentsReviewReposito
     // 닉변 전 게시물의 닉네임을 변경한 닉네임으로 update
     suspend fun changeReviewNickName(oldNickName: String, newNickName: String) {
         contentsReviewRepository.changeReviewNickName(oldNickName,newNickName)
+    }
+
+    // 유저의 리뷰 개수 카운팅
+    suspend fun getCountUserReview(userNickName : String): Int{
+        return getContentsUserReviewByNickName(userNickName).size
     }
 
 

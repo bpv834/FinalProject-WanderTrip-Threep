@@ -56,17 +56,15 @@ import com.skydoves.landscapist.glide.GlideImage
 
 @Composable
 fun DetailReviewModifyScreen(
-    contentDocID: String,
     reviewDocID: String,
     contentsID : String,
     detailReviewModifyViewModel: DetailReviewModifyViewModel = hiltViewModel()
 ) {
     Log.d("test100","DetailReviewModifyScreen")
-    Log.d("test100","!!!!!!!!!!!!! contentDocID : $contentDocID, reviewDocID: $reviewDocID")
 
     // getReviewModel을 LaunchedEffect로 감싸기
     LaunchedEffect(Unit) {
-        detailReviewModifyViewModel.getReviewModel(contentDocId = contentDocID, contentReviewDocId = reviewDocID)
+        detailReviewModifyViewModel.getReviewModel( contentReviewDocId = reviewDocID)
     }
 
 
@@ -101,7 +99,6 @@ fun DetailReviewModifyScreen(
                             ImageVector.vectorResource(R.drawable.ic_check_24px),
                             iconButtonOnClick = {
                                 detailReviewModifyViewModel.onClickIconCheckModifyReview(
-                                    contentDocID,
                                     contentsID,
                                     reviewDocID
                                 )

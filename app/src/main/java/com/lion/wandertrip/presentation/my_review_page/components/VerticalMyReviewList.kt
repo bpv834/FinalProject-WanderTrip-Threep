@@ -24,7 +24,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
@@ -37,14 +36,7 @@ import com.lion.wandertrip.R
 import com.lion.wandertrip.component.CustomRatingBar
 import com.lion.wandertrip.model.ReviewModel
 import com.lion.wandertrip.presentation.my_review_page.MyReviewViewModel
-import com.lion.wandertrip.ui.theme.Gray0
-import com.lion.wandertrip.ui.theme.Gray1
-import com.lion.wandertrip.ui.theme.Gray2
-import com.lion.wandertrip.ui.theme.Gray4
-import com.lion.wandertrip.ui.theme.LightGray1
-import com.lion.wandertrip.ui.theme.LightGray2
 import com.lion.wandertrip.ui.theme.LightGray3
-import com.lion.wandertrip.ui.theme.LightGray4
 import com.lion.wandertrip.util.CustomFont
 import com.skydoves.landscapist.CircularReveal
 import com.skydoves.landscapist.glide.GlideImage
@@ -191,10 +183,9 @@ fun ReviewItem(review: ReviewModel, pos: Int, myReviewViewModel: MyReviewViewMod
                         // 수정
                         CustomIconButton(
                             iconButtonOnClick = {
-                                Log.d("test100","cDID : ${review.contentsDocId}")
-                                Log.d("test100","cID : ${review.contentsId}")
+                                Log.d("test100","cID : ${review.contentId}")
                                 Log.d("test100","rDI : ${review.reviewDocId}")
-                                myReviewViewModel.onClickIconEditReview(review.contentsDocId,review.contentsId,review.reviewDocId)
+                                myReviewViewModel.onClickIconEditReview(review.contentId,review.reviewDocId)
 
                             },
                             icon = ImageVector.vectorResource(R.drawable.ic_edit_24px)
@@ -203,7 +194,7 @@ fun ReviewItem(review: ReviewModel, pos: Int, myReviewViewModel: MyReviewViewMod
                         // 삭제
                         CustomIconButton(
                             iconButtonOnClick = {
-                                myReviewViewModel.onClickIconDeleteReview(contentDocId =review.contentsDocId , contentsReviewDocId = review.reviewDocId)
+                                myReviewViewModel.onClickIconDeleteReview(review)
                             },
                             icon = ImageVector.vectorResource(R.drawable.ic_delete_24px)
                         )

@@ -51,20 +51,20 @@ class DetailReviewModifyViewModel @Inject constructor(
     }
 
     // 모델 가져오기
-    fun getReviewModel(contentDocId: String, contentReviewDocId: String) {
-        Log.d("test100","contentDocId : ${contentDocId}, contentReviewDocId : $contentReviewDocId")
+    fun getReviewModel(contentReviewDocId: String) {
+        Log.d("test100", " contentReviewDocId : $contentReviewDocId")
         isLoading.value = true
         viewModelScope.launch {
-            isLoading.value=true
+            isLoading.value = true
             // 수정할 리뷰 가져오기
-            val work1 = async(Dispatchers.IO){
-                contentsReviewService.getContentsReviewByDocId(contentDocId, contentReviewDocId)
+            val work1 = async(Dispatchers.IO) {
+                contentsReviewService.getContentsReviewByDocId(contentReviewDocId)
             }
-            val reviewData =work1.await()
-            Log.d("test","reviewData : ${reviewData.reviewTitle}")
+            val reviewData = work1.await()
+            Log.d("test", "reviewData : ${reviewData.reviewTitle}")
             reviewModelValue.value = reviewData
 
-            val work2 = async(Dispatchers.IO){
+            val work2 = async(Dispatchers.IO) {
                 convertToBitMap()
             }
             work2.join()
@@ -72,12 +72,11 @@ class DetailReviewModifyViewModel @Inject constructor(
             ratingScoreValue.value = reviewData.reviewRatingScore
 
             reviewContentValue.value = reviewData.reviewContent
-            isLoading.value=false
+            isLoading.value = false
 
         }
     }
 
-    // 비트맵 객체로 변환
     // 비트맵 객체로 변환
     suspend fun convertToBitMap() {
         Log.d("bitmapLog", "🧹 비트맵 리스트 초기화")
@@ -138,21 +137,19 @@ class DetailReviewModifyViewModel @Inject constructor(
     }
 
 
-
     // 수정 완료하기
     fun onClickIconCheckModifyReview(
-        contentDocID: String,
-        paramContentsId:String,
+        paramContentsId: String,
         reviewDocID: String,
     ) {
-        isLoading.value=true
+        isLoading.value = true
         Log.d("onClickIconCheckModifyReview", "onClickIconCheckModifyReview")
         viewModelScope.launch {
             val imagePathList = mutableListOf<String>()
             val serverFilePathList = mutableListOf<String>()
 
             val work0 = async(Dispatchers.IO) {
-                contentsReviewService.getContentsReviewByDocId(contentDocID,reviewDocID)
+                contentsReviewService.getContentsReviewByDocId(reviewDocID)
             }
             val gettingReview = work0.await()
             var imageUrlList = gettingReview.reviewImageList
@@ -177,7 +174,7 @@ class DetailReviewModifyViewModel @Inject constructor(
             if (isImagePicked.value) {
                 Log.d("addContentsReview", "이미지 업로드 시작")
                 val work1 = async(Dispatchers.IO) {
-                    uploadImage(imagePathList, serverFilePathList, gettingReview.contentsId)
+                    uploadImage(imagePathList, serverFilePathList, gettingReview.contentId)
                 }
                 imageUrlList = work1.await()
                 Log.d("getUri", "이미지 업로드 완료 - URL 리스트: $imageUrlList")
@@ -191,8 +188,7 @@ class DetailReviewModifyViewModel @Inject constructor(
             val review = ReviewModel().apply {
                 reviewTitle = gettingReview.reviewTitle
                 reviewDocId = reviewDocID
-                contentsDocId = contentDocID
-                contentsId = paramContentsId
+                this.contentId = paramContentsId
                 reviewContent = reviewContentValue.value
                 reviewImageList = imageUrlList // ✅ 업로드 완료 후 URL 리스트 저장
                 reviewRatingScore = ratingScoreValue.value
@@ -206,24 +202,20 @@ class DetailReviewModifyViewModel @Inject constructor(
             Log.d("addContentsReview", "리뷰 데이터 생성 완료: $review")
 
             val work2 = async(Dispatchers.IO) {
-                Log.d(
-                    "test100,",
-                    "reviewModel.value.contentsDocId, : ${gettingReview.contentsDocId}"
-                )
-                contentsReviewService.modifyContentsReview(gettingReview.contentsDocId, review)
+                contentsReviewService.modifyContentsReview( review)
             }
             work2.join()
             Log.d("addContentsReview", "리뷰 수정 완료")
 
             Log.d("addContentsReview", "리뷰 수정 후 컨텐츠 업데이트 시작")
             val work3 = async(Dispatchers.IO) {
-                addReviewAndUpdateContents(contentDocID)
+                addReviewAndUpdateContents(paramContentsId)
             }
             work3.join()
             Log.d("addContentsReview", "리뷰 저장 후 컨텐츠 업데이트 완료")
 
             Log.d("addContentsReview", "화면 뒤로 이동")
-            isLoading.value=false
+            isLoading.value = false
             tripApplication.navHostController.popBackStack()
         }
     }
@@ -251,11 +243,10 @@ class DetailReviewModifyViewModel @Inject constructor(
     }
 
     // 컨텐츠 의 별점 필드 수정
-    suspend fun addReviewAndUpdateContents(contentDocId: String) {
-        contentsService.updateContentRatingAndRatingCount(contentDocId)
+    suspend fun addReviewAndUpdateContents(contentId: String) {
+        val content = contentsService.getContentByContentsId(contentId)
+        contentsService.updateContentRatingAndRatingCount(content.contentDocId)
     }
-
-
 
 
 }

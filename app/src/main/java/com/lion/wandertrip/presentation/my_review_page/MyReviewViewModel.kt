@@ -17,6 +17,7 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.text.SimpleDateFormat
 import java.util.Locale
 import java.util.TimeZone
@@ -29,7 +30,6 @@ class MyReviewViewModel @Inject constructor(
     val contentsReviewService: ContentsReviewService,
     val contentsService: ContentsService,
 ) : ViewModel() {
-    val reviewList = mutableStateListOf<ReviewModel>()
 
     // 인덱스별 메뉴 상태를 관리할 맵
     val menuStateMap = mutableStateMapOf<Int, Boolean>()
@@ -43,12 +43,14 @@ class MyReviewViewModel @Inject constructor(
 
     val isLoading = mutableStateOf(false)
 
+    val reviewList = mutableStateListOf<ReviewModel>()
+
     // 리뷰 가져오는 메서드
     fun getReviewList() {
         reviewList.clear()
         viewModelScope.launch {
             val work1 = async(Dispatchers.IO) {
-                contentsReviewService.getContentsMyReview(tripApplication.loginUserModel.userNickName)
+                contentsReviewService.getContentsUserReviewByNickName(tripApplication.loginUserModel.userNickName)
             }
             val result = work1.await()
             reviewList.addAll(result)
@@ -67,20 +69,23 @@ class MyReviewViewModel @Inject constructor(
     }
 
     // 수정 버튼 리스너 메서드
-    fun onClickIconEditReview(contentDocID: String, contentsID: String, reviewDocID: String) {
-        tripApplication.navHostController.navigate("${MainScreenName.MAIN_SCREEN_DETAIL_REVIEW_MODIFY.name}/${contentDocID}/${contentsID}/${reviewDocID}")
+    fun onClickIconEditReview(contentsID: String, reviewDocID: String) {
+        tripApplication.navHostController.navigate("${MainScreenName.MAIN_SCREEN_DETAIL_REVIEW_MODIFY.name}/${contentsID}/${reviewDocID}")
     }
 
     // 삭제 버튼 리스너 메서드
-    fun onClickIconDeleteReview(contentDocId: String, contentsReviewDocId: String) {
+    fun onClickIconDeleteReview(review: ReviewModel) {
         viewModelScope.launch {
             val work1 = async(Dispatchers.IO) {
-                contentsReviewService.deleteContentsReview(contentDocId, contentsReviewDocId)
+                contentsReviewService.deleteContentsReview(review.reviewDocId)
             }
             work1.join()
             // 컨텐츠 별점 수정
+            val content = withContext(Dispatchers.IO){
+                contentsService.getContentByContentsId(review.contentId)
+            }
             val work2 = async(Dispatchers.IO) {
-                contentsService.updateContentRatingAndRatingCount(contentDocId)
+                contentsService.updateContentRatingAndRatingCount(content.contentDocId)
             }
             work2.join()
             getReviewList()

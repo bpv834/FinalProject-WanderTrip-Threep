@@ -103,7 +103,7 @@ class DetailReviewWriteViewModel @Inject constructor(
 
             val review = ReviewModel().apply {
                 reviewTitle = title
-                contentsId = contentId
+                this.contentId = contentId
                 reviewContent = reviewContentValue.value
                 reviewImageList = imageUrlList
                 reviewRatingScore = ratingScoreValue.value
@@ -119,13 +119,13 @@ class DetailReviewWriteViewModel @Inject constructor(
             try {
                 if (contentsDocId.isNotEmpty()) {
                     Log.d("addContentsReview", "✔ 기존 콘텐츠 문서 있음 - 리뷰 추가 중")
-                    contentsReviewService.addContentsReview(contentId, review)
+                    contentsReviewService.addContentsReview(review)
                 } else {
                     Log.d("addContentsReview", "🆕 콘텐츠 문서 없음 - 새 문서 생성 중")
                     val contents = ContentsModel(contentId = contentId)
                     contentsDocId = contentsService.addContents(contents)
                     Log.d("addContentsReview", "✔ 새 콘텐츠 문서 생성 완료 - DocId: $contentsDocId")
-                    contentsReviewService.addContentsReview(contentId, review)
+                    contentsReviewService.addContentsReview(review)
                 }
             } catch (e: Exception) {
                 Log.e("addContentsReview", "❌ 리뷰 추가 실패: ${e.message}")
