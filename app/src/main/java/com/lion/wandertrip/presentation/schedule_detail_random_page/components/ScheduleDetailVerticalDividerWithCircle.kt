@@ -1,4 +1,4 @@
-package com.lion.wandertrip.presentation.schedule_detail_page.component
+package com.lion.wandertrip.presentation.schedule_detail_random_page.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box

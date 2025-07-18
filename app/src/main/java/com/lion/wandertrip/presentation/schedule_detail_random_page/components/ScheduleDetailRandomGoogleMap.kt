@@ -18,8 +18,8 @@ import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.rememberCameraPositionState
 import com.google.maps.android.compose.rememberMarkerState
+import com.lion.wandertrip.component.ScheduleDetailCustomMarkerIcon
 import com.lion.wandertrip.model.ScheduleItem
-import com.lion.wandertrip.presentation.schedule_detail_page.component.ScheduleDetailCustomMarkerIcon
 import com.lion.wandertrip.presentation.schedule_detail_random_page.ScheduleDetailRandomViewModel
 
 // Google Map을 표시하는 Composable

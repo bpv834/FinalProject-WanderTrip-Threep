@@ -6,6 +6,7 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.google.android.gms.maps.model.LatLng
 import com.google.firebase.Timestamp
 import com.lion.wandertrip.TripApplication
 import com.lion.wandertrip.model.TripScheduleModel
@@ -142,6 +143,42 @@ class ScheduleCitySelectViewModel @Inject constructor(
         application.navHostController.popBackStack()
     }
 
+    // 지역 이름에 따른 기본 위치 좌표 반환 함수
+    fun getDefaultLocation(areaName: String): LatLng {
+        return when (areaName) {
+            "서울" -> LatLng(37.5665, 126.9780)
+            "인천" -> LatLng(37.4563, 126.7052)
+            "대전" -> LatLng(36.3504, 127.3845)
+            "대구" -> LatLng(35.8722, 128.6025)
+            "광주" -> LatLng(35.1595, 126.8526)
+            "부산" -> LatLng(35.1796, 129.0756)
+            "울산" -> LatLng(35.5384, 129.3114)
+            "세종시" -> LatLng(36.4800, 127.2890)
+            "경기도" -> LatLng(37.4138, 127.5183)
+            "강원도" -> LatLng(37.7519, 128.8969)
+            "충청북도" -> LatLng(36.6357, 127.4910)
+            "충청남도" -> LatLng(36.5184, 126.8000)
+            "경상북도" -> LatLng(36.4919, 128.8889)
+            "경상남도" -> LatLng(35.2383, 128.6920)
+            "전라북도" -> LatLng(35.7175, 127.1441)
+            "전라남도" -> LatLng(34.8161, 126.4630)
+            "제주도" -> LatLng(33.4996, 126.5312)
+            else -> LatLng(37.5665, 126.9780) // 기본값은 서울
+        }
+    }
+    // 일정 상세 화면 으로 이동
+    fun moveToScheduleDetailRandomScreen(lat: String, lng: String) {
+
+        // 일정 상세 화면 이동
+        application.navHostController.navigate(
+            "${ScheduleScreenName.SCHEDULE_DETAIL_RANDOM_SCREEN.name}?" +
+                    "tripScheduleDocId=${tripScheduleModel.tripScheduleDocId}&lat=${lat}&lng=${lng}",
+        ) {
+            popUpTo(BotNavScreenName.BOT_NAV_SCREEN_HOME.name) { inclusive = false }
+            launchSingleTop = true
+        }
+    }
+
     // 일정 추가
     fun addTripSchedule(
         scheduleTitle: String,
@@ -150,6 +187,7 @@ class ScheduleCitySelectViewModel @Inject constructor(
         areaName: String,
         areaCode: Int
     ) {
+        val latLng = getDefaultLocation(areaName)
         isLoading.value = true
         val scheduleDateList = generateDateList(scheduleStartDate, scheduleEndDate)
         tripScheduleModel.userID = application.loginUserModel.userId
@@ -160,6 +198,8 @@ class ScheduleCitySelectViewModel @Inject constructor(
         tripScheduleModel.scheduleEndDate = scheduleEndDate
         tripScheduleModel.scheduleDateList = scheduleDateList
         tripScheduleModel.scheduleInviteList += application.loginUserModel.userDocId
+        tripScheduleModel.lat = latLng.latitude.toString()
+        tripScheduleModel.lng = latLng.longitude.toString()
 
         Log.d("ScheduleCitySelectViewModel", "userDocId: ${application.loginUserModel.userDocId}")
 
@@ -182,7 +222,8 @@ class ScheduleCitySelectViewModel @Inject constructor(
             delay(2000)
 
             // 일정 상세 화면 으로 이동
-            moveToScheduleDetailScreen(areaName, areaCode)
+            moveToScheduleDetailRandomScreen(latLng.latitude.toString(), latLng.longitude.toString())
+
         }
     }
 }

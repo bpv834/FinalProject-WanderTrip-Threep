@@ -133,7 +133,7 @@ class ScheduleViewModel @Inject constructor(
         viewModelScope.launch {
             tripScheduleService.getMyTripSchedulesFlow(application.loginUserModel.userNickName)
                 .collect() { schedule ->
-                    _userSchedules.value = schedule
+                    _userSchedules.value = schedule.filter { it.scheduleStartDate> Timestamp.now() } //다가오는 일정만 보여주기
                 }
         }
     }

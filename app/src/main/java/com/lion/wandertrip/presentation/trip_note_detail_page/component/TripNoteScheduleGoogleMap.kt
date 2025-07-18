@@ -14,8 +14,8 @@ import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.rememberCameraPositionState
 import com.google.maps.android.compose.rememberMarkerState
+import com.lion.wandertrip.component.ScheduleDetailCustomMarkerIcon
 import com.lion.wandertrip.model.ScheduleItem
-import com.lion.wandertrip.presentation.schedule_detail_page.component.ScheduleDetailCustomMarkerIcon
 
 // Google Map을 표시하는 Composable
 @Composable
@@ -70,7 +70,7 @@ fun TripNoteScheduleGoogleMap(
                         position = LatLng(item.itemLatitude, item.itemLongitude)
                     ),
                     title = item.itemTitle,
-                    icon = ScheduleDetailCustomMarkerIcon(context, item.itemIndex)
+                    icon = ScheduleDetailCustomMarkerIcon(context,item.itemIndex)
                 )
             }
         }

@@ -36,7 +36,6 @@ import com.lion.wandertrip.presentation.schedule_city_select.ScheduleCitySelectS
 import com.lion.wandertrip.presentation.schedule_city_select.city_roulette.RouletteCityScreen
 import com.lion.wandertrip.presentation.schedule_city_select.city_roulette.roulette_city_select.RouletteCitySelectScreen
 import com.lion.wandertrip.presentation.schedule_detail_friends.ScheduleDetailFriendsScreen
-import com.lion.wandertrip.presentation.schedule_detail_page.ScheduleDetailScreen
 import com.lion.wandertrip.presentation.schedule_detail_random_page.ScheduleDetailRandomScreen
 import com.lion.wandertrip.presentation.schedule_detail_random_page.schedule_random_select_item.ScheduleRandomSelectItemScreen
 import com.lion.wandertrip.presentation.schedule_item_review.ScheduleItemReviewScreen
@@ -243,7 +242,7 @@ fun MyApp() {
             ScheduleCitySelectScreen(scheduleTitle, startDate, endDate)
         }
 
-        // 일정 상세 화면
+  /*      // 일정 상세 화면
         composable(
             route = "${ScheduleScreenName.SCHEDULE_DETAIL_SCREEN.name}?" +
                     "tripScheduleDocId={tripScheduleDocId}&areaName={areaName}&areaCode={areaCode}",
@@ -257,7 +256,7 @@ fun MyApp() {
             val areaName = it.arguments?.getString("areaName") ?: ""
             val areaCode = it.arguments?.getInt("areaCode") ?: 0
             ScheduleDetailScreen(tripScheduleDocId, areaName, areaCode)
-        }
+        }*/
 
         // 일정 상세 랜덤 화면
         composable(

@@ -1,4 +1,4 @@
-package com.lion.wandertrip.presentation.schedule_detail_page.component
+package com.lion.wandertrip.component
 
 import android.content.Context
 import android.graphics.Bitmap

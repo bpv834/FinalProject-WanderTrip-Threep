@@ -1,4 +1,5 @@
-package com.lion.wandertrip.presentation.schedule_detail_page.component
+package com.lion.wandertrip.presentation.schedule_detail_random_page.components
+
 
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem

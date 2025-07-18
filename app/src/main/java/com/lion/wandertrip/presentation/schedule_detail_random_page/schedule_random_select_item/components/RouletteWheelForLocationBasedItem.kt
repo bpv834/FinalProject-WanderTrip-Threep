@@ -47,9 +47,9 @@ fun RouletteWheelForLocationBasedItem(
 
             // drawArc : Canvas에서 원호(Arc)를 그리는 함수예요
             drawArc(
-                color = Color.Red,         // 그릴 색상
+                color = Color.Gray,         // 그릴 색상
                 startAngle = 0f,           // 시작 각도 (0도는 오른쪽)
-                sweepAngle = 90f,          // 몇 도까지 그릴 것인지 (90도면 1/4원)
+                sweepAngle = 360f,          // 몇 도까지 그릴 것인지 (90도면 1/4원)
                 useCenter = true,          // true면 중심을 연결해 파이 모양 / false면 둥근 호만 그림
             )
         } else {

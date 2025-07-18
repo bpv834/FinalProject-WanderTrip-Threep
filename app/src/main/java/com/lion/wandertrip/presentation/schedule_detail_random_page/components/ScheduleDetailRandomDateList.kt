@@ -1,8 +1,6 @@
 package com.lion.wandertrip.presentation.schedule_detail_random_page.components
 
-import com.lion.wandertrip.presentation.schedule_detail_page.component.ScheduleDetailDropDawn
-import com.lion.wandertrip.presentation.schedule_detail_page.component.ScheduleDetailGoogleMap
-import com.lion.wandertrip.presentation.schedule_detail_page.component.ScheduleDetailVerticalDividerWithCircle
+
 
 import android.util.Log
 import androidx.compose.foundation.Image
@@ -34,7 +32,6 @@ import com.airbnb.lottie.compose.rememberLottieComposition
 import com.google.android.gms.maps.model.LatLng
 import com.lion.wandertrip.R
 import com.lion.wandertrip.model.TripScheduleModel
-import com.lion.wandertrip.presentation.schedule_detail_page.ScheduleDetailViewModel
 import com.lion.wandertrip.ui.theme.NanumSquareRound
 import com.lion.wandertrip.ui.theme.NanumSquareRoundRegular
 import com.lion.wandertrip.util.ContentTypeId
