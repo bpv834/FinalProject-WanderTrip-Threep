@@ -28,6 +28,7 @@ fun PopularCityHome(
     val attractionList by viewModel.attractionListAtHome.collectAsState()
     val accommodationList by viewModel.accommodationListAtHome.collectAsState()
     val tripNoteList = viewModel.tripNoteList
+    val userLikeList by viewModel.userLikeList.collectAsState()
 
     LazyColumn {
         if(tripNoteList.size!=0)
@@ -69,7 +70,7 @@ fun PopularCityHome(
                 content = {
                     Column {
                         attractionList.forEach { item ->
-                            CityTripSpotItem(item, {viewModel.toggleFavorite(item.publicData.contentId?:"")}, viewModel, viewModel.userLikeList.value.contains(item.publicData.contentId), { viewModel.onClickTrip(item.publicData.contentId?:"") })
+                            CityTripSpotItem(item, {viewModel.toggleFavorite(item.publicData.contentId?:"")}, viewModel, userLikeList.contains(item.publicData.contentId), { viewModel.onClickTrip(item.publicData.contentId?:"") })
                         }
                     }
                 }

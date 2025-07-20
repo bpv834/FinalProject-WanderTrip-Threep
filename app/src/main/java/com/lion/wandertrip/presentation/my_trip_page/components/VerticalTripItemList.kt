@@ -41,38 +41,46 @@ import java.util.Locale
 fun VerticalTripItemList(myTripViewModel: MyTripViewModel) {
     val upComingTripList by myTripViewModel.upComingTripList.collectAsState()
     val pastTripList by myTripViewModel.pastTripList.collectAsState()
-    Column(modifier = Modifier.fillMaxSize()
-        .verticalScroll(rememberScrollState()) // 스크롤 가능하게 설정
-        .padding(16.dp)) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState()) // 스크롤 가능하게 설정
+            .padding(16.dp)
+    ) {
         // 다가오는 여행
-        if(upComingTripList.size!=0)
-        Column  {
-            Text(text = "다가오는 여행", fontSize = 20.sp,  fontFamily = CustomFont.customFontBold)
-            upComingTripList
-                .forEachIndexed { index, tripScheduleModel ->
-                    TripItem(trip = upComingTripList[index],myTripViewModel,index)
-                }
-        }
+        if (upComingTripList.size != 0)
+            Column {
+                Text(text = "다가오는 여행", fontSize = 20.sp, fontFamily = CustomFont.customFontBold)
+                upComingTripList
+                    .forEachIndexed { index, tripScheduleModel ->
+                        TripItem(trip = upComingTripList[index], myTripViewModel, index)
+                    }
+            }
 
         Spacer(modifier = Modifier.height(16.dp)) // 두 섹션 간격
-        if(pastTripList.isNotEmpty())
+        if (pastTripList.isNotEmpty())
         // 지난 여행
-        Column {
-            Text(text = "지난 여행", fontSize = 20.sp, fontFamily = CustomFont.customFontBold)
-            pastTripList
-                .forEachIndexed { index, tripScheduleModel ->
-                    TripItem(trip = pastTripList[index],myTripViewModel,index+upComingTripList    .size)
-                }
-        }
+            Column {
+                Text(text = "지난 여행", fontSize = 20.sp, fontFamily = CustomFont.customFontBold)
+                pastTripList
+                    .forEachIndexed { index, tripScheduleModel ->
+                        TripItem(
+                            trip = pastTripList[index],
+                            myTripViewModel,
+                            index + upComingTripList.size
+                        )
+                    }
+            }
     }
 }
 
 @Composable
-fun TripItem(trip: TripScheduleModel,myTripViewModel: MyTripViewModel,pos : Int) {
+fun TripItem(trip: TripScheduleModel, myTripViewModel: MyTripViewModel, pos: Int) {
     Row(
-        modifier = Modifier.clickable {
-            myTripViewModel.onClickScheduleItemGoScheduleDetail(trip)
-        }
+        modifier = Modifier
+            .clickable {
+                myTripViewModel.onClickScheduleItemGoScheduleDetail(trip)
+            }
             .fillMaxWidth()
             .padding(10.dp)
     ) {
@@ -97,23 +105,27 @@ fun TripItem(trip: TripScheduleModel,myTripViewModel: MyTripViewModel,pos : Int)
         }
 
         // 팝업 메뉴 (점 3개 버튼)
-        if(!myTripViewModel.menuStateMap[pos]!!)
-        IconButton(onClick = {
-            myTripViewModel.onClickIconMenu(pos)
-        }) {
-            Icon(
-                imageVector = Icons.Default.MoreVert,
-                contentDescription = "Menu"
-            )
-        }
-        else{
-            Row{
+        if (!myTripViewModel.menuStateMap[pos]!!)
+            IconButton(onClick = {
+                myTripViewModel.onClickIconMenu(pos)
+            }) {
+                Icon(
+                    imageVector = Icons.Default.MoreVert,
+                    contentDescription = "Menu"
+                )
+            }
+        else {
+            Row {
                 // 여행 날짜 수정
-                CustomIconButton(icon = ImageVector.vectorResource(R.drawable.ic_calendar_month_24px), iconButtonOnClick = {})
+                CustomIconButton(
+                    icon = ImageVector.vectorResource(R.drawable.ic_calendar_month_24px),
+                    iconButtonOnClick = {})
                 // 여행 삭제
-                CustomIconButton(icon = ImageVector.vectorResource(R.drawable.ic_delete_24px), iconButtonOnClick = {
-                    myTripViewModel.onClickIconDeleteTrip(trip)
-                })
+                CustomIconButton(
+                    icon = ImageVector.vectorResource(R.drawable.ic_delete_24px),
+                    iconButtonOnClick = {
+                        myTripViewModel.onClickIconDeleteTrip(trip)
+                    })
             }
         }
 
