@@ -16,6 +16,8 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -28,35 +30,29 @@ class MyTripViewModel @Inject constructor(
     // 현재 날짜 가져오기
     val currentDate = Timestamp.now()
 
-    // 여행 데이터 전체
-    val tripList = mutableStateListOf<TripScheduleModel>()
+    // ViewModel 내부
+    private val _tripList = MutableStateFlow<List<TripScheduleModel>>(emptyList())
+    val tripList: StateFlow<List<TripScheduleModel>> = _tripList
 
-    // 다가올 여행
-    val upComingTripList = mutableStateListOf<TripScheduleModel>()
+    private val _upComingTripList = MutableStateFlow<List<TripScheduleModel>>(emptyList())
+    val upComingTripList: StateFlow<List<TripScheduleModel>> = _upComingTripList
 
-    // 지난 여행
-    val pastTripList = mutableStateListOf<TripScheduleModel>()
+    private val _pastTripList = MutableStateFlow<List<TripScheduleModel>>(emptyList())
+    val pastTripList: StateFlow<List<TripScheduleModel>> = _pastTripList
 
     // 인덱스별 메뉴 상태를 관리할 맵
     val menuStateMap = mutableStateMapOf<Int, Boolean>()
 
     // 화면 열때 리스트 가져오기
     fun getTripList() {
-        tripList.clear()
         // Log.d("test100","getTripList")
         viewModelScope.launch {
-            val work1 = async(Dispatchers.IO) {
-                userService.gettingTripScheduleItemList(tripApplication.loginUserModel.userDocId)
-            }
-            // 유저 목록의 일정 서브컬렉션 문서 아이디 리스트
-            val tripDocIdList = work1.await()
-
             // 일정 모델 리스트
-            val work2 = async(Dispatchers.IO) {
-                tripScheduleService.fetchScheduleList(tripDocIdList)
+            val work1 = async(Dispatchers.IO) {
+                tripScheduleService.gettingMyTripSchedules(tripApplication.loginUserModel.userNickName)
             }
-            val result = work2.await()
-            tripList.addAll(result)
+            val result = work1.await()
+            _tripList.value = result
             getUpComingList()
             getPastList()
             addMap()
@@ -67,7 +63,7 @@ class MyTripViewModel @Inject constructor(
     // 리스트 길이로 맵을 초기화
     fun addMap() {
         // Log.d("test100","addMap")
-        tripList.forEachIndexed { index, tripScheduleModel ->
+        tripList.value.forEachIndexed { index, tripScheduleModel ->
             menuStateMap[index] = false
         }
     }
@@ -76,23 +72,21 @@ class MyTripViewModel @Inject constructor(
     fun getUpComingList() {
         // Log.d("test100","getUpComingList")
         // 필터링하고 정렬된 리스트를 upComingTripList에 추가
-        upComingTripList.clear()
-        upComingTripList.addAll(
-            tripList
+
+        _upComingTripList.value =
+            _tripList.value
                 .filter { it.scheduleEndDate >= currentDate } // 현재 날짜 이후 여행 필터링
                 .sortedBy { it.scheduleStartDate.toDate() } // scheduleStartDate가 가까운 순으로 정렬
-        )
+
     }
 
     // 지난 여행 가져오기
     fun getPastList() {
         // Log.d("test100","getPastList")
-        pastTripList.clear()
-        pastTripList.addAll(
-            tripList
-                .filter { it.scheduleEndDate < currentDate }  // 현재 날짜 이전 여행 필터링
-                .sortedByDescending { it.scheduleStartDate.toDate() } // scheduleEndDate가 가까운 순으로 정렬
-        )
+        _pastTripList.value = _tripList.value
+            .filter { it.scheduleEndDate < currentDate }  // 현재 날짜 이전 여행 필터링
+            .sortedByDescending { it.scheduleStartDate.toDate() } // scheduleEndDate가 가까운 순으로 정렬
+
     }
 
     // context 변수
@@ -133,8 +127,11 @@ class MyTripViewModel @Inject constructor(
             // Log.d("test100","onClickIconDeleteTrip")
 
             // 유저 일정 서브컬렉션에서 제거
-            val work0 = async(Dispatchers.IO){
-                userService.deleteTripScheduleItem(tripApplication.loginUserModel.userDocId,trip.tripScheduleDocId)
+            val work0 = async(Dispatchers.IO) {
+                userService.deleteTripScheduleItem(
+                    tripApplication.loginUserModel.userDocId,
+                    trip.tripScheduleDocId
+                )
             }
             work0.join()
 
@@ -143,9 +140,11 @@ class MyTripViewModel @Inject constructor(
                 tripScheduleService.deleteTripScheduleByDocId(trip.tripScheduleDocId)
             } else {
                 // 참여자가 2 이상이면 초대리스트에서 해당 유저만 제거
-                tripScheduleService.removeScheduleInviteList(trip.tripScheduleDocId,tripApplication.loginUserModel.userDocId)
+                tripScheduleService.removeScheduleInviteList(
+                    trip.tripScheduleDocId,
+                    tripApplication.loginUserModel.userDocId
+                )
             }
-            tripList.clear()
             getTripList()
         }
 

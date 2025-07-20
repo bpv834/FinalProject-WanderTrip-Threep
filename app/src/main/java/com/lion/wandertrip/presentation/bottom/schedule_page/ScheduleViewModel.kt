@@ -2,8 +2,6 @@ package com.lion.wandertrip.presentation.bottom.schedule_page
 
 import android.content.Context
 import android.util.Log
-import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.Timestamp
@@ -11,7 +9,7 @@ import com.lion.wandertrip.TripApplication
 import com.lion.wandertrip.model.TripScheduleModel
 import com.lion.wandertrip.service.TripScheduleService
 import com.lion.wandertrip.service.UserService
-import com.lion.wandertrip.util.AreaCode
+import com.lion.wandertrip.util.BotNavScreenName
 import com.lion.wandertrip.util.ScheduleScreenName
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -38,7 +36,7 @@ class ScheduleViewModel @Inject constructor(
     // 데이터 로딩 상태
     // ViewModel 안에서 선언
     private val _isLoading = MutableStateFlow(false)
-    val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
+    val isLoading: StateFlow<Boolean> = _isLoading
 
     // 일정 추가 버튼 클릭 이벤트
     fun addIconButtonEvent() {
@@ -85,7 +83,7 @@ class ScheduleViewModel @Inject constructor(
                     application.loginUserModel.userDocId
                 )
             }.join()
-
+            loadMyScheduleOnce()
         }
 
     }
@@ -110,36 +108,36 @@ class ScheduleViewModel @Inject constructor(
         }
     }
 
-    // 해당 일정 상세 화면으로 이동
-    fun moveToScheduleDetailScreen(scheduleModel: TripScheduleModel) {
-        // scheduleCity와 일치하는 AreaCode 찾기 (없으면 0 반환)
-        val areaCodeValue =
-            AreaCode.entries.firstOrNull { it.areaName == scheduleModel.scheduleCity }?.areaCode
-                ?: 0
-        Log.d("ScheduleViewModel", "areaCodeValue: $areaCodeValue")
 
+    // 일정 상세 화면 으로 이동
+    fun moveToScheduleDetailScreen(scheduleModel: TripScheduleModel) {
+        val lat = scheduleModel.lat
+        val lng = scheduleModel.lng
+
+        // 일정 상세 화면 이동
         application.navHostController.navigate(
-            "${ScheduleScreenName.SCHEDULE_DETAIL_SCREEN.name}?" +
-                    "tripScheduleDocId=${scheduleModel.tripScheduleDocId}&areaName=${scheduleModel.scheduleCity}&areaCode=$areaCodeValue"
-        )
+            "${ScheduleScreenName.SCHEDULE_DETAIL_RANDOM_SCREEN.name}?" +
+                    "tripScheduleDocId=${scheduleModel.tripScheduleDocId}&lat=${lat}&lng=${lng}",
+        ) {
+            popUpTo(BotNavScreenName.BOT_NAV_SCREEN_HOME.name) { inclusive = false }
+            launchSingleTop = true
+        }
     }
+
+
+
 
     // flow 유저 스케줄 상태 변수
     private val _userSchedules = MutableStateFlow<List<TripScheduleModel>>(emptyList())
     val userSchedules: StateFlow<List<TripScheduleModel>> = _userSchedules
 
     // flow 유저 스케줄 collect 메서드
-    private fun flowMySchedule() {
+    fun loadMyScheduleOnce() {
         viewModelScope.launch {
-            tripScheduleService.getMyTripSchedulesFlow(application.loginUserModel.userNickName)
-                .collect() { schedule ->
-                    _userSchedules.value = schedule.filter { it.scheduleStartDate> Timestamp.now() } //다가오는 일정만 보여주기
-                }
+            val result = tripScheduleService.gettingMyTripSchedules(application.loginUserModel.userNickName)
+            _userSchedules.value = result
+                .filter { it.scheduleStartDate > Timestamp.now() } // 다가오는 일정
         }
-    }
-
-    init {
-        flowMySchedule()
     }
 
 }

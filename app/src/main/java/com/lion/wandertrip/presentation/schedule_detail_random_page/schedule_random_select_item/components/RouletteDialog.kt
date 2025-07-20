@@ -67,7 +67,7 @@ fun RouletteDialog(
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .defaultMinSize(minHeight = (sh / 6).dp)
+                .defaultMinSize(minHeight = (sh / 5).dp)
                 .background(Color.White, shape = RoundedCornerShape(8.dp)) // 배경에 둥근 사각형 적용
                 .padding(24.dp)
         ) {

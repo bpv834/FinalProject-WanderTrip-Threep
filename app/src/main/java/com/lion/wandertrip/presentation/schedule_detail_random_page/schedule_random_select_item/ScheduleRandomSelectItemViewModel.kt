@@ -321,7 +321,6 @@ class ScheduleRandomSelectItemViewModel @Inject constructor(
             currentList = _itemList,
             pageFlow = _page
         )
+        println("code : $itemCode docId : $tripScheduleDocId lat :$lat lng $lng")
     }
-
-
 }

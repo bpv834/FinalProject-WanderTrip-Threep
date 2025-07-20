@@ -19,6 +19,8 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -37,27 +39,29 @@ import java.util.Locale
 
 @Composable
 fun VerticalTripItemList(myTripViewModel: MyTripViewModel) {
+    val upComingTripList by myTripViewModel.upComingTripList.collectAsState()
+    val pastTripList by myTripViewModel.pastTripList.collectAsState()
     Column(modifier = Modifier.fillMaxSize()
         .verticalScroll(rememberScrollState()) // 스크롤 가능하게 설정
         .padding(16.dp)) {
         // 다가오는 여행
-        if(myTripViewModel.upComingTripList.size!=0)
+        if(upComingTripList.size!=0)
         Column  {
             Text(text = "다가오는 여행", fontSize = 20.sp,  fontFamily = CustomFont.customFontBold)
-            myTripViewModel.upComingTripList
+            upComingTripList
                 .forEachIndexed { index, tripScheduleModel ->
-                    TripItem(trip = myTripViewModel.upComingTripList[index],myTripViewModel,index)
+                    TripItem(trip = upComingTripList[index],myTripViewModel,index)
                 }
         }
 
         Spacer(modifier = Modifier.height(16.dp)) // 두 섹션 간격
-        if(myTripViewModel.pastTripList.size !=0)
+        if(pastTripList.isNotEmpty())
         // 지난 여행
         Column {
             Text(text = "지난 여행", fontSize = 20.sp, fontFamily = CustomFont.customFontBold)
-            myTripViewModel.pastTripList
+            pastTripList
                 .forEachIndexed { index, tripScheduleModel ->
-                    TripItem(trip = myTripViewModel.pastTripList[index],myTripViewModel,index+myTripViewModel.upComingTripList.size)
+                    TripItem(trip = pastTripList[index],myTripViewModel,index+upComingTripList    .size)
                 }
         }
     }

@@ -3,6 +3,7 @@ package com.lion.wandertrip.presentation.schedule_detail_random_page.schedule_ra
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -28,73 +29,79 @@ import com.lion.wandertrip.ui.theme.NanumSquareRoundRegular
 import com.lion.wandertrip.ui.theme.starColor
 
 @Composable
-fun ContentsInfo(viewModel : ScheduleRandomSelectItemViewModel,tripLocationBasedItem: TripLocationBasedItem){
+fun ContentsInfo(
+    viewModel: ScheduleRandomSelectItemViewModel,
+    tripLocationBasedItem: TripLocationBasedItem,
+    modifier: Modifier
+) {
     val contentsMap by viewModel.allContentsMapFlow.collectAsState()
-    Column {
-        // ✅ 제목 텍스트
-        Text(
-            text = tripLocationBasedItem.title!!,
-            fontSize = 20.sp,
-            fontFamily = NanumSquareRound,
-            maxLines = 1, // ✅ 최대 1줄까지 표시
-            overflow = TextOverflow.Ellipsis, // ✅ 너무 길면 "..." 표시
-            modifier = Modifier.padding(bottom = 5.dp)
+    Column(
+        modifier = modifier) {
+                // ✅ 제목 텍스트
+                Text (
+                text = tripLocationBasedItem.title!!,
+        fontSize = 20.sp,
+        fontFamily = NanumSquareRound,
+        maxLines = 1, // ✅ 최대 1줄까지 표시
+        overflow = TextOverflow.Ellipsis, // ✅ 너무 길면 "..." 표시
+        modifier = Modifier.padding(bottom = 5.dp)
+    )
+
+    // ✅ 주소 텍스트
+    Text(
+        modifier = Modifier.padding(top = 4.dp),
+        text = tripLocationBasedItem.addr1 + tripLocationBasedItem.addr2,
+        fontSize = 12.sp,
+        fontFamily = NanumSquareRoundRegular,
+        maxLines = 1, // ✅ 최대 2줄까지 표시
+        overflow = TextOverflow.Ellipsis, // ✅ 너무 길면 "..." 표시
+        lineHeight = 14.sp // ✅ 줄 간격을 조정 (기본값보다 약간 좁게)
+    )
+    val contentModel =
+        contentsMap[tripLocationBasedItem.contentId]
+    Spacer(
+        modifier = Modifier.height(20.dp)
+    )
+    Row {
+        Icon(
+            imageVector = ImageVector.vectorResource(R.drawable.ic_heart_filled_24px),
+            contentDescription = "관심 지역",
+            tint = Color.Red,
+            modifier = Modifier.size(15.dp)
         )
 
-        // ✅ 주소 텍스트
-        Text(
-            text = tripLocationBasedItem.addr1 + tripLocationBasedItem.addr2,
-            fontSize = 12.sp,
-            fontFamily = NanumSquareRoundRegular,
-            maxLines = 1, // ✅ 최대 2줄까지 표시
-            overflow = TextOverflow.Ellipsis, // ✅ 너무 길면 "..." 표시
-            lineHeight = 14.sp // ✅ 줄 간격을 조정 (기본값보다 약간 좁게)
-        )
-        val contentModel =
-            contentsMap[tripLocationBasedItem.contentId]
         Spacer(
-            modifier = Modifier.height(10.dp)
+            modifier = Modifier.width(3.dp)
         )
-        Row {
-            Icon(
-                painter = painterResource(R.drawable.ic_heart_red),
-                tint = Color.Red,
-                contentDescription = "관심 지역",
-                modifier = Modifier.size(15.dp)
-            )
 
-            Spacer(
-                modifier = Modifier.width(3.dp)
-            )
+        Text(
+            text = "${contentModel?.interestingCount ?: 0}",
+            fontSize = 15.sp,
+            fontFamily = NanumSquareRoundRegular,
+            lineHeight = 14.sp
+        )
 
-            Text(
-                text = "${contentModel?.interestingCount?:0}",
-                fontSize = 15.sp,
-                fontFamily = NanumSquareRoundRegular,
-                lineHeight = 14.sp
-            )
+        Spacer(
+            modifier = Modifier.width(10.dp)
+        )
 
-            Spacer(
-                modifier = Modifier.width(10.dp)
-            )
+        Icon(
+            imageVector = ImageVector.vectorResource(id = R.drawable.ic_star_full_24px),
+            contentDescription = "평점",
+            tint = starColor,
+            modifier = Modifier.size(15.dp)
+        )
 
-            Icon(
-                painter = painterResource(R.drawable.ic_star_full_24px), // 또는 다른 하트 아이콘
-                contentDescription = "평점",
-                tint = starColor,
-                modifier = Modifier.size(15.dp)
-            )
+        Spacer(
+            modifier = Modifier.width(3.dp)
+        )
 
-            Spacer(
-                modifier = Modifier.width(3.dp)
-            )
-
-            Text(
-                text = "${contentModel?.ratingScore?:0.0}",
-                fontSize = 15.sp,
-                fontFamily = NanumSquareRoundRegular,
-                lineHeight = 14.sp
-            )
-        }
+        Text(
+            text = "${contentModel?.ratingScore ?: 0.0}",
+            fontSize = 15.sp,
+            fontFamily = NanumSquareRoundRegular,
+            lineHeight = 14.sp
+        )
     }
+}
 }

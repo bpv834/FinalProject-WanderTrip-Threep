@@ -1,5 +1,6 @@
 package com.lion.wandertrip.presentation.bottom.schedule_page
 
+import android.util.Log
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -36,6 +37,9 @@ import kotlinx.coroutines.launch
 fun ScheduleScreen(
     viewModel: ScheduleViewModel = hiltViewModel(),
 ) {
+    LaunchedEffect (Unit){
+        viewModel.loadMyScheduleOnce()
+    }
     val isLoading by viewModel.isLoading.collectAsState()
     // 일정 데이터 가져오기
     val myScheduleList by viewModel.userSchedules.collectAsState()

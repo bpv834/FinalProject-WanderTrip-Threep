@@ -46,7 +46,7 @@ import com.lion.wandertrip.util.CustomFont
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 fun DetailScreen(contentID: String, detailViewModel: DetailViewModel = hiltViewModel()) {
-    Log.d("test", "contentID : $contentID")
+   // Log.d("test", "contentID : $contentID")
 
     val toastMessage = detailViewModel.toastMessageValue.value
 
@@ -56,8 +56,10 @@ fun DetailScreen(contentID: String, detailViewModel: DetailViewModel = hiltViewM
 
     // 토스트 내용이 변할때마다 동작하는 런쳐
     LaunchedEffect(toastMessage) {
-        toastMessage?.let {
-            Toast.makeText(detailViewModel.tripApplication, it, Toast.LENGTH_SHORT).show()
+        if (!toastMessage.isNullOrBlank()) {
+            Toast.makeText(detailViewModel.tripApplication, toastMessage, Toast.LENGTH_SHORT).show()
+            // 토스트 다시 ""로 변경
+            detailViewModel.toastMessageValue.value=""
         }
     }
 

@@ -226,16 +226,9 @@ class DetailViewModel @Inject constructor(
         tripScheduleList.clear()
         viewModelScope.launch {
             val work1 = async(Dispatchers.IO) {
-                userService.gettingTripScheduleItemList(tripApplication.loginUserModel.userDocId)
+                tripScheduleService.gettingMyTripSchedules(tripApplication.loginUserModel.userNickName)
             }
-            // 유저 목록의 일정 서브컬렉션 문서 아이디 리스트
-            val tripDocIdList = work1.await()
-
-            // 일정 모델 리스트
-            val work2 = async(Dispatchers.IO) {
-                tripScheduleService.fetchScheduleList(tripDocIdList)
-            }
-            val result = work2.await()
+            val result = work1.await()
             tripScheduleList.addAll(result)
             addMap()
         }
