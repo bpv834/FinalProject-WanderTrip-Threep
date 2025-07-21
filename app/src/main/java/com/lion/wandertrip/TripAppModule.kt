@@ -1,195 +1,170 @@
 package com.lion.wandertrip
 
-import com.lion.wandertrip.repository.ContentsRepository
-import com.lion.wandertrip.repository.ContentsReviewRepository
-import com.lion.wandertrip.repository.TripAreaBaseItemRepository
-import com.lion.wandertrip.repository.TripCommonItemRepository
-import com.lion.wandertrip.repository.TripKeywordItemRepository
-import com.lion.wandertrip.repository.TripLocationBasedItemRepository
-import com.lion.wandertrip.repository.TripScheduleRepository
-import com.lion.wandertrip.repository.UserRepository
-import com.lion.wandertrip.retrofit_for_practice.TripAreaBaseItemInterface
-import com.lion.wandertrip.retrofit_for_practice.TripCommonItemInterface
-import com.lion.wandertrip.retrofit_for_practice.TripKeywordItemInterface
-import com.lion.wandertrip.retrofit_for_practice.TripLocationBasedInterface
-import com.lion.wandertrip.service.ContentsReviewService
-import com.lion.wandertrip.service.ContentsService
-import com.lion.wandertrip.service.TripAreaBaseItemService
-import com.lion.wandertrip.service.TripCommonItemService
-import com.lion.wandertrip.service.TripKeywordItemService
-import com.lion.wandertrip.service.TripLocationBasedItemService
-import com.lion.wandertrip.service.TripScheduleService
-import com.lion.wandertrip.service.UserService
+import com.lion.wandertrip.repository.*
+import com.lion.wandertrip.retrofit_for_practice.*
+import com.lion.wandertrip.service.*
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import javax.inject.Qualifier
 import javax.inject.Singleton
 
-// 모듈은 Hilt에게 객체를 어떻게 제공할지에 대한 규칙을 정의하며, 주로 @Provides 또는 @Binds 어노테이션을 사용하여 의존성을 생성합니다.
-// @InstallIn(SingletonComponent::class)는 모듈이 SingletonComponent에 설치되어 해당 컴포넌트의 라이프사이클 동안 유효한 의존성으로 제공됨을 의미합니다.
+@Qualifier
+@Retention(AnnotationRetention.BINARY)
+annotation class RetrofitV1
+
+@Qualifier
+@Retention(AnnotationRetention.BINARY)
+annotation class RetrofitV2
+
 @Module
-@InstallIn(SingletonComponent ::class)
+@InstallIn(SingletonComponent::class)
 object TripAppModule {
 
-
+    // User
+    @Provides
+    @Singleton
+    fun userRepositoryProvider(): UserRepository = UserRepository()
 
     @Provides
     @Singleton
-    fun userRepositoryProvider() : UserRepository {
-        return UserRepository()
-    }
+    fun userServiceProvider(userRepository: UserRepository): UserService =
+        UserService(userRepository)
 
+    // TripSchedule
     @Provides
     @Singleton
-    fun userServiceProvider(userRepository: UserRepository) : UserService {
-        return UserService(userRepository)
-    }
-
-    // TripSchedule ////////////////////////////////////////////////////////////////////////////////
-    @Provides
-    @Singleton
-    fun tripScheduleRepositoryProvider(): TripScheduleRepository {
-        return TripScheduleRepository()
-    }
+    fun tripScheduleRepositoryProvider(): TripScheduleRepository = TripScheduleRepository()
 
     @Provides
     @Singleton
     fun tripScheduleServiceProvider(
         tripScheduleRepository: TripScheduleRepository
-    ): TripScheduleService {
-        return TripScheduleService(tripScheduleRepository)
-    }
-    ////////////////////////////////////////////////////////////////////////////////////////////////
+    ): TripScheduleService = TripScheduleService(tripScheduleRepository)
 
-    val BASE_URL = "http://apis.data.go.kr/B551011/KorService1/"
+    private const val BASE_URL = "http://apis.data.go.kr/B551011/KorService1/"
+
+    // RetrofitV1
+    @Provides
+    @Singleton
+    @RetrofitV1
+    fun retrofitProvider(): Retrofit =
+        Retrofit.Builder()
+            .baseUrl(BASE_URL)
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
 
     // TripCommonItem
     @Provides
     @Singleton
-    fun retrofitProvider(): Retrofit {
-        return Retrofit.Builder()
-            .baseUrl(BASE_URL)
-            .addConverterFactory(GsonConverterFactory.create())  // Gson 사용
-            .build()
-    }
+    fun tripItemCommonInterfaceProvider(@RetrofitV1 retrofit: Retrofit): TripCommonItemInterface =
+        retrofit.create(TripCommonItemInterface::class.java)
 
     @Provides
     @Singleton
-    fun tripItemCommonInterfaceProvider(retrofit: Retrofit): TripCommonItemInterface {
-        return retrofit.create(TripCommonItemInterface::class.java)
-    }
+    fun tripCommonItemRepositoryProvider(api: TripCommonItemInterface): TripCommonItemRepository =
+        TripCommonItemRepository(api)
 
     @Provides
     @Singleton
-    fun tripCommonItemRepositoryProvider(api: TripCommonItemInterface): TripCommonItemRepository {
-        return TripCommonItemRepository(api)
-    }
-
-    @Provides
-    @Singleton
-    fun tripCommonItemServiceProvider(repository: TripCommonItemRepository): TripCommonItemService {
-        return TripCommonItemService(repository)
-    }
-    ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    fun tripCommonItemServiceProvider(repository: TripCommonItemRepository): TripCommonItemService =
+        TripCommonItemService(repository)
 
     // TripAreaBase
     @Provides
     @Singleton
-    fun tripItemAreaBaseInterfaceProvider(retrofit: Retrofit): TripAreaBaseItemInterface {
-        return retrofit.create(TripAreaBaseItemInterface::class.java)
-    }
+    fun tripItemAreaBaseInterfaceProvider(@RetrofitV1 retrofit: Retrofit): TripAreaBaseItemInterface =
+        retrofit.create(TripAreaBaseItemInterface::class.java)
 
     @Provides
     @Singleton
-    fun tripAreaBaseItemRepositoryProvider(api: TripAreaBaseItemInterface): TripAreaBaseItemRepository {
-        return TripAreaBaseItemRepository(api)
-    }
+    fun tripAreaBaseItemRepositoryProvider(api: TripAreaBaseItemInterface): TripAreaBaseItemRepository =
+        TripAreaBaseItemRepository(api)
 
     @Provides
     @Singleton
-    fun tripAreaBaseItemServiceProvider(repository: TripAreaBaseItemRepository): TripAreaBaseItemService {
-        return TripAreaBaseItemService(repository)
-    }
-    ////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    // tripKeywordProvider
-    @Provides
-    @Singleton
-    fun tripKeywordItemCommonInterfaceProvider(retrofit: Retrofit): TripKeywordItemInterface {
-        return retrofit.create(TripKeywordItemInterface::class.java)
-    }
+    fun tripAreaBaseItemServiceProvider(repository: TripAreaBaseItemRepository): TripAreaBaseItemService =
+        TripAreaBaseItemService(repository)
 
+    // TripKeywordItem
     @Provides
     @Singleton
-    fun tripKeywordItemRepositoryProvider(api: TripKeywordItemInterface): TripKeywordItemRepository {
-        return TripKeywordItemRepository(api)
-    }
+    fun tripKeywordItemCommonInterfaceProvider(@RetrofitV1 retrofit: Retrofit): TripKeywordItemInterface =
+        retrofit.create(TripKeywordItemInterface::class.java)
 
     @Provides
     @Singleton
-    fun tripKeywordItemServiceProvider(repository: TripKeywordItemRepository): TripKeywordItemService {
-        return TripKeywordItemService(repository)
-    }
-
-    // contents
+    fun tripKeywordItemRepositoryProvider(api: TripKeywordItemInterface): TripKeywordItemRepository =
+        TripKeywordItemRepository(api)
 
     @Provides
     @Singleton
-    fun contentsRepositoryProvider(): ContentsRepository {
-        return ContentsRepository()
-    }
+    fun tripKeywordItemServiceProvider(repository: TripKeywordItemRepository): TripKeywordItemService =
+        TripKeywordItemService(repository)
+
+    // Contents
+    @Provides
+    @Singleton
+    fun contentsRepositoryProvider(): ContentsRepository = ContentsRepository()
 
     @Provides
     @Singleton
-    fun contentsServiceProvider(
-        contentsRepository: ContentsRepository
-    ): ContentsService {
-        return ContentsService(contentsRepository)
-    }
-
-    //////////////////////////////////////////////////////////////////////////////////////
-
+    fun contentsServiceProvider(contentsRepository: ContentsRepository): ContentsService =
+        ContentsService(contentsRepository)
 
     // ContentsReview
+    @Provides
+    @Singleton
+    fun contentsReviewRepositoryProvider(): ContentsReviewRepository = ContentsReviewRepository()
 
     @Provides
     @Singleton
-    fun contentsReviewRepositoryProvider(): ContentsReviewRepository {
-        return ContentsReviewRepository()
-    }
-
-    @Provides
-    @Singleton
-    fun contentsReviewServiceProvider(
-        contentsReviewRepository: ContentsReviewRepository
-    ): ContentsReviewService {
-        return ContentsReviewService(contentsReviewRepository)
-    }
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////
+    fun contentsReviewServiceProvider(contentsReviewRepository: ContentsReviewRepository): ContentsReviewService =
+        ContentsReviewService(contentsReviewRepository)
 
     // TripLocationBased
     @Provides
     @Singleton
-    fun tripLocationBasedInterfaceProvider(retrofit: Retrofit): TripLocationBasedInterface {
-        return retrofit.create(TripLocationBasedInterface::class.java)
-    }
-
-
+    fun tripLocationBasedInterfaceProvider(@RetrofitV1 retrofit: Retrofit): TripLocationBasedInterface =
+        retrofit.create(TripLocationBasedInterface::class.java)
 
     @Provides
     @Singleton
-    fun tripLocationBasedRepositoryProvider(api: TripLocationBasedInterface): TripLocationBasedItemRepository {
-        return TripLocationBasedItemRepository(api)
-    }
-
+    fun tripLocationBasedRepositoryProvider(api: TripLocationBasedInterface): TripLocationBasedItemRepository =
+        TripLocationBasedItemRepository(api)
 
     @Provides
     @Singleton
-    fun tripLocationBasedServiceProvider(repository: TripLocationBasedItemRepository): TripLocationBasedItemService {
-        return TripLocationBasedItemService(repository)
-    }
+    fun tripLocationBasedServiceProvider(repository: TripLocationBasedItemRepository): TripLocationBasedItemService =
+        TripLocationBasedItemService(repository)
 
+    // RetrofitV2 for AreaBaseItem2
+    private const val BASE_URL_V2 = "https://apis.data.go.kr/B551011/KorService2/"
+
+    @Provides
+    @Singleton
+    @RetrofitV2
+    fun retrofitProvider2(): Retrofit =
+        Retrofit.Builder()
+            .baseUrl(BASE_URL_V2)
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+
+    @Provides
+    @Singleton
+    fun tripItemAreaBaseInterfaceProvider2(@RetrofitV2 retrofit: Retrofit): TripAreaBaseItem2Interface =
+        retrofit.create(TripAreaBaseItem2Interface::class.java)
+
+    @Provides
+    @Singleton
+    fun tripItemAreaBaseRepositoryProvider2(api: TripAreaBaseItem2Interface): TripAreaBaseItem2Repository =
+        TripAreaBaseItem2Repository(api)
+
+    @Provides
+    @Singleton
+    fun tripItemAreaBaseServiceProvider2(repository: TripAreaBaseItem2Repository): TripAreaBaseItem2Service =
+        TripAreaBaseItem2Service(repository)
 }

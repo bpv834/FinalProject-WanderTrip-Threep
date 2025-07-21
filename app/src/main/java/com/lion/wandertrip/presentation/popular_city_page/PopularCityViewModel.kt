@@ -116,7 +116,6 @@ class PopularCityViewModel @Inject constructor(
             work2.join()
         }
     }
-
     // 좋아요 버튼 누를 때 리스너
     fun toggleFavorite(contentId: String) {
         viewModelScope.launch {

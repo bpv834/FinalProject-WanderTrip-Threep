@@ -48,7 +48,7 @@ fun HomeSearchBar(
             searchText = it
             onSearchQueryChanged(it) // 검색어 변경 콜백
         },
-        placeholder = { Text("검색어를 입력하세요") },
+        placeholder = { Text("지역명을 입력하세요") },
 
         // 🔙 뒤로 가기 아이콘 추가
         leadingIcon = {

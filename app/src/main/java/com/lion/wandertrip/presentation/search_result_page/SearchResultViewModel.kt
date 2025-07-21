@@ -1,64 +1,63 @@
 package com.lion.wandertrip.presentation.search_result_page
 
 import android.content.Context
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.lion.wandertrip.TripApplication
 import com.lion.wandertrip.model.TripItemModel
 import com.lion.wandertrip.model.TripNoteModel
-import com.lion.wandertrip.presentation.main_page.MainScreen
-import com.lion.wandertrip.repository.TripAreaBaseItemRepository
-import com.lion.wandertrip.service.TripAreaBaseItemService
+import com.lion.wandertrip.service.TripAreaBaseItem2Service
+import com.lion.wandertrip.service.TripKeywordItemService
 import com.lion.wandertrip.service.TripNoteService
-import com.lion.wandertrip.util.BotNavScreenName
-import com.lion.wandertrip.util.ContentTypeId
 import com.lion.wandertrip.util.MainScreenName
+import com.lion.wandertrip.util.Tools
 import com.lion.wandertrip.util.TripNoteScreenName
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class SearchResultViewModel @Inject constructor(
     @ApplicationContext context: Context,
-    val tripAreaBaseItemService: TripAreaBaseItemService,
-    val tripNoteService: TripNoteService
+    val tripNoteService: TripNoteService,
+    val tripAreaBaseItem2Service: TripAreaBaseItem2Service
 ): ViewModel() {
 
     val tripApplication = context as TripApplication
 
-    private val _searchResults = MutableLiveData<List<TripItemModel>>() // ✅ 검색 결과 LiveData 추가
-    val searchResults: LiveData<List<TripItemModel>> get() = _searchResults
+    // TripItemModel 검색 결과
+    private val _searchResults = MutableStateFlow<List<TripItemModel>>(emptyList())
+    val searchResults: StateFlow<List<TripItemModel>> get() = _searchResults
 
-    private val _searchNoteResults = MutableLiveData<List<TripNoteModel>>() // ✅ 검색 결과 LiveData 추가
-    val searchNoteResults: LiveData<List<TripNoteModel>> get() = _searchNoteResults
+    // TripNoteModel 검색 결과
+    private val _searchNoteResults = MutableStateFlow<List<TripNoteModel>>(emptyList())
+    val searchNoteResults: StateFlow<List<TripNoteModel>> get() = _searchNoteResults
 
-    private val _isLoading = MutableLiveData(false) // ✅ 로딩 상태 추가
-    val isLoading: LiveData<Boolean> get() = _isLoading
+    // 로딩 상태
+    private val _isLoading = MutableStateFlow(false)
+    val isLoading: StateFlow<Boolean> get() = _isLoading
 
-    fun searchTrip(text: String) {
+    // 검색 메서드
+    fun searchTrip(keyword: String) {
         viewModelScope.launch {
             _isLoading.value = true // ✅ 검색 시작 전 로딩 시작
-            val items = tripAreaBaseItemService.getTripAllItem()
-            val noteItems = tripNoteService.gettingTripNoteList()
-            val filteredItems = items?.filter { item ->
-                item.title.contains(text, ignoreCase = true) ||
-                        item.cat1.contains(text, ignoreCase = true) ||
-                        item.cat2.contains(text, ignoreCase = true) ||
-                        item.cat3.contains(text, ignoreCase = true)
-            } ?: emptyList()
+            val (areaCode,sigunguCode) = Tools.getAreaAndSubAreaCode(keyword)?:Pair("","")
+            val work1 = async(Dispatchers.IO){
+                tripAreaBaseItem2Service.gettingAllItemWithAreaCode(areaCode,sigunguCode)
+            }
+            val work2 = async(Dispatchers.IO){
+                tripNoteService.gettingTripNoteList()
+            }
+            _searchResults.value =work1.await()?: emptyList()
+            _searchNoteResults.value = work2.await()
 
-            val filteredNoteItems = noteItems.filter { item ->
-                item.tripNoteTitle.contains(text, ignoreCase = true) ||
-                        item.tripNoteContent.contains(text, ignoreCase = true)
-            } ?: emptyList()
-
-            _searchResults.value = filteredItems
-            _searchNoteResults.value = filteredNoteItems
-            _isLoading.value = false // ✅ 검색 완료 후 로딩 종료
+            _isLoading.value = false
         }
     }
 
@@ -76,4 +75,5 @@ class SearchResultViewModel @Inject constructor(
             inclusive = false // ✅ 기존 검색창을 새로 생성하도록 설정
         )
     }
+
 }

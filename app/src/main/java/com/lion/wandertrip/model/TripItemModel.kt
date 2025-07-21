@@ -2,7 +2,7 @@ package com.lion.wandertrip.model
 
 import com.lion.wandertrip.vo.TripItemVO
 
-class TripItemModel(
+data class TripItemModel(
     var addr1: String = "",          // 주소
     var addr2: String = "",          // 상세주소
     var areaCode: String = "",       // 지역코드

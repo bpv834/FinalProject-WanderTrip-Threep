@@ -17,6 +17,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateMapOf
@@ -52,11 +53,11 @@ fun SearchResultScreen(
 
     var selectedCategoryCode by remember { mutableStateOf<String?>("추천") }
 
-    val isLoading by viewModel.isLoading.observeAsState(false) // ✅ 로딩 상태 감지
+    val isLoading by viewModel.isLoading.collectAsState() // ✅ 로딩 상태 감지
 
     // ✅ ViewModel에서 검색 결과 가져오기
-    val filteredList by viewModel.searchResults.observeAsState(emptyList())
-    val filteredNoteList by viewModel.searchNoteResults.observeAsState(emptyList())
+    val filteredList by viewModel.searchResults.collectAsState()
+    val filteredNoteList by viewModel.searchNoteResults.collectAsState()
 
     // ✅ "더보기"를 눌렀을 때 표시할 개수를 저장하는 Map
     val visibleItemCounts = remember { mutableStateMapOf<String, Int>() }

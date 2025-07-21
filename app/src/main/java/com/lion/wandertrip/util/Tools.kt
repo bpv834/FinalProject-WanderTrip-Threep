@@ -336,7 +336,6 @@ class Tools {
         }
 
         val areaCodeMap = mapOf(
-
             "1" to "서울",
             "2" to "인천",
             "3" to "대전",
@@ -717,20 +716,20 @@ class Tools {
 
         // 검색어로 sigunguCode 와, areaCode 얻는 메서드
         // 강남 --> [1][1] 서울 --> [1][0]
-        fun getAreaAndSubAreaCode(areaName: String): String? {
+        fun getAreaAndSubAreaCode(areaName: String): Pair<String,String>? {
             for ((areaCode, areaData) in AreaCityMap) {
                 val cityName : String = areaData["name"].toString()
                 val subAreas = areaData["subAreas"] as Map<String, String>
 
                 for ((subAreaCode, subAreaName) in subAreas) {
                     if (subAreaName.contains(areaName)) {
-                        return "$areaCode,$subAreaCode" // 첫 번째 일치 항목만 반환
+                        return areaCode to subAreaCode // 첫 번째 일치 항목만 반환
                     }
                 }
 
                 // 도시 이름이 일치할 경우
                 if (cityName.contains(areaName)) {
-                    return "$areaCode,0" // 첫 번째 일치 항목만 반환
+                    return areaCode to "" // 첫 번째 일치 항목만 반환
                 }
             }
             return null // 해당 지역을 찾지 못한 경우 null 반환

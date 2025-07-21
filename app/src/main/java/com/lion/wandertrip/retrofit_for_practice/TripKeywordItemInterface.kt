@@ -18,3 +18,18 @@ interface TripKeywordItemInterface {
         @Query("serviceKey") serviceKey: String
     ): Response<TripApiResponse>
 }
+
+interface TourApi {
+    @GET("searchKeyword2")
+    suspend fun getKeywordTripItemV2(
+        @Query("numOfRows") numOfRows: Int = 1000,
+        @Query("pageNo") pageNo: Int = 1,
+        @Query("MobileOS") mobileOS: String = "ETC",
+        @Query("MobileApp") mobileApp: String = "WanderTrip",
+        @Query("_type") type: String = "json",
+        @Query("arrange") arrange: String = "O",
+        @Query("listYN") listYN: String = "Y", // ← 문서엔 없어도 안전하게 넣기
+        @Query("keyword") keyword: String,
+        @Query("serviceKey") serviceKey: String
+    ): Response<TripApiResponse>
+}

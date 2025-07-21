@@ -4,6 +4,7 @@ import android.util.Log
 import com.lion.wandertrip.model.TripCommonItem
 import com.lion.wandertrip.model.TripItemModel
 import com.lion.wandertrip.retrofit_for_practice.TripKeywordItemInterface
+import com.lion.wandertrip.util.ContentTypeId
 
 class TripKeywordItemRepository(private val api: TripKeywordItemInterface) {
     private val myKey =
@@ -19,6 +20,7 @@ class TripKeywordItemRepository(private val api: TripKeywordItemInterface) {
                 mobileOS = "ETC",
                 mobileApp = "WanderTrip",
                 type = "json",
+                arrange = "O",
                 listYN = "Y",
                 keyword = keyword,
                 serviceKey = myKey
@@ -69,6 +71,72 @@ class TripKeywordItemRepository(private val api: TripKeywordItemInterface) {
         } catch (e: Exception) {
             Log.e("TripRepo", "여행지 정보 요청 중 예외 발생${e.message}")
             null
+        }
+    }
+
+    // 키워드로 tripItem 가져오기
+    suspend fun gettingTripItemAllByKeyword(keyword: String): List<TripItemModel> {
+        Log.d("TripKeywordItemRepository", "gettingTripItemByKeyword - keyword: $keyword")
+        return try {
+            val response = api.getKeywordTripItem(
+                numOfRows = 1000,
+                pageNo = 1,
+                mobileOS = "ETC",
+                mobileApp = "WanderTrip",
+                type = "json",
+                arrange = "O",
+                listYN = "Y",
+                keyword = keyword,
+                serviceKey = myKey,
+            )
+
+            if (response.isSuccessful) {
+                val responseBody = response.body()
+                if (responseBody == null) {
+                    Log.e("TripRepo", "응답 본문이 null입니다.")
+                    return emptyList()
+                }
+
+                val items = responseBody.response?.body?.items?.item.orEmpty()
+
+                if (items.isEmpty()) {
+                    Log.w("TripRepo", "검색된 아이템이 없습니다.")
+                    return emptyList()
+                }
+
+                return items
+                    .filter {
+                        it.contentTypeId == ContentTypeId.TOURIST_ATTRACTION.contentTypeCode.toString()
+                                || it.contentId == ContentTypeId.ACCOMMODATION.contentTypeCode.toString()
+                                || it.contentId == ContentTypeId.RESTAURANT.contentTypeCode.toString()
+                    }
+                    .map {
+                        TripItemModel(
+                            contentId = it.contentId ?: "",
+                            contentTypeId = it.contentTypeId ?: "",
+                            title = it.title ?: "",
+                            tel = it.tel ?: "",
+                            firstImage = it.firstImage ?: "",
+                            areaCode = it.areaCode ?: "",
+                            sigunguCode = it.siGunGuCode ?: "",
+                            addr1 = it.addr1 ?: "",
+                            addr2 = it.addr2 ?: "",
+                            mapLat = it.mapLat?.toDouble() ?: 0.0,
+                            mapLong = it.mapLng?.toDouble() ?: 0.0,
+                            cat2 = it.cat2.toString(),
+                            cat3 = it.cat3.toString()
+                        )
+                    }
+            } else {
+                Log.e(
+                    "TripRepo",
+                    "API 요청 실패 - Code: ${response.code()}, Message: ${response.message()}"
+                )
+                emptyList()
+            }
+        } catch (e: Exception) {
+            Log.e("TripRepo", "여행지 정보 요청 중 예외 발생 ${e.message}")
+            emptyList()
         }
     }
 

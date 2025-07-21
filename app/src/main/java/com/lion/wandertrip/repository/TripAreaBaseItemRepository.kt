@@ -65,7 +65,8 @@ class TripAreaBaseItemRepository(private val api: TripAreaBaseItemInterface) {
                 mobileApp = "com.lion.wandertrip",
                 type = "json",
                 numOfRows = 50000,
-                pageNo = 1
+                pageNo = 1,
+
             )
 
             if (response.isSuccessful) {
