@@ -60,7 +60,6 @@ fun HomeSearchBar(
                 }
             }
         },
-
         // ❌ X 버튼 & 🔍 검색 아이콘 추가
         trailingIcon = {
             Row(

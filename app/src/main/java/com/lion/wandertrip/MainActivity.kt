@@ -126,9 +126,13 @@ fun MyApp() {
         composable(MainScreenName.MAIN_SCREEN_SEARCH.name) { SearchScreen() }
         composable(MainScreenName.MAIN_SCREEN_USER_INFO.name) { UserInfoScreen() }
 
-        composable("${MainScreenName.MAIN_SCREEN_SEARCH_RESULT.name}/{contentId}") { backStackEntry ->
-            val contentId = backStackEntry.arguments?.getString("contentId") ?: "default_id"
-            SearchResultScreen(contentId)
+        composable(
+            "${MainScreenName.MAIN_SCREEN_SEARCH_RESULT.name}/{query}",
+            arguments = listOf(
+                navArgument("query") { type = NavType.StringType },
+            )
+        ) { backStackEntry ->
+            SearchResultScreen()
         }
 
 //        // 여행기 메인 화면
@@ -242,21 +246,21 @@ fun MyApp() {
             ScheduleCitySelectScreen(scheduleTitle, startDate, endDate)
         }
 
-  /*      // 일정 상세 화면
-        composable(
-            route = "${ScheduleScreenName.SCHEDULE_DETAIL_SCREEN.name}?" +
-                    "tripScheduleDocId={tripScheduleDocId}&areaName={areaName}&areaCode={areaCode}",
-            arguments = listOf(
-                navArgument("tripScheduleDocId") { type = NavType.StringType },
-                navArgument("areaName") { type = NavType.StringType },
-                navArgument("areaCode") { type = NavType.IntType }
-            )
-        ) {
-            val tripScheduleDocId = it.arguments?.getString("tripScheduleDocId") ?: ""
-            val areaName = it.arguments?.getString("areaName") ?: ""
-            val areaCode = it.arguments?.getInt("areaCode") ?: 0
-            ScheduleDetailScreen(tripScheduleDocId, areaName, areaCode)
-        }*/
+        /*      // 일정 상세 화면
+              composable(
+                  route = "${ScheduleScreenName.SCHEDULE_DETAIL_SCREEN.name}?" +
+                          "tripScheduleDocId={tripScheduleDocId}&areaName={areaName}&areaCode={areaCode}",
+                  arguments = listOf(
+                      navArgument("tripScheduleDocId") { type = NavType.StringType },
+                      navArgument("areaName") { type = NavType.StringType },
+                      navArgument("areaCode") { type = NavType.IntType }
+                  )
+              ) {
+                  val tripScheduleDocId = it.arguments?.getString("tripScheduleDocId") ?: ""
+                  val areaName = it.arguments?.getString("areaName") ?: ""
+                  val areaCode = it.arguments?.getInt("areaCode") ?: 0
+                  ScheduleDetailScreen(tripScheduleDocId, areaName, areaCode)
+              }*/
 
         // 일정 상세 랜덤 화면
         composable(
@@ -268,9 +272,9 @@ fun MyApp() {
                 navArgument("lng") { type = NavType.StringType }
             )
         ) {
-        /*    val tripScheduleDocId = it.arguments?.getString("tripScheduleDocId") ?: ""
-            val lat = it.arguments?.getString("lat") ?: ""
-            val lng = it.arguments?.getString("lng") ?: ""*/
+            /*    val tripScheduleDocId = it.arguments?.getString("tripScheduleDocId") ?: ""
+                val lat = it.arguments?.getString("lat") ?: ""
+                val lng = it.arguments?.getString("lng") ?: ""*/
             ScheduleDetailRandomScreen()
         }
 
@@ -310,7 +314,6 @@ fun MyApp() {
         ) {
             ScheduleRandomSelectItemScreen()
         }
-
 
 
         // 일정 초대한 친구 목록 화면
@@ -466,13 +469,13 @@ fun MyApp() {
 
                 )
         ) { backStackEntry ->
-         /*   val lat = backStackEntry.arguments?.getString("lat") ?: ""
-            val lng = backStackEntry.arguments?.getString("lng") ?: ""
-            val radius = backStackEntry.arguments?.getString("radius") ?: ""*/
+            /*   val lat = backStackEntry.arguments?.getString("lat") ?: ""
+               val lng = backStackEntry.arguments?.getString("lng") ?: ""
+               val radius = backStackEntry.arguments?.getString("radius") ?: ""*/
             val cityName = backStackEntry.arguments?.getString("cityName") ?: ""
 
 
-            PopularCityScreen(/*lat, lng, */cityName,/*radius*/)
+            PopularCityScreen(/*lat, lng, */cityName/*radius*/)
         }
 
 

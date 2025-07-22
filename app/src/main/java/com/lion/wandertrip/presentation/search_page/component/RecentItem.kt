@@ -67,7 +67,7 @@ fun RecentItem(searchViewModel: SearchViewModel) {
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
-                            text = search.title,
+                            text = search,
                             modifier = Modifier.weight(1f),
                             fontSize = 16.sp,
                             fontFamily = NanumSquareRound

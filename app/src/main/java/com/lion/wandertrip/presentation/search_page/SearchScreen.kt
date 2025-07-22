@@ -35,8 +35,7 @@ fun SearchScreen(viewModel: SearchViewModel = hiltViewModel()) {
                 onSearchQueryChanged = { viewModel.updateQuery(it) },
                 onSearchClicked = {
                     if (viewModel.searchQuery.isNotBlank()) {
-                        val searchItem = TripItemModel(title = viewModel.searchQuery)
-                        viewModel.addSearchToRecent(searchItem)
+                        viewModel.addSearchToRecent(viewModel.searchQuery)
                         viewModel.onClickToResult(viewModel.searchQuery)
                     }
                 },
@@ -44,7 +43,7 @@ fun SearchScreen(viewModel: SearchViewModel = hiltViewModel()) {
                 onBackClicked = { viewModel.backScreen() }
             )
 
-        // ✅ 최근 검색어 목록 추가
+            // ✅ 최근 검색어 목록 추가
             RecentItem(searchViewModel = viewModel)
         }
     }
