@@ -1,3 +1,4 @@
+/*
 package com.lion.wandertrip
 
 import com.lion.wandertrip.repository.*
@@ -168,3 +169,4 @@ object TripAppModule {
     fun tripItemAreaBaseServiceProvider2(repository: TripAreaBaseItem2Repository): TripAreaBaseItem2Service =
         TripAreaBaseItem2Service(repository)
 }
+*/

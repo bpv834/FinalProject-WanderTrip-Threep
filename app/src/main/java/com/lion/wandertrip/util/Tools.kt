@@ -800,22 +800,53 @@ class Tools {
         }
 
         // lat, lng 으로 지역명 불러오기
-        fun getRegionNameFromLatLng(context: Context, latitude: Double, longitude: Double): String? {
+        fun getSimpleRegionName(context: Context, latitude: Double, longitude: Double): String? {
+            Log.d("GEO_CODER", "latitude: $latitude, longitude: $longitude")
+
             return try {
                 val geocoder = Geocoder(context, Locale.KOREA)
                 val addresses = geocoder.getFromLocation(latitude, longitude, 1)
 
                 if (!addresses.isNullOrEmpty()) {
                     val address = addresses[0]
-                    address.locality  // 예: 청주시, 인천시, 대구시 등
+                    Log.d("GEO_CODER", "address: $address")
+
+                    val locality = address.locality?.trim() ?: ""
+                    val adminArea = address.adminArea?.trim() ?: ""
+
+                    Log.d("GEO_CODER", "locality: $locality, adminArea: $adminArea")
+
+                    // ✅ locality가 있으면 그걸 사용하고, 없으면 adminArea로 대체
+                    val region = if (locality.isNotEmpty()) {
+                        locality.replace(Regex("시$|군$|구$"), "")
+                    } else {
+                        when {
+                            adminArea.contains("서울") -> "서울"
+                            adminArea.contains("부산") -> "부산"
+                            adminArea.contains("대구") -> "대구"
+                            adminArea.contains("인천") -> "인천"
+                            adminArea.contains("광주") -> "광주"
+                            adminArea.contains("대전") -> "대전"
+                            adminArea.contains("울산") -> "울산"
+                            adminArea.contains("세종") -> "세종"
+                            else -> {
+                                Log.d("GEO_CODER", "도 단위 지역은 제외함")
+                                null
+                            }
+                        }
+                    }
+
+                    return region
                 } else {
                     null
                 }
             } catch (e: Exception) {
-                e.printStackTrace()
+                Log.e("GEO_CODER", "지오코딩 실패", e)
                 null
             }
         }
+
+
 
     }
 }

@@ -7,7 +7,10 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.android.gms.maps.model.LatLng
+import com.google.firebase.Firebase
 import com.google.firebase.Timestamp
+import com.google.firebase.auth.auth
+import com.google.firebase.functions.FirebaseFunctionsException
 import com.lion.wandertrip.TripApplication
 import com.lion.wandertrip.model.TripScheduleModel
 import com.lion.wandertrip.service.TripScheduleService
@@ -17,6 +20,7 @@ import com.lion.wandertrip.util.BotNavScreenName
 import com.lion.wandertrip.util.RotateMapScreenName
 import com.lion.wandertrip.util.RouletteScreenName
 import com.lion.wandertrip.util.ScheduleScreenName
+import com.lion.wandertrip.util.Tools
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
@@ -24,6 +28,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
 import org.checkerframework.checker.units.qual.Area
 import javax.inject.Inject
@@ -38,12 +43,13 @@ class ScheduleCitySelectViewModel @Inject constructor(
     val application = context as TripApplication
 
     val isLoading = mutableStateOf(false)
-    
+
     // 일정 모델
     val tripScheduleModel = TripScheduleModel()
 
     // 모든 도시 리스트
     val allCities = mutableStateListOf<AreaCode>()
+
     // 검색 결과 리스트
     val filteredCities = mutableStateListOf<AreaCode>().apply { addAll(allCities) }
 
@@ -78,7 +84,12 @@ class ScheduleCitySelectViewModel @Inject constructor(
             filteredCities.addAll(allCities) // 검색어가 없으면 전체 도시 표시
         } else {
             filteredCities.clear()
-            filteredCities.addAll(allCities.filter { it.areaName.contains(query, ignoreCase = true) })
+            filteredCities.addAll(allCities.filter {
+                it.areaName.contains(
+                    query,
+                    ignoreCase = true
+                )
+            })
         }
     }
 
@@ -89,14 +100,19 @@ class ScheduleCitySelectViewModel @Inject constructor(
 
         while (currentTimestamp.seconds <= endDate.seconds) {
             dateList.add(currentTimestamp)
-            currentTimestamp = Timestamp(currentTimestamp.seconds + 86400, 0) // 하루(24시간 = 86400초) 추가
+            currentTimestamp =
+                Timestamp(currentTimestamp.seconds + 86400, 0) // 하루(24시간 = 86400초) 추가
         }
 
         return dateList
     }
 
     // 한반도 돌리기 화면으로 이동
-    fun moveToRotateMapScreen(scheduleTitle: String, scheduleStartDate: Timestamp, scheduleEndDate: Timestamp) {
+    fun moveToRotateMapScreen(
+        scheduleTitle: String,
+        scheduleStartDate: Timestamp,
+        scheduleEndDate: Timestamp
+    ) {
         // application.navHostController.navigate(RouletteScreenName.ROULETTE_CITY_SCREEN.name)
 
         val formattedTitle = scheduleTitle
@@ -116,7 +132,7 @@ class ScheduleCitySelectViewModel @Inject constructor(
         application.navHostController.popBackStack()
     }
 
-    // 지역 이름에 따른 기본 위치 좌표 반환 함수
+    /*  // 지역 이름에 따른 기본 위치 좌표 반환 함수
     fun getDefaultLocation(areaName: String): LatLng {
         return when (areaName) {
             "서울" -> LatLng(37.5665, 126.9780)
@@ -138,11 +154,15 @@ class ScheduleCitySelectViewModel @Inject constructor(
             "제주도" -> LatLng(33.4996, 126.5312)
             else -> LatLng(37.5665, 126.9780) // 기본값은 서울
         }
-    }
+    }*/
     // 일정 상세 화면 으로 이동
     fun moveToScheduleDetailRandomScreen(lat: String, lng: String) {
 
-        Log.d("moveDetail","tripScheduleModel.tripScheduleDocId: ${tripScheduleModel.tripScheduleDocId}")
+
+        Log.d(
+            "moveDetail",
+            "tripScheduleModel.tripScheduleDocId: ${tripScheduleModel.tripScheduleDocId}"
+        )
         // 일정 상세 화면 이동
         application.navHostController.navigate(
             "${ScheduleScreenName.SCHEDULE_DETAIL_RANDOM_SCREEN.name}?" +
@@ -159,22 +179,21 @@ class ScheduleCitySelectViewModel @Inject constructor(
         scheduleStartDate: Timestamp,
         scheduleEndDate: Timestamp,
         areaName: String,
-        areaCode: Int
-    ) {
-        val latLng = getDefaultLocation(areaName)
+        ) {
+        getLatLng(areaName)
+        val city = {}
         isLoading.value = true
         val scheduleDateList = generateDateList(scheduleStartDate, scheduleEndDate)
         tripScheduleModel.userID = application.loginUserModel.userId
         tripScheduleModel.userNickName = application.loginUserModel.userNickName
-        tripScheduleModel.scheduleCity = areaName
+        tripScheduleModel.scheduleCity = ""
         tripScheduleModel.scheduleTitle = scheduleTitle
         tripScheduleModel.scheduleStartDate = scheduleStartDate
         tripScheduleModel.scheduleEndDate = scheduleEndDate
         tripScheduleModel.scheduleDateList = scheduleDateList
         tripScheduleModel.scheduleInviteList += application.loginUserModel.userDocId
-        tripScheduleModel.lat = latLng.latitude.toString()
-        tripScheduleModel.lng = latLng.longitude.toString()
-
+        tripScheduleModel.lat = 0.0
+        tripScheduleModel.lng = 0.0
         viewModelScope.launch {
             // tripScheduleModel 생성 및 Firestore에 추가
             val tripScheduleDocId = withContext(Dispatchers.IO) {
@@ -190,11 +209,61 @@ class ScheduleCitySelectViewModel @Inject constructor(
                 )
             }
 
-            // 모든 작업이 끝난 뒤 화면 전환
+    /*        // 모든 작업이 끝난 뒤 화면 전환
             moveToScheduleDetailRandomScreen(
-                latLng.latitude.toString(),
-                latLng.longitude.toString()
-            )
+                *//* latLng.latitude.toString(),
+                latLng.longitude.toString()*//*"", ""
+            )*/
+        }
+    }
+
+
+
+    fun getLatLng(areaName: String) {
+        val data = mapOf("regionName" to areaName)
+
+        viewModelScope.launch {
+            val functionsInstance = application.firebaseFunctions
+
+
+            try {
+                // 이제 Firebase Functions 호출
+                val result = functionsInstance
+                    .getHttpsCallable("getCoordinatesByRegionName")
+                    .call(data)
+                    .await()
+
+                @Suppress("UNCHECKED_CAST")
+                val responseData = result.getData() as? Map<String, Any>
+
+                if (responseData != null) {
+                    val latitude = (responseData["latitude"] as? String)?.toDoubleOrNull()
+                        ?: (responseData["latitude"] as? Double)
+                    val longitude = (responseData["longitude"] as? String)?.toDoubleOrNull()
+                        ?: (responseData["longitude"] as? Double)
+                    val addressName = responseData["address_name"] as? String
+
+                    if (latitude != null && longitude != null && addressName != null) {
+                        Log.d(
+                            "FirebaseFunctions",
+                            "Latitude: $latitude, Longitude: $longitude, Address: $addressName"
+                        )
+                    } else {
+                        Log.e("FirebaseFunctions", "Invalid response data: $responseData")
+                    }
+                } else {
+                    Log.e("FirebaseFunctions", "Function response data is null or not a Map.")
+                }
+
+            } catch (e: Exception) {
+                Log.e("FirebaseFunctions", "Error calling function: ${e.message}", e)
+                if (e is com.google.firebase.functions.FirebaseFunctionsException) {
+                    Log.e(
+                        "FirebaseFunctions",
+                        "Callable error code: ${e.code}, message: ${e.message}, details: ${e.details}"
+                    )
+                }
+            }
         }
     }
 }

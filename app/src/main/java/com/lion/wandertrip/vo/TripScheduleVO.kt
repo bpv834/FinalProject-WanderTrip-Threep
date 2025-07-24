@@ -17,8 +17,8 @@ class TripScheduleVO(
     var scheduleTimeStamp: Timestamp = Timestamp.now(),
     var scheduleState: Int = 1,
     var scheduleItems: List<ScheduleItemVO> = emptyList(),
-    var lat : String? =null,
-    var lng : String? =null,
+    var lat : Double? =null,
+    var lng : Double? =null,
 ) {
 
     fun toTripScheduleModel(): TripScheduleModel {

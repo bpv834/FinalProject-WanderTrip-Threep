@@ -178,10 +178,10 @@ class RotateMapViewModel @Inject constructor(
 
     // 위도/경도 변환 함수
     fun toLatLng(relativeOffset: Offset): Pair<Double, Double> {
-        val latTop = 38.676696
-        val latBottom = 33.226696
-        val lonLeft = 125.89075
-        val lonRight = 129.49075
+        val latTop = 38.7    // 더 위로 (북쪽) 올림
+        val latBottom = 33.1 // 더 아래로 (남쪽) 내림
+        val lonLeft = 125.85 // 서쪽으로 조금 더 내림
+        val lonRight = 129.55 // 동쪽으로 조금 더 올림
 
         val latitude = latTop + (latBottom - latTop) * relativeOffset.y
         val longitude = lonLeft + (lonRight - lonLeft) * relativeOffset.x
@@ -222,8 +222,8 @@ class RotateMapViewModel @Inject constructor(
         scheduleStartDate: Timestamp,
         scheduleEndDate: Timestamp,
         areaName: String,
-        lat: String,
-        lng: String
+        lat: Double,
+        lng: Double,
     ) {
         hideAttractionDialog()
         hideNoAttractionDialog()
@@ -259,7 +259,7 @@ class RotateMapViewModel @Inject constructor(
             }.await()
 
             // 일정 상세 화면 으로 이동
-            moveToScheduleDetailRandomScreen(lat, lng)
+            moveToScheduleDetailRandomScreen(lat.toString(), lng.toString())
         }
     }
 }

@@ -18,6 +18,7 @@ import androidx.navigation.navArgument
 import com.google.firebase.Firebase
 import com.google.firebase.Timestamp
 import com.google.firebase.auth.auth
+import com.google.firebase.functions.FirebaseFunctions
 import com.lion.wandertrip.presentation.detail_page.DetailScreen
 import com.lion.wandertrip.presentation.detail_review_modify_page.DetailReviewModifyScreen
 import com.lion.wandertrip.presentation.detail_review_write_page.DetailReviewWriteScreen
@@ -68,17 +69,6 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-
-        // Firebase Auth 익명 로그인
-        Firebase.auth.signInAnonymously()
-            .addOnCompleteListener { task ->
-                if (task.isSuccessful) {
-                    Log.d("MainActivity FirebaseAuth", "로그인 성공: ${task.result?.user?.uid}")
-                } else {
-                    Log.e("MainActivity FirebaseAuth ", "로그인 실패", task.exception)
-                }
-            }
-
         setContent {
             WanderTripTheme {
                 MyApp()
@@ -98,6 +88,7 @@ fun MyApp() {
     // applicationContext의 기본 타입은 Context이므로, 우리가 만든 TripApplication 클래스의 인스턴스로 사용하려면 형변환이 필요합니다.
     val tripApplication = LocalContext.current.applicationContext as TripApplication
     tripApplication.navHostController = rememberNavHostController
+
 
     NavHost(
         navController = rememberNavHostController,

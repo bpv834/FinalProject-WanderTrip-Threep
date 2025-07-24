@@ -16,7 +16,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -26,14 +25,11 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.lion.a02_boardcloneproject.component.CustomTopAppBar
-import com.lion.wandertrip.presentation.schedule_city_select.ScheduleCitySelectViewModel
 import com.lion.wandertrip.presentation.schedule_city_select.city_roulette.RouletteCityViewModel
 import com.lion.wandertrip.presentation.schedule_city_select.city_roulette.roulette_city_select.compenent.RouletteCitySelectChips
 import com.lion.wandertrip.presentation.schedule_city_select.city_roulette.roulette_city_select.compenent.RouletteCitySelectList
-import com.lion.wandertrip.presentation.schedule_city_select.component.ScheduleCitySelectList
 import com.lion.wandertrip.presentation.schedule_city_select.component.ScheduleCitySelectSearchBar
 import com.lion.wandertrip.ui.theme.NanumSquareRoundRegular
-import com.lion.wandertrip.util.AreaCode
 import com.lion.wandertrip.util.RouletteScreenName
 
 @Composable

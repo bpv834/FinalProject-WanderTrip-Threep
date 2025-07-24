@@ -193,7 +193,7 @@ fun RotateMapScreen(
     }
     // 다이얼로그는 스케폴드 바깥에 배치
     if (showAttractionDialog) {
-        val regionName = Tools.getRegionNameFromLatLng(
+        val regionName = Tools.getSimpleRegionName(
             viewModel.tripApplication,
             viewModel.initLat.toDouble(),
             viewModel.initLng.toDouble()
@@ -205,8 +205,8 @@ fun RotateMapScreen(
                     scheduleStartDate,
                     scheduleEndDate,
                     regionName ?: "region",
-                    viewModel.initLat,
-                    viewModel.initLng
+                    viewModel.initLat.toDouble(),
+                    viewModel.initLng.toDouble()
                 )
             },
             onRetryClick = { viewModel.hideAttractionDialog() },
