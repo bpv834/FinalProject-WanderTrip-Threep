@@ -15,6 +15,8 @@ import com.lion.wandertrip.model.TripItemModel
 import com.lion.wandertrip.model.UserModel
 import com.lion.wandertrip.model.PopularCityModel
 import dagger.hilt.android.HiltAndroidApp
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 
 // Hilt를 사용하려면 이 어노테이션을 애플리케이션의 Application 클래스에 선언해야 합니다.
 @HiltAndroidApp
@@ -67,11 +69,21 @@ class TripApplication : Application() {
         screenRatio = screenWidth.toFloat() / screenHeight.toFloat()
     }
 
+    // --- 추가된 부분: StateFlow를 업데이트하는 공개 메서드 ---
+    fun updatePopularTripList(newList: List<TripItemModel>) {
+        _popularTripList.value = newList // MutableStateFlow의 value를 업데이트
+    }
+
+    fun updatePopularCities(newList: List<PopularCityModel>) {
+        _popularCities.value = newList // MutableStateFlow의 value를 업데이트
+    }
+    // ---------------------------------------------------
 
 
-    // 인기 관광지
-    val popularTripList: MutableList<TripItemModel> = mutableListOf()
 
-    // 인기 지역
-    val popularCities : MutableList<PopularCityModel> = mutableListOf()
+    private val _popularTripList = MutableStateFlow<List<TripItemModel>>(emptyList())
+    val popularTripList: StateFlow<List<TripItemModel>> = _popularTripList
+
+    private val _popularCities = MutableStateFlow<List<PopularCityModel>>(emptyList())
+    val popularCities: StateFlow<List<PopularCityModel>> = _popularCities
 }

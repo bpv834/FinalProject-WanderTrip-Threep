@@ -96,17 +96,17 @@ fun ScheduleCitySelectScreen(
                 }
                 // 도시 목록
                 ScheduleCitySelectList(
-                    dataList = viewModel.filteredCities,
+                    dataList = viewModel.initCities,
                     scheduleTitle = viewModel.scheduleTitle.value,
                     scheduleStartDate = viewModel.scheduleStartDate.value,
                     scheduleEndDate = viewModel.scheduleEndDate.value,
-                    onSelectedCity = {areaCode ->
+                    onSelectedCity = {areaName ->
                         // 일정 제목 날짜 아이디 저장 후 일정 상세로 넘어 간다
                         viewModel.addTripSchedule(
                             scheduleTitle = scheduleTitle,
                             scheduleStartDate = scheduleStartDate,
                             scheduleEndDate = scheduleEndDate,
-                            areaName = areaCode.areaName,
+                            areaName = areaName
                         )
                     }
                 )

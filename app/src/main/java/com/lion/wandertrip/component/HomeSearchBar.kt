@@ -1,4 +1,4 @@
-package com.lion.wandertrip.presentation.search_page.component
+package com.lion.wandertrip.component
 
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth

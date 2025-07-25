@@ -39,8 +39,6 @@ class HomeViewModel @Inject constructor(
     val contentsService: ContentsService,
     val userService: UserService
 ) : ViewModel() {
-
-
     val tripApplication = context as TripApplication
 
     // ✅ 사용자 정보 (LiveData로 관리하여 UI에서 감지할 수 있도록 변경)

@@ -15,6 +15,8 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -31,6 +33,7 @@ import com.lion.wandertrip.model.PopularCityModel
 
 @Composable
 fun HorizontalPopularCityList(viewModel: HomeViewModel) {
+    val popularCities by viewModel.tripApplication.popularCities.collectAsState()
     Column(
         modifier = Modifier.fillMaxWidth() // 컬럼이 가로로 가득 차도록 합니다.
     ) {
@@ -48,7 +51,7 @@ fun HorizontalPopularCityList(viewModel: HomeViewModel) {
             horizontalArrangement = Arrangement.spacedBy(12.dp) // 아이템들 사이에 12dp의 간격을 줍니다.
         ) {
             // 뷰모델에서 가져온 인기 도시 목록을 반복하여 표시합니다.
-            items(viewModel.tripApplication.popularCities) { city ->
+            items(popularCities) { city ->
                 PopularCityItemView(city = city,viewModel) // 각 도시 아이템을 표시하는 컴포저블을 호출합니다.
             }
         }

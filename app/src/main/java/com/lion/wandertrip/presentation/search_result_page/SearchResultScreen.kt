@@ -1,7 +1,6 @@
 package com.lion.wandertrip.presentation.search_result_page
 
 import SearchItemCategoryChips
-import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -18,7 +17,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -31,9 +29,8 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.lion.a02_boardcloneproject.component.CustomDividerComponent
 import com.lion.wandertrip.component.LottieLoadingIndicator
-import com.lion.wandertrip.model.TripItemModel
 import com.lion.wandertrip.presentation.search_page.SearchViewModel
-import com.lion.wandertrip.presentation.search_page.component.HomeSearchBar
+import com.lion.wandertrip.component.HomeSearchBar
 import com.lion.wandertrip.presentation.search_result_page.component.SearchItem
 import com.lion.wandertrip.presentation.search_result_page.component.SearchTripNoteItem
 

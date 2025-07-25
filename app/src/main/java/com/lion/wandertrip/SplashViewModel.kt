@@ -49,9 +49,7 @@ class SplashViewModel @Inject constructor(
             if(item!=null)
             tripList.add(item ?: TripItemModel())
         }
-        tripApplication.popularTripList.clear()
-        // 모듈에 저장한다
-        tripApplication.popularTripList.addAll(tripList)
+        tripApplication.updatePopularTripList(tripList)
     }
 
     // 두 함수를 순차적으로 동작시킨다.
@@ -92,9 +90,7 @@ class SplashViewModel @Inject constructor(
         Log.d("SplashViewModel","savePopularSpoList")
         val popularCities = getPopularCityList()
 
-        tripApplication.popularCities.clear()
-        // 모듈에 저장한다
-        tripApplication.popularCities.addAll(popularCities)
+        tripApplication.updatePopularCities(popularCities)
     }
 
 

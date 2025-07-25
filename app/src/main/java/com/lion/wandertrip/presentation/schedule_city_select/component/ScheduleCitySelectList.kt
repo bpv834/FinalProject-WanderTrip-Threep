@@ -31,11 +31,11 @@ import com.lion.wandertrip.util.AreaCode
 
 @Composable
 fun ScheduleCitySelectList(
-    dataList : List<AreaCode>,
+    dataList : List<String>,
     scheduleTitle : String,
     scheduleStartDate : Timestamp,
     scheduleEndDate : Timestamp,
-    onSelectedCity: (AreaCode) -> Unit
+    onSelectedCity: (String) -> Unit
 ) {
     LazyColumn(
         modifier = Modifier
@@ -60,7 +60,7 @@ fun ScheduleCitySelectList(
 
                     // 지역 이름
                     Text(
-                        text = dataList[index].areaName,
+                        text = dataList[index],
                         fontSize = 20.sp,
                         fontFamily = NanumSquareRoundRegular,
                         modifier = Modifier.weight(1f)
@@ -69,7 +69,7 @@ fun ScheduleCitySelectList(
                     // 선택 버튼
                     OutlinedButton(
                         onClick = {
-                            Log.d("ScheduleCitySelectScreen", "선택 된 지역 : ${dataList[index].areaName}")
+                            Log.d("ScheduleCitySelectScreen", "선택 된 지역 : ${dataList[index]}")
                             Log.d("ScheduleCitySelectScreen", "일정 제목 : $scheduleTitle")
                             Log.d("ScheduleCitySelectScreen", "일정 시작일 : $scheduleStartDate")
                             Log.d("ScheduleCitySelectScreen", "일정 종료일 : $scheduleEndDate")

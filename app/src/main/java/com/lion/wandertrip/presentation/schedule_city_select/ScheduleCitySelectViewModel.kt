@@ -47,50 +47,37 @@ class ScheduleCitySelectViewModel @Inject constructor(
     // 일정 모델
     val tripScheduleModel = TripScheduleModel()
 
-    // 모든 도시 리스트
-    val allCities = mutableStateListOf<AreaCode>()
-
-    // 검색 결과 리스트
-    val filteredCities = mutableStateListOf<AreaCode>().apply { addAll(allCities) }
+    val initCities = listOf<String>(
+        "서울",
+        "가평",
+        "양평",
+        "강릉",
+        "속초",
+        "경주",
+        "부산",
+        "여수",
+        "인천",
+        "전주",
+        "제주",
+        "춘천",
+        "홍천",
+        "태안",
+        "통영",
+        "거제",
+        "포항",
+        "안동"
+    )
 
     val scheduleTitle = mutableStateOf<String>("")
     val scheduleStartDate = mutableStateOf<Timestamp>(Timestamp.now())
     val scheduleEndDate = mutableStateOf<Timestamp>(Timestamp.now())
 
-    init {
-        // 모든 도시 추가
-        addCity()
-        // 초기 화면에 모든 도시 표시
-        filteredCities.addAll(allCities)
-    }
-
-    // 모든 도시 추가
-    fun addCity() {
-        allCities.clear() // 혹시 모를 중복 방지
-        allCities.addAll(AreaCode.entries.map { it }) // enum 모든 값 추가
-    }
 
     // 처음 데이터 설정
     fun settingFirstData(title: String, startDate: Timestamp, endDate: Timestamp) {
         scheduleTitle.value = title
         scheduleStartDate.value = startDate
         scheduleEndDate.value = endDate
-    }
-
-    // ✅ 검색어에 맞는 도시 필터링
-    fun updateFilteredCities(query: String) {
-        if (query.isEmpty()) {
-            filteredCities.clear()
-            filteredCities.addAll(allCities) // 검색어가 없으면 전체 도시 표시
-        } else {
-            filteredCities.clear()
-            filteredCities.addAll(allCities.filter {
-                it.areaName.contains(
-                    query,
-                    ignoreCase = true
-                )
-            })
-        }
     }
 
     // 특정 기간 동안의 날짜 목록 생성 함수
@@ -132,33 +119,8 @@ class ScheduleCitySelectViewModel @Inject constructor(
         application.navHostController.popBackStack()
     }
 
-    /*  // 지역 이름에 따른 기본 위치 좌표 반환 함수
-    fun getDefaultLocation(areaName: String): LatLng {
-        return when (areaName) {
-            "서울" -> LatLng(37.5665, 126.9780)
-            "인천" -> LatLng(37.4563, 126.7052)
-            "대전" -> LatLng(36.3504, 127.3845)
-            "대구" -> LatLng(35.8722, 128.6025)
-            "광주" -> LatLng(35.1595, 126.8526)
-            "부산" -> LatLng(35.1796, 129.0756)
-            "울산" -> LatLng(35.5384, 129.3114)
-            "세종시" -> LatLng(36.4800, 127.2890)
-            "경기도" -> LatLng(37.4138, 127.5183)
-            "강원도" -> LatLng(37.7519, 128.8969)
-            "충청북도" -> LatLng(36.6357, 127.4910)
-            "충청남도" -> LatLng(36.5184, 126.8000)
-            "경상북도" -> LatLng(36.4919, 128.8889)
-            "경상남도" -> LatLng(35.2383, 128.6920)
-            "전라북도" -> LatLng(35.7175, 127.1441)
-            "전라남도" -> LatLng(34.8161, 126.4630)
-            "제주도" -> LatLng(33.4996, 126.5312)
-            else -> LatLng(37.5665, 126.9780) // 기본값은 서울
-        }
-    }*/
     // 일정 상세 화면 으로 이동
     fun moveToScheduleDetailRandomScreen(lat: String, lng: String) {
-
-
         Log.d(
             "moveDetail",
             "tripScheduleModel.tripScheduleDocId: ${tripScheduleModel.tripScheduleDocId}"
@@ -179,9 +141,8 @@ class ScheduleCitySelectViewModel @Inject constructor(
         scheduleStartDate: Timestamp,
         scheduleEndDate: Timestamp,
         areaName: String,
-        ) {
-        getLatLng(areaName)
-        val city = {}
+    ) {
+
         isLoading.value = true
         val scheduleDateList = generateDateList(scheduleStartDate, scheduleEndDate)
         tripScheduleModel.userID = application.loginUserModel.userId
@@ -194,76 +155,81 @@ class ScheduleCitySelectViewModel @Inject constructor(
         tripScheduleModel.scheduleInviteList += application.loginUserModel.userDocId
         tripScheduleModel.lat = 0.0
         tripScheduleModel.lng = 0.0
+        tripScheduleModel.scheduleCity = areaName
         viewModelScope.launch {
+
+            // 위도경도 구해서 넣는 메서드 실행
+            withContext(Dispatchers.IO) {
+                val getLatLng = getLatLng(areaName)
+                tripScheduleModel.lat = getLatLng?.first ?: 0.0
+                tripScheduleModel.lng = getLatLng?.second ?: 0.0
+            }
+
             // tripScheduleModel 생성 및 Firestore에 추가
             val tripScheduleDocId = withContext(Dispatchers.IO) {
                 tripScheduleService.addTripSchedule(tripScheduleModel)
             }
             tripScheduleModel.tripScheduleDocId = tripScheduleDocId
 
-            // 사용자의 서브컬렉션에 추가
-            withContext(Dispatchers.IO) {
-                userService.addTripScheduleToUserSubCollection(
-                    application.loginUserModel.userDocId,
-                    tripScheduleDocId
-                )
-            }
+            /*           // 사용자의 서브컬렉션에 추가
+                       withContext(Dispatchers.IO) {
+                           userService.addTripScheduleToUserSubCollection(
+                               application.loginUserModel.userDocId,
+                               tripScheduleDocId
+                           )
+                       }*/
 
-    /*        // 모든 작업이 끝난 뒤 화면 전환
+            // 모든 작업이 끝난 뒤 화면 전환
             moveToScheduleDetailRandomScreen(
-                *//* latLng.latitude.toString(),
-                latLng.longitude.toString()*//*"", ""
-            )*/
+                tripScheduleModel.lat.toString(),
+                tripScheduleModel.lng.toString()
+            )
         }
     }
 
-
-
-    fun getLatLng(areaName: String) {
+    suspend fun getLatLng(areaName: String): Pair<Double, Double>? {
         val data = mapOf("regionName" to areaName)
 
-        viewModelScope.launch {
-            val functionsInstance = application.firebaseFunctions
+        val functionsInstance = application.firebaseFunctions
+        try {
+            // 이제 Firebase Functions 호출
+            val result = functionsInstance
+                .getHttpsCallable("getCoordinatesByRegionName")
+                .call(data)
+                .await()
 
+            @Suppress("UNCHECKED_CAST")
+            val responseData = result.getData() as? Map<String, Any>
 
-            try {
-                // 이제 Firebase Functions 호출
-                val result = functionsInstance
-                    .getHttpsCallable("getCoordinatesByRegionName")
-                    .call(data)
-                    .await()
+            if (responseData != null) {
+                val latitude = (responseData["latitude"] as? String)?.toDoubleOrNull()
+                    ?: (responseData["latitude"] as? Double)
+                val longitude = (responseData["longitude"] as? String)?.toDoubleOrNull()
+                    ?: (responseData["longitude"] as? Double)
+                val addressName = responseData["address_name"] as? String
 
-                @Suppress("UNCHECKED_CAST")
-                val responseData = result.getData() as? Map<String, Any>
-
-                if (responseData != null) {
-                    val latitude = (responseData["latitude"] as? String)?.toDoubleOrNull()
-                        ?: (responseData["latitude"] as? Double)
-                    val longitude = (responseData["longitude"] as? String)?.toDoubleOrNull()
-                        ?: (responseData["longitude"] as? Double)
-                    val addressName = responseData["address_name"] as? String
-
-                    if (latitude != null && longitude != null && addressName != null) {
-                        Log.d(
-                            "FirebaseFunctions",
-                            "Latitude: $latitude, Longitude: $longitude, Address: $addressName"
-                        )
-                    } else {
-                        Log.e("FirebaseFunctions", "Invalid response data: $responseData")
-                    }
-                } else {
-                    Log.e("FirebaseFunctions", "Function response data is null or not a Map.")
-                }
-
-            } catch (e: Exception) {
-                Log.e("FirebaseFunctions", "Error calling function: ${e.message}", e)
-                if (e is com.google.firebase.functions.FirebaseFunctionsException) {
-                    Log.e(
+                if (latitude != null && longitude != null && addressName != null) {
+                    Log.d(
                         "FirebaseFunctions",
-                        "Callable error code: ${e.code}, message: ${e.message}, details: ${e.details}"
+                        "Latitude: $latitude, Longitude: $longitude, Address: $addressName"
                     )
+                    return Pair(latitude, longitude)
+                } else {
+                    Log.e("FirebaseFunctions", "Invalid response data: $responseData")
                 }
+            } else {
+                Log.e("FirebaseFunctions", "Function response data is null or not a Map.")
+            }
+
+        } catch (e: Exception) {
+            Log.e("FirebaseFunctions", "Error calling function: ${e.message}", e)
+            if (e is com.google.firebase.functions.FirebaseFunctionsException) {
+                Log.e(
+                    "FirebaseFunctions",
+                    "Callable error code: ${e.code}, message: ${e.message}, details: ${e.details}"
+                )
             }
         }
+        return null
     }
 }

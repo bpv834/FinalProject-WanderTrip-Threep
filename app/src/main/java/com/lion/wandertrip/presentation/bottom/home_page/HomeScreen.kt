@@ -20,7 +20,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.lion.a02_boardcloneproject.component.CustomTopAppBar
 import com.lion.wandertrip.component.LottieLoadingIndicator
 import com.lion.wandertrip.model.UserModel
 import com.lion.wandertrip.presentation.bottom.home_page.components.HorizontalPopularCityList
@@ -36,8 +35,9 @@ fun HomeScreen(
     viewModel: HomeViewModel = hiltViewModel()
 ) {
     /*    val tripItems by viewModel.randomTourItems.observeAsState(emptyList())*/
-    val topTrips by viewModel.topScrapedTrips.observeAsState(emptyList())
+    val topTripNotes by viewModel.topScrapedTrips.observeAsState(emptyList())
 
+    val popularTripList by viewModel.tripApplication.popularTripList.collectAsState()
 
     /*    val imageUrlMap = viewModel.imageUrlMap*/
     val isLoading by viewModel.isLoading.observeAsState(false) // ✅ 로딩 상태 감지
@@ -137,7 +137,7 @@ fun HomeScreen(
                         modifier = Modifier.padding(bottom = 8.dp)
                     )
                 }
-                items(viewModel.tripApplication.popularTripList) { tripItem ->
+                items(popularTripList) { tripItem ->
                     TripSpotItem(
                         tripItem = tripItem,
                         onItemClick = { viewModel.onClickTrip(tripItem.contentId) },
@@ -156,7 +156,7 @@ fun HomeScreen(
                         modifier = Modifier.padding(bottom = 8.dp)
                     )
                 }
-                items(topTrips) { tripNote ->
+                items(topTripNotes) { tripNote ->
                     PopularTripNoteItem(
                         tripItem = tripNote,
                         onItemClick = { viewModel.onClickTripNote(tripNote.tripNoteDocumentId) }

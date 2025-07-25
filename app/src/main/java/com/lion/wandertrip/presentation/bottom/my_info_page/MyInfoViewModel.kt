@@ -1,21 +1,17 @@
 package com.lion.wandertrip.presentation.bottom.my_info_page
 
-import android.annotation.SuppressLint
 import android.content.Context
 import android.net.Uri
-import android.util.Log
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.google.firebase.Timestamp
 import com.lion.wandertrip.TripApplication
 import com.lion.wandertrip.model.RecentTripItemModel
 import com.lion.wandertrip.model.TripScheduleModel
 import com.lion.wandertrip.model.UserModel
 import com.lion.wandertrip.service.TripScheduleService
 import com.lion.wandertrip.service.UserService
-import com.lion.wandertrip.util.AreaCode
 import com.lion.wandertrip.util.BotNavScreenName
 import com.lion.wandertrip.util.MainScreenName
 import com.lion.wandertrip.util.ScheduleScreenName
@@ -35,10 +31,11 @@ class MyInfoViewModel @Inject constructor(
     @ApplicationContext context: Context,
     val userService: UserService,
     val tripScheduleService: TripScheduleService,
-) : ViewModel(){
+) : ViewModel() {
 
     // userModelState
     val userModelValue = mutableStateOf(UserModel())
+
     // context
     val tripApplication = context as TripApplication
 
@@ -57,14 +54,17 @@ class MyInfoViewModel @Inject constructor(
     fun onClickIconMyTrip() {
         tripApplication.navHostController.navigate(MainScreenName.MAIN_SCREEN_MY_TRIP.name)
     }
+
     // 내 저장 화면 전환
     fun onClickIconMyInteresting() {
         tripApplication.navHostController.navigate(MainScreenName.MAIN_SCREEN_MY_INTERESTING.name)
     }
+
     // 내 리뷰 화면 전환
     fun onClickIconMyReview() {
         tripApplication.navHostController.navigate(MainScreenName.MAIN_SCREEN_MY_REVIEW.name)
     }
+
     // 내 여행기 화면 전환
     fun onClickIconTripNote() {
         tripApplication.navHostController.navigate(MainScreenName.MAIN_SCREEN_MY_TRIP_NOTE.name)
@@ -88,16 +88,15 @@ class MyInfoViewModel @Inject constructor(
     }
 
 
-
     // userModel 가져오기
     fun gettingUserModel() {
         CoroutineScope(Dispatchers.Main).launch {
-            val work1= async(Dispatchers.IO){
+            val work1 = async(Dispatchers.IO) {
                 userService.getUserByUserDocId(tripApplication.loginUserModel.userDocId)
             }
             userModelValue.value = work1.await()
-            if(userModelValue.value.userProfileImageURL !=""){
-                val work2 = async(Dispatchers.IO){
+            if (userModelValue.value.userProfileImageURL != "") {
+                val work2 = async(Dispatchers.IO) {
                     userService.gettingImage(userModelValue.value.userProfileImageURL)
                 }
                 showImageUri.value = work2.await()
@@ -108,7 +107,7 @@ class MyInfoViewModel @Inject constructor(
     // 화면 열 때 최근 본 목록 가져오기
     fun getRecentTripItemList() {
         recentTripItemList.clear()
-     val recentList = Tools.getRecentItemList(tripApplication)
+        val recentList = Tools.getRecentItemList(tripApplication)
         recentTripItemList.addAll(
             recentList
         )
@@ -119,12 +118,11 @@ class MyInfoViewModel @Inject constructor(
     val userSchedules: StateFlow<List<TripScheduleModel>> = _userSchedules
 
     // flow 유저 스케줄 collect 메서드
-    private fun flowMySchedule() {
+    private fun getMySchedule() {
         viewModelScope.launch {
-            tripScheduleService.getMyTripSchedulesFlow(tripApplication.loginUserModel.userNickName)
-                .collect() { schedule ->
-                    _userSchedules.value = schedule.filter { it.scheduleStartDate> Timestamp.now() }.sortedBy { it.scheduleStartDate }
-                }
+            _userSchedules.value =
+                tripScheduleService.gettingMyTripSchedules(tripApplication.loginUserModel.userNickName)
+
         }
     }
 
@@ -132,9 +130,8 @@ class MyInfoViewModel @Inject constructor(
         // 플로우만 넣어야 하는게
         // mutableState 같은 상태는 화면일 리컴퍼지션 될때마다 get해줘야 상태 변경이 됨
         gettingUserModel()
-        flowMySchedule()
+        getMySchedule()
     }
-
 
 
 }

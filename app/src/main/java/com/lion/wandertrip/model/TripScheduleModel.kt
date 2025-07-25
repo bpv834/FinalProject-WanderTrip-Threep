@@ -17,8 +17,8 @@ class TripScheduleModel(
     var scheduleTimeStamp: Timestamp = Timestamp.now(),              // 데이터가 들어온 시간
     var scheduleState: Int = 1,                                      // 일정 상태 (1: 활성화, 2: 비활성화)
     var scheduleItems: List<ScheduleItem> = emptyList(),             // 서브 컬렉션 (일정 내 아이템 리스트)
-    var lat: Double? = null,
-    var lng: Double? = null,
+    var lat: Double = 0.0,
+    var lng: Double = 0.0,
 ) {
     fun toTripScheduleVO(): TripScheduleVO {
         val tripScheduleVO = TripScheduleVO()
