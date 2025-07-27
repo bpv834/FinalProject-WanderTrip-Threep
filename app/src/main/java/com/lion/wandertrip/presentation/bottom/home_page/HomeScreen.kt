@@ -66,9 +66,9 @@ fun HomeScreen(
         }
     }
 
+    val scrollState = rememberScrollState()
     val navController = viewModel.tripApplication.navHostController
     var backStackRoutes by remember { mutableStateOf<List<String>>(emptyList()) }
-    val scrollState = rememberScrollState()
 
     LaunchedEffect(navController) {
         navController.currentBackStackEntryFlow.collectLatest { backStackEntry ->
@@ -80,6 +80,7 @@ fun HomeScreen(
         }
     }
 
+/*
     // 백스택 로그 출력
     LaunchedEffect(backStackRoutes) {
         Log.d("BackStack", "===== Current BackStack =====")
@@ -88,6 +89,7 @@ fun HomeScreen(
         }
         Log.d("BackStack", "=============================")
     }
+*/
 
     if (isLoading) {
         // ✅ 로딩 중일 때 표시할 화면

@@ -1,14 +1,12 @@
-package com.lion.wandertrip.presentation.schedule_detail_random_page.schedule_random_select_item
+package com.lion.wandertrip.presentation.schedule_select_item
 
 
-import ScheduleItemSearchBar
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
@@ -19,10 +17,9 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.lion.a02_boardcloneproject.component.CustomDividerComponent
 import com.lion.wandertrip.R
 import com.lion.wandertrip.component.LottieLoadingIndicator
-import com.lion.wandertrip.model.TripLocationBasedItem
-import com.lion.wandertrip.presentation.schedule_detail_random_page.schedule_random_select_item.components.AddItemDialog
-import com.lion.wandertrip.presentation.schedule_detail_random_page.schedule_random_select_item.components.RouletteDialog
-import com.lion.wandertrip.presentation.schedule_detail_random_page.schedule_random_select_item.components.ScheduleRandomItemList
+import com.lion.wandertrip.presentation.schedule_select_item.components.AddItemDialog
+import com.lion.wandertrip.presentation.schedule_select_item.components.RouletteDialog
+import com.lion.wandertrip.presentation.schedule_select_item.components.ScheduleRandomItemList
 import com.lion.wandertrip.ui.theme.NanumSquareRound
 import com.lion.wandertrip.ui.theme.NanumSquareRoundRegular
 

@@ -108,7 +108,6 @@ fun TripNoteScheduleList(
                 ) {
                     TripNoteScheduleGoogleMap(
                         scheduleItems = filteredItems,
-                        onTouch = { touched -> isMapTouched = touched }
                     )
                 }
 

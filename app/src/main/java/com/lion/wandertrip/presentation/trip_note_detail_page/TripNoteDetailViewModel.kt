@@ -9,6 +9,7 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import com.google.firebase.Timestamp
 import com.lion.wandertrip.TripApplication
@@ -24,6 +25,8 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.time.Instant
@@ -38,10 +41,13 @@ import javax.inject.Inject
 class TripNoteDetailViewModel @Inject constructor(
     @ApplicationContext val context: Context,
     val tripNoteService : TripNoteService,
-    val tripScheduleService : TripScheduleService
+    val tripScheduleService : TripScheduleService,
+    val savedStateHandle: SavedStateHandle
 ) : ViewModel() {
-
+    val tripNoteDocumentId = savedStateHandle.get<String>("documentId")
     // 여행기 정보를 담을 변수
+    val tripApplication = context as TripApplication
+
     val tripNoteModelValue = mutableStateOf(TripNoteModel())
 
     // 여행기 제목
@@ -66,13 +72,28 @@ class TripNoteDetailViewModel @Inject constructor(
     // 댓글 리스트
     var tripNoteReplyList = mutableStateListOf<TripNoteReplyModel>()
 
-    val tripApplication = context as TripApplication
     val nickName = tripApplication.loginUserModel.userNickName
 
     val tripSchedule = mutableStateOf(TripScheduleModel())
+
     var tripScheduleItems = mutableStateListOf<ScheduleItem>()
 
     val isLoading = mutableStateOf(false) // ✅ 로딩 상태 추가
+
+    private val _isMapTouched = MutableStateFlow(false)
+    val isMapTouched: StateFlow<Boolean> = _isMapTouched
+
+    fun setMapTouched(touched: Boolean) {
+        _isMapTouched.value = touched
+        Log.d("_isMapTouched","_isMapTouched = ${_isMapTouched.value}")
+    }
+
+    private val _showDeleteDialogState = MutableStateFlow<Boolean>(false)
+    val showDeleteDialogState :StateFlow<Boolean> = _showDeleteDialogState
+
+    fun setDeleteDialogState(state : Boolean){
+        _showDeleteDialogState.value = state
+    }
 
 
     // 일정 상세 정보 가져오기
@@ -243,10 +264,8 @@ class TripNoteDetailViewModel @Inject constructor(
     }
 
     // 일정 담기 아이콘 해당 여행기의 일정 문서id와 여행기 문서id를 전달해줌
-
-    // 일정 담기 아이콘 해당 여행기의 일정 문서id와 여행기 문서id를 전달해줌
-    fun bringTripNote(tripNoteScheduleDocId: MutableState<String>, documentId: String) {
-        val tripNoteScheduleDocIdValue = tripNoteScheduleDocId.value
+    fun bringTripNote(tripNoteScheduleDocId: String, documentId: String) {
+        val tripNoteScheduleDocIdValue = tripNoteScheduleDocId
 
         Log.d("BringTripNote", "tripNoteScheduleDocId: $tripNoteScheduleDocIdValue")
         Log.d("BringTripNote", "documentId: $documentId")
@@ -298,6 +317,11 @@ class TripNoteDetailViewModel @Inject constructor(
 
         val formatter = DateTimeFormatter.ofPattern("yyyy.MM.dd") // ✅ 년-월-일 포맷 적용
         return localDate.format(formatter)
+    }
+
+    init {
+        gettingTripNoteDetailData(tripNoteDocumentId!!)
+
     }
 
 }

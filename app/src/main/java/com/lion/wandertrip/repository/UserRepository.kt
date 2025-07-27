@@ -97,6 +97,7 @@ class UserRepository {
         documentReference.update(tokenMap).await()
     }
 
+    //Todo 에러 예외 처리 필요함
     // 자동 로그인 토큰 값으로 사용자 정보를 가져오는 메서드
     suspend fun selectUserDataByLoginToken(loginToken: String): Map<String, *>? {
         val firestore = FirebaseFirestore.getInstance()

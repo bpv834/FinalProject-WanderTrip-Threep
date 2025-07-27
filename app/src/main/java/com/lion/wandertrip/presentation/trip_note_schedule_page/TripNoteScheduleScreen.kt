@@ -19,6 +19,8 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
@@ -35,9 +37,7 @@ import com.lion.wandertrip.ui.theme.NanumSquareRound
 fun TripNoteScheduleScreen(
     tripNoteScheduleViewModel: TripNoteScheduleViewModel = hiltViewModel(),
 ) {
-
-    tripNoteScheduleViewModel.gettingTripNoteScheduleData()
-
+    val tripNoteScheduleList by tripNoteScheduleViewModel.scheduleList.collectAsState()
     Scaffold(
         containerColor = Color.White,
         topBar = {
@@ -66,10 +66,10 @@ fun TripNoteScheduleScreen(
         content = { paddingValues ->
             // 일정 목록 표시
             TripNoteScheduleItemList(
-                dataList = tripNoteScheduleViewModel.tripNoteScheduleList,
+                dataList = tripNoteScheduleList,
                 viewModel = tripNoteScheduleViewModel,
                 onRowClick = { tripSchedule ->
-                    // 클릭 시, 다시 이 화면으로 이동 + 일정 제목 가져오기
+                    // 클릭 시, 다시 이 화면으로 이동
                     tripNoteScheduleViewModel.gettingSchedule(tripSchedule)
                 },
                 modifier = Modifier.padding(paddingValues)

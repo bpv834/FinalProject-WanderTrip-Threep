@@ -1,4 +1,4 @@
-package com.lion.wandertrip.presentation.schedule_detail_random_page.components
+package com.lion.wandertrip.presentation.schedule_detail_page.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -16,7 +16,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.ui.draw.blur
 
 @Composable
 fun ScheduleDetailVerticalDividerWithCircle(

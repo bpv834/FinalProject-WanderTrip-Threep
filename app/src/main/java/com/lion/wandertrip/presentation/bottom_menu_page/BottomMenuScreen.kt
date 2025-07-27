@@ -47,10 +47,6 @@ fun BottomMenuScreen(bottomMenuViewModel: BottomMenuViewModel = hiltViewModel())
         NavigationData("여행기", R.drawable.ic_camera_film_24px),
         NavigationData("My", R.drawable.ic_person_24px)
     )
-
-
-    /*var selectedItem by remember { mutableStateOf(0) }*/
-
     Scaffold(
             bottomBar = {
                 BottomAppBar(

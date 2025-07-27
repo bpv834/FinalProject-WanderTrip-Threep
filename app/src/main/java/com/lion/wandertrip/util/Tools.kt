@@ -5,7 +5,6 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.ImageDecoder
 import android.graphics.Matrix
-import android.location.Geocoder
 import android.media.ExifInterface
 import android.net.Uri
 import android.os.Build
@@ -16,7 +15,9 @@ import androidx.core.content.FileProvider
 import com.google.firebase.Timestamp
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
+import com.lion.wandertrip.TripApplication
 import com.lion.wandertrip.model.RecentTripItemModel
+import kotlinx.coroutines.tasks.await
 import java.io.File
 import java.io.FileOutputStream
 import java.text.SimpleDateFormat
@@ -677,6 +678,31 @@ class Tools {
                 )
             )
         )
+
+        // 검색어로 도시 목록 n*n번 으로 찾기 검색어로 시작하는 도시 리스트 반환
+        fun searchRegionNames(query: String): List<String> {
+            val result = mutableListOf<String>()
+
+            for ((areaCode, areaData) in AreaCityMap) {
+                val cityName = areaData["name"].toString()
+                val subAreas = areaData["subAreas"] as Map<String, String>
+
+                // 1. 시/도 이름이 쿼리로 시작하면 추가 (예: "서울")
+                if (cityName.startsWith(query, ignoreCase = true)) {
+                    result.add(cityName)
+                }
+
+                // 2. 하위 구/군 이름이 쿼리로 시작하면 추가 (예: "경기도 연천군")
+                for ((_, subAreaName) in subAreas) {
+                    if (subAreaName.startsWith(query, ignoreCase = true)) {
+                        result.add("$cityName $subAreaName")
+                    }
+                }
+            }
+
+            return result
+        }
+
         // 코드로 지역 출력하는 메서드
         fun getAreaDetails(areaCode: String, subAreaCode: String? = null): String {
             val areaDetails = AreaCityMap[areaCode]
@@ -800,7 +826,8 @@ class Tools {
         }
 
         // lat, lng 으로 지역명 불러오기
-        fun getSimpleRegionName(context: Context, latitude: Double, longitude: Double): String? {
+        // locality가 null 인것도 있어서 카카오 local Api로 수정
+/*        fun getSimpleRegionName(context: Context, latitude: Double, longitude: Double): String? {
             Log.d("GEO_CODER", "latitude: $latitude, longitude: $longitude")
 
             return try {
@@ -844,9 +871,100 @@ class Tools {
                 Log.e("GEO_CODER", "지오코딩 실패", e)
                 null
             }
+        }*/
+        // 카카오 local Api, 지역이름으로 위도경도 구하기
+        suspend fun getLatLng(areaName: String, application : TripApplication): Pair<Double, Double>? {
+            val data = mapOf("regionName" to areaName)
+
+            val functionsInstance = application.firebaseFunctions
+            try {
+                // 이제 Firebase Functions 호출
+                val result = functionsInstance
+                    .getHttpsCallable("getCoordinatesByRegionName")
+                    .call(data)
+                    .await()
+
+                @Suppress("UNCHECKED_CAST")
+                val responseData = result.getData() as? Map<String, Any>
+
+                if (responseData != null) {
+                    val latitude = (responseData["latitude"] as? String)?.toDoubleOrNull()
+                        ?: (responseData["latitude"] as? Double)
+                    val longitude = (responseData["longitude"] as? String)?.toDoubleOrNull()
+                        ?: (responseData["longitude"] as? Double)
+                    val addressName = responseData["address_name"] as? String
+
+                    if (latitude != null && longitude != null && addressName != null) {
+                        Log.d(
+                            "FirebaseFunctions",
+                            "Latitude: $latitude, Longitude: $longitude, Address: $addressName"
+                        )
+                        return Pair(latitude, longitude)
+                    } else {
+                        Log.e("FirebaseFunctions", "Invalid response data: $responseData")
+                    }
+                } else {
+                    Log.e("FirebaseFunctions", "Function response data is null or not a Map.")
+                }
+
+            } catch (e: Exception) {
+                Log.e("FirebaseFunctions", "Error calling function: ${e.message}", e)
+                if (e is com.google.firebase.functions.FirebaseFunctionsException) {
+                    Log.e(
+                        "FirebaseFunctions",
+                        "Callable error code: ${e.code}, message: ${e.message}, details: ${e.details}"
+                    )
+                }
+            }
+            return null
         }
 
+        // kakao local api 위도 경도로 지역이름 가져오기
+        suspend fun getRegionNameByLatLng(
+            latitude: Double,
+            longitude: Double,
+            application: TripApplication
+        ): String? {
+            val data = mapOf(
+                "latitude" to latitude,
+                "longitude" to longitude
+            )
 
+            val functionsInstance = application.firebaseFunctions
+
+            try {
+                val result = functionsInstance
+                    .getHttpsCallable("getRegionNameByCoordinates")
+                    .call(data)
+                    .await()
+
+                @Suppress("UNCHECKED_CAST")
+                val responseData = result.getData() as? Map<String, Any>
+
+                if (responseData != null) {
+                    val regionName = responseData["regionName"] as? String
+                    if (regionName != null) {
+                        Log.d("FirebaseFunctions", "지역명: $regionName")
+                        return regionName
+                    } else {
+                        Log.e("FirebaseFunctions", "regionName이 응답에 없습니다: $responseData")
+                    }
+                } else {
+                    Log.e("FirebaseFunctions", "응답이 Map 형식이 아닙니다.")
+                }
+
+            } catch (e: Exception) {
+                Log.e("FirebaseFunctions", "함수 호출 중 오류: ${e.message}", e)
+                if (e is com.google.firebase.functions.FirebaseFunctionsException) {
+                    Log.e(
+                        "FirebaseFunctions",
+                        "에러 코드: ${e.code}, 메시지: ${e.message}, 상세: ${e.details}"
+                    )
+                }
+            }
+
+            return null
+        }
 
     }
 }

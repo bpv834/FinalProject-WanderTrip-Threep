@@ -41,7 +41,7 @@ class TripScheduleModel(
     }
 }
 
-class ScheduleItem(
+data class ScheduleItem(
     // 서브컬렉션으로 할거면, var tripScheduleDocId: String = "",  이 필요함 인덱스 조절할때나, 삭제할때 필요함
     var itemDocId: String = "",                          // 문서 ID
     var itemDate: Timestamp = Timestamp.now(),           // 일정 날짜

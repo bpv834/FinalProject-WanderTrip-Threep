@@ -1,4 +1,4 @@
-package com.lion.wandertrip.presentation.schedule_detail_random_page.schedule_random_select_item
+package com.lion.wandertrip.presentation.schedule_select_item
 
 
 import android.content.Context
@@ -304,8 +304,8 @@ class ScheduleRandomSelectItemViewModel @Inject constructor(
                         else -> ""
                     },
                     itemDate = Timestamp(scheduleDate,0),
-                    itemLongitude = lng.toDouble(),
-                    itemLatitude = lat.toDouble(),
+                    itemLatitude = item.mapLat!!.toDouble(),
+                    itemLongitude = item.mapLng!!.toDouble(),
                     itemContentId = item.contentId!!,
                 )
 

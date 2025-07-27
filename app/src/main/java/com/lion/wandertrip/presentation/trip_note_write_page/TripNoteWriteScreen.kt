@@ -31,6 +31,8 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -44,6 +46,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.lion.a02_boardcloneproject.component.CustomOutlinedTextField
 import com.lion.a02_boardcloneproject.component.CustomTopAppBar
 import com.lion.a02_boardcloneproject.component.LikeLionOutlinedTextFieldEndIconMode
@@ -56,36 +59,29 @@ import com.lion.wandertrip.util.Tools
 
 @Composable
 fun TripNoteWriteScreen(
+    scheduleDocId :String,
     tripNoteWriteViewModel: TripNoteWriteViewModel = hiltViewModel(),
-    tripScheduleTitle : String,
-    scheduleDocId : String
 ) {
-
-
     val context = LocalContext.current
+    val schedule by tripNoteWriteViewModel.pickedSchedule.collectAsState()
+    LaunchedEffect (tripNoteWriteViewModel.scheduleDocId){
+        if(tripNoteWriteViewModel.scheduleDocId!="") // none은 기본값 처음 작성화면 열때
+        tripNoteWriteViewModel.gettingSchedule()
+    }
 
     // 앨범용 런처
     val albumLauncher = rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) {
         Tools.takeAlbumDataList(context, it, tripNoteWriteViewModel.tripNotePreviewBitmap)
         tripNoteWriteViewModel.isImagePicked.value=true
     }
-
-    val scheduleTitleState = remember { mutableStateOf(tripScheduleTitle) }
-
     // 에러 상태 추가
     val scheduleTitleError = remember { mutableStateOf("") }
-
-    // tripNoteWriteViewModel에 tripScheduleTitle 값을 설정
-    tripNoteWriteViewModel.tripScheduleTitle.value = scheduleTitleState.value
-    tripNoteWriteViewModel.scheduleDocId =  scheduleDocId
-
-
 
     Scaffold(
         containerColor = Color.White,
         topBar = {
             CustomTopAppBar(
-                title = tripNoteWriteViewModel.topAppBarTitle.value,
+                title = "여행기 작성",
                 navigationIconImage = Icons.AutoMirrored.Filled.ArrowBack,
                 navigationIconOnClick = {
                     tripNoteWriteViewModel.navigationButtonClick()
@@ -116,7 +112,7 @@ fun TripNoteWriteScreen(
                 )
 
                 Text(
-                    text = "${scheduleTitleState.value}",
+                    text = schedule.scheduleTitle,
                     fontFamily = NanumSquareRound,
                     fontSize = 22.sp,
                     modifier = Modifier.padding(start = 11.dp, top = 0.dp)
@@ -221,11 +217,10 @@ fun TripNoteWriteScreen(
                 textFieldValue = tripNoteWriteViewModel.tripNoteContent,
                 label = "후기",
                 placeHolder = "여행기 후기를 입력해 주세요",
-                trailingIconMode = LikeLionOutlinedTextFieldEndIconMode.TEXT,
                 singleLine = false,
                 isError = tripNoteWriteViewModel.tripNoteContentIsError,  // 에러 상태 전달
                 supportText = tripNoteWriteViewModel.tripNoteContentError,  // 에러 메시지 전달
-                minLines = 13
+                minLines = 15
             )
 
 
@@ -261,14 +256,14 @@ fun TripNoteWriteScreen(
                     }
 
                     // 일정 선택 확인
-                    if (scheduleTitleState.value.isEmpty()) {
+                    if (schedule.scheduleTitle == "") {
                         scheduleTitleError.value = "일정을 선택해 주세요."
                     } else {
                         scheduleTitleError.value = ""
                     }
 
                     // 제목과 내용이 모두 비어 있지 않으면 tripNoteDoneClick 호출
-                    if (tripNoteWriteViewModel.tripNoteTitle.value.isNotEmpty() && tripNoteWriteViewModel.tripNoteContent.value.isNotEmpty() && scheduleTitleState.value.isNotEmpty() ){
+                    if (tripNoteWriteViewModel.tripNoteTitle.value.isNotEmpty() && tripNoteWriteViewModel.tripNoteContent.value.isNotEmpty() && schedule.scheduleTitle!="" ){
                         tripNoteWriteViewModel.tripNoteDoneClick()
                     }
                 }

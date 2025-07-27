@@ -152,6 +152,7 @@ class HomeViewModel @Inject constructor(
     }
 
     // 상위 여행기 가져오기
+    // TODO 전체가져와서 자르지말고 7개만 가져오도록
     fun getTopScrapedTrips() {
         viewModelScope.launch {
             val tripNotes = tripNoteService.gettingTripNoteListWithScrapCount()
@@ -165,9 +166,10 @@ class HomeViewModel @Inject constructor(
         tripApplication.navHostController.popBackStack()
     }
 
-    // 내 리뷰 화면 전환
+    // 검색 화면 전환
     fun onClickIconSearch() {
-        tripApplication.navHostController.navigate(MainScreenName.MAIN_SCREEN_SEARCH.name)
+        val query = ""
+        tripApplication.navHostController.navigate("${MainScreenName.MAIN_SCREEN_SEARCH_RESULT.name}/${query}")
     }
 
     fun onClickTrip(contentId: String) {
@@ -180,7 +182,6 @@ class HomeViewModel @Inject constructor(
 
     // 인기도시 리스너
     fun onClickPopularCity(lat: Double, lng: Double, cityName: String, radius:String) {
-  /*      println("/${lat}/${lng}/${cityName}/${radius}")*/
         tripApplication.navHostController.navigate("${MainScreenName.MAIN_SCREEN_POPULAR_CITY.name}/${lat}/${lng}/${cityName}/${radius}")
     }
 }

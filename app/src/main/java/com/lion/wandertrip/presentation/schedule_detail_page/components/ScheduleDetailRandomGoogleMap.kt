@@ -1,4 +1,4 @@
-package com.lion.wandertrip.presentation.schedule_detail_random_page.components
+package com.lion.wandertrip.presentation.schedule_detail_page.components
 
 
 import androidx.compose.foundation.layout.Box
@@ -20,7 +20,7 @@ import com.google.maps.android.compose.rememberCameraPositionState
 import com.google.maps.android.compose.rememberMarkerState
 import com.lion.wandertrip.component.ScheduleDetailCustomMarkerIcon
 import com.lion.wandertrip.model.ScheduleItem
-import com.lion.wandertrip.presentation.schedule_detail_random_page.ScheduleDetailRandomViewModel
+import com.lion.wandertrip.presentation.schedule_detail_page.ScheduleDetailRandomViewModel
 
 // Google Map을 표시하는 Composable
 @Composable

@@ -1,4 +1,4 @@
-package com.lion.wandertrip.presentation.schedule_detail_random_page.components
+package com.lion.wandertrip.presentation.schedule_detail_page.components
 
 
 
@@ -38,7 +38,7 @@ import com.lion.wandertrip.util.ContentTypeId
 import com.google.firebase.Timestamp
 import com.lion.a02_boardcloneproject.component.CustomDividerComponent
 import com.lion.wandertrip.model.ScheduleItem
-import com.lion.wandertrip.presentation.schedule_detail_random_page.ScheduleDetailRandomViewModel
+import com.lion.wandertrip.presentation.schedule_detail_page.ScheduleDetailRandomViewModel
 import org.burnoutcrew.reorderable.ReorderableItem
 import org.burnoutcrew.reorderable.detectReorder
 import org.burnoutcrew.reorderable.reorderable

@@ -1,4 +1,4 @@
-package com.lion.wandertrip.presentation.schedule_select_item.roulette_item.component
+package com.lion.wandertrip.presentation.schedule_select_item.components
 
 import android.graphics.Paint
 import android.graphics.Typeface

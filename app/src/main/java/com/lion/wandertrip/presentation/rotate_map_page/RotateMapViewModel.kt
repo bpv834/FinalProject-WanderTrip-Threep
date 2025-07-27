@@ -18,6 +18,7 @@ import com.lion.wandertrip.service.UserService
 import com.lion.wandertrip.util.BotNavScreenName
 import com.lion.wandertrip.util.ContentTypeId
 import com.lion.wandertrip.util.ScheduleScreenName
+import com.lion.wandertrip.util.Tools
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
@@ -26,6 +27,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 import kotlin.math.cos
 import kotlin.math.sin
@@ -35,7 +37,7 @@ class RotateMapViewModel @Inject constructor(
     @ApplicationContext val context: Context,
     val tripScheduleService: TripScheduleService,
     val tripLocationBasedItemService: TripLocationBasedItemService,
-    val userService : UserService,
+    val userService: UserService,
     private val savedStateHandle: SavedStateHandle
 ) : ViewModel() {
     // context
@@ -43,11 +45,9 @@ class RotateMapViewModel @Inject constructor(
 
     // set 제한 lat 변수
     var initLat by mutableStateOf("")
-        private set
 
     // set 제한 lng 변수
     var initLng by mutableStateOf("")
-        private set
 
     // 위도경도 설정 메서드
     fun setLatLng(lat: String, lng: String) {
@@ -103,6 +103,7 @@ class RotateMapViewModel @Inject constructor(
         )
         return totalCount != 0
     }
+
     // 회전상태
     private val _isSpinning = MutableStateFlow(false)
     val isSpinning: StateFlow<Boolean> = _isSpinning
@@ -221,7 +222,6 @@ class RotateMapViewModel @Inject constructor(
         scheduleTitle: String,
         scheduleStartDate: Timestamp,
         scheduleEndDate: Timestamp,
-        areaName: String,
         lat: Double,
         lng: Double,
     ) {
@@ -230,22 +230,29 @@ class RotateMapViewModel @Inject constructor(
 
         val scheduleDateList = generateDateList(scheduleStartDate, scheduleEndDate)
 
-        val tripScheduleItem = TripScheduleModel().let {
-            it.userID = tripApplication.loginUserModel.userId
-            it.userNickName = tripApplication.loginUserModel.userNickName
-            it.scheduleCity = areaName
-            it.scheduleTitle = scheduleTitle
-            it.scheduleStartDate = scheduleStartDate
-            it.scheduleEndDate = scheduleEndDate
-            it.scheduleDateList = scheduleDateList
-            it.scheduleInviteList += tripApplication.loginUserModel.userDocId
-            it.lat = lat
-            it.lng = lng
-            it
-        }
-        tripScheduleModel.value = tripScheduleItem
-
         viewModelScope.launch {
+            val areaName = withContext(Dispatchers.IO) {
+                Tools.getRegionNameByLatLng(
+                    lat, lng, tripApplication
+                )
+            }
+
+
+            val tripScheduleItem = TripScheduleModel().let {
+                it.userID = tripApplication.loginUserModel.userId
+                it.userNickName = tripApplication.loginUserModel.userNickName
+                it.scheduleCity = areaName?:"null"
+                it.scheduleTitle = scheduleTitle
+                it.scheduleStartDate = scheduleStartDate
+                it.scheduleEndDate = scheduleEndDate
+                it.scheduleDateList = scheduleDateList
+                it.scheduleInviteList += tripApplication.loginUserModel.userDocId
+                it.lat = lat
+                it.lng = lng
+                it
+            }
+            tripScheduleModel.value = tripScheduleItem
+
             val work = async(Dispatchers.IO) {
                 tripScheduleService.addTripSchedule(tripScheduleModel.value)
             }.await()

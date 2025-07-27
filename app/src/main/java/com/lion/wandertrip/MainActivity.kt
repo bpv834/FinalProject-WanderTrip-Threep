@@ -2,7 +2,6 @@ package com.lion.wandertrip
 
 import android.os.Build
 import android.os.Bundle
-import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -15,10 +14,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.lion.wandertrip.presentation.bottom.trip_note_page.TripNoteScreen
 import androidx.navigation.navArgument
-import com.google.firebase.Firebase
 import com.google.firebase.Timestamp
-import com.google.firebase.auth.auth
-import com.google.firebase.functions.FirebaseFunctions
 import com.lion.wandertrip.presentation.detail_page.DetailScreen
 import com.lion.wandertrip.presentation.detail_review_modify_page.DetailReviewModifyScreen
 import com.lion.wandertrip.presentation.detail_review_write_page.DetailReviewWriteScreen
@@ -37,12 +33,9 @@ import com.lion.wandertrip.presentation.schedule_city_select.ScheduleCitySelectS
 import com.lion.wandertrip.presentation.schedule_city_select.city_roulette.RouletteCityScreen
 import com.lion.wandertrip.presentation.schedule_city_select.city_roulette.roulette_city_select.RouletteCitySelectScreen
 import com.lion.wandertrip.presentation.schedule_detail_friends.ScheduleDetailFriendsScreen
-import com.lion.wandertrip.presentation.schedule_detail_random_page.ScheduleDetailRandomScreen
-import com.lion.wandertrip.presentation.schedule_detail_random_page.schedule_random_select_item.ScheduleRandomSelectItemScreen
+import com.lion.wandertrip.presentation.schedule_detail_page.ScheduleDetailRandomScreen
+import com.lion.wandertrip.presentation.schedule_select_item.ScheduleRandomSelectItemScreen
 import com.lion.wandertrip.presentation.schedule_item_review.ScheduleItemReviewScreen
-import com.lion.wandertrip.presentation.schedule_select_item.ScheduleSelectItemScreen
-import com.lion.wandertrip.presentation.schedule_select_item.roulette_item.RouletteItemScreen
-import com.lion.wandertrip.presentation.schedule_select_item.roulette_item.roulette_item_select.RouletteItemSelectScreen
 import com.lion.wandertrip.presentation.search_page.SearchScreen
 import com.lion.wandertrip.presentation.search_result_page.SearchResultScreen
 import com.lion.wandertrip.presentation.start_page.StartScreen
@@ -138,20 +131,28 @@ fun MyApp() {
 
         // 여행기 상세 화면
         composable(
-            route = "${TripNoteScreenName.TRIP_NOTE_DETAIL.name}/{documentId}"
+            route = "${TripNoteScreenName.TRIP_NOTE_DETAIL.name}/{documentId}",
+            arguments = listOf(navArgument("documentId"){type = NavType.StringType})
         ) {
-            val documentId = it.arguments?.getString("documentId") ?: ""
-            TripNoteDetailScreen(tripNoteDocumentId = documentId)
+            TripNoteDetailScreen()
         }
 
 
         // 여행기 작성 화면
+        // 경로 파라미터에서 쿼리파라미터로 바꿈
+        // 그래야 백스텍 관리가 쉽기때문(경로면 인자가 바뀐것도 다 경로라서 백스텍 재사용이 안됨
         composable(
-            route = "${TripNoteScreenName.TRIP_NOTE_WRITE.name}/{scheduleTitle}/{scheduleDocId}"
-        ) {
-            val scheduleTitle = it.arguments?.getString("scheduleTitle") ?: ""
-            val scheduleDocId = it.arguments?.getString("scheduleDocId") ?: ""
-            TripNoteWriteScreen(tripScheduleTitle = scheduleTitle, scheduleDocId = scheduleDocId)
+            route = "${TripNoteScreenName.TRIP_NOTE_WRITE.name}?scheduleDocId={scheduleDocId}",
+            arguments = listOf(
+                navArgument("scheduleDocId") {
+                    type = NavType.StringType
+                    nullable = true  // null도 허용 (선택사항)
+                    defaultValue = "" // 기본값 지정 가능
+                }
+            )
+        ) { backStackEntry ->
+            val scheduleDocId = backStackEntry.arguments?.getString("scheduleDocId") ?: ""
+            TripNoteWriteScreen(scheduleDocId = scheduleDocId)
         }
 
         // 여행기 페이지에서 다른 사람 여행기 보기
@@ -271,6 +272,7 @@ fun MyApp() {
 
 
         // 일정 항목 선택 화면
+/*
         composable(
             route = "${ScheduleScreenName.SCHEDULE_SELECT_ITEM_SCREEN.name}?" +
                     "itemCode={itemCode}&areaName={areaName}&areaCode={areaCode}&scheduleDate={scheduleDate}&tripScheduleDocId={tripScheduleDocId}",
@@ -289,6 +291,7 @@ fun MyApp() {
             val tripScheduleDocId = it.arguments?.getString("tripScheduleDocId") ?: ""
             ScheduleSelectItemScreen(itemCode, areaName, areaCode, scheduleDate, tripScheduleDocId)
         }
+*/
 
         // 일정 랜덤화면 항목 선택 화면
         composable(
@@ -405,15 +408,17 @@ fun MyApp() {
             val scheduleDateTemp = it.arguments?.getLong("scheduleDate") ?: 0L
             val scheduleDate = Timestamp(scheduleDateTemp, 0)
 
-            RouletteItemScreen(tripScheduleDocId, areaName, areaCode, scheduleDate)
+/*            RouletteItemScreen(tripScheduleDocId, areaName, areaCode, scheduleDate)*/
         }
 
+/*
         // 룰렛 일정 항목 선택 화면
         composable(RouletteScreenName.ROULETTE_ITEM_SELECT_SCREEN.name) {
             RouletteItemSelectScreen(
                 navController = rememberNavHostController
             )
         }
+*/
 
         ////////////////////////////////////////////////////////////////////////////////////////////
         // 리뷰 작성 화면

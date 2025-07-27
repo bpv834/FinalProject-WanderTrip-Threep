@@ -13,8 +13,8 @@ fun NoAttractionDialog(
 ) {
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("해당 지역에 관광지가 없습니다.") },
-        text = { Text("그래도 여행하시겠습니까?") },
+        title = { Text("이곳은 관광지가 없습니다.") },
+        text = { Text("여행 하시겠습니까?") },
         confirmButton = {
             TextButton(onClick = onYesClick) {
                 Text("YES")

@@ -10,19 +10,21 @@ import androidx.compose.runtime.Composable
 fun TravelConfirmDialog(
     onYesClick: () -> Unit,
     onRetryClick: () -> Unit,
-    onDismiss: () -> Unit
+    onDismiss: () -> Unit,
+    area:String
 ) {
     AlertDialog(
         onDismissRequest = { onDismiss() },
         title = { Text(text = "WanderTrip") },
+        text = { Text("${area}로 떠나볼까요?") },
         confirmButton = {
             TextButton(onClick = onYesClick) {
-                Text("YES")
+                Text("여행가기")
             }
         },
         dismissButton = {
             TextButton(onClick = onRetryClick) {
-                Text("RETRY")
+                Text("취소")
             }
         }
     )

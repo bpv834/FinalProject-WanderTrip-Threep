@@ -42,7 +42,7 @@ class SplashViewModel @Inject constructor(
 
     // 관광지명으로 tripItemModel 를 찾는 메서드 -> 찾아 모듈에 리스트 저장
     suspend fun getTripModelList(list: MutableList<String>) = withContext(Dispatchers.IO) {
-        Log.d("SplashViewModel","getTripModelList")
+  //      Log.d("SplashViewModel","getTripModelList")
         val tripList = mutableListOf<TripItemModel>()
         list.forEach {
             val item = tripKeywordItemService.gettingTripItemByKeyword(it)
@@ -87,7 +87,7 @@ class SplashViewModel @Inject constructor(
     }
     // 인기 지역 순위 module에 저장
     suspend fun savePopularCities(){
-        Log.d("SplashViewModel","savePopularSpoList")
+     //   Log.d("SplashViewModel","savePopularSpoList")
         val popularCities = getPopularCityList()
 
         tripApplication.updatePopularCities(popularCities)

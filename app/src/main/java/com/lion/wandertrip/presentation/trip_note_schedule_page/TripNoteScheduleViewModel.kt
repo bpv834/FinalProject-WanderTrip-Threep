@@ -10,12 +10,16 @@ import com.google.firebase.Timestamp
 import com.lion.wandertrip.TripApplication
 import com.lion.wandertrip.model.TripScheduleModel
 import com.lion.wandertrip.service.TripNoteService
+import com.lion.wandertrip.service.TripScheduleService
+import com.lion.wandertrip.util.BotNavScreenName
 import com.lion.wandertrip.util.TripNoteScreenName
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import java.time.Instant
 import java.time.ZoneId
@@ -26,59 +30,45 @@ import javax.inject.Inject
 class TripNoteScheduleViewModel @Inject constructor(
     @ApplicationContext val context: Context,
     val tripNoteService: TripNoteService,
+    val tripScheduleService: TripScheduleService
 ) : ViewModel() {
-
-    var tripNoteScheduleList = mutableStateListOf<TripScheduleModel?>()
-
     val tripApplication = context as TripApplication
     val userDocId = tripApplication.loginUserModel.userDocId
 
+    private val _scheduleList = MutableStateFlow<List<TripScheduleModel>>(emptyList())
+    val scheduleList: StateFlow<List<TripScheduleModel>> = _scheduleList
+
     // 리사이클러뷰 데이터 리스트 (로그인한 사용자의 일정)
     fun gettingTripNoteScheduleData() {
-
         CoroutineScope(Dispatchers.Main).launch {
-            val work1 = async(Dispatchers.IO){
-                tripNoteService.getTripSchedulesByUserDocId(userDocId)
+            val work1 = async(Dispatchers.IO) {
+                tripScheduleService.gettingMyTripSchedules(tripApplication.loginUserModel.userNickName)
             }
-            val recyclerViewList  = work1.await()
-
-            // 상태 관리 변수에 담아준다.
-            tripNoteScheduleList.clear()
-            tripNoteScheduleList.addAll(recyclerViewList)
+            _scheduleList.value = work1.await().filter { it.scheduleStartDate <= Timestamp.now() } // 갔다온것만 여행기 쓰도록
+                .sortedBy { it.scheduleStartDate }
         }
-
-
-
-//        tripNoteScheduleList = mutableStateListOf(
-//            TripScheduleModel(
-//                scheduleTitle = "제주 힐링여행",
-//                scheduleStartDate = Timestamp.now(),
-//                scheduleCity = "제주",
-//                scheduleEndDate = Timestamp.now(),
-//            ),
-//            TripScheduleModel(
-//                scheduleTitle = "서울 힐링여행",
-//                scheduleStartDate = Timestamp.now(),
-//                scheduleCity = "서울",
-//                scheduleEndDate = Timestamp.now(),
-//            )
-//        )
     }
 
     // 뒤로 가기 버튼
-    fun navigationButtonClick(){
+    fun navigationButtonClick() {
         tripApplication.navHostController.popBackStack()
     }
 
     // 일정 가져오기 버튼
-    fun gettingSchedule(tripSchedule: TripScheduleModel){
-        val scheduleTitle = tripSchedule.scheduleTitle
+    // 아이템 클릭 리스너
+    fun gettingSchedule(tripSchedule: TripScheduleModel) {
         val scheduleDocId = tripSchedule.tripScheduleDocId
-        Log.d("GettingSchedule", "Schedule Title: $scheduleTitle")
-        tripApplication.navHostController.popBackStack()
-        tripApplication.navHostController.popBackStack()
-        tripApplication.navHostController.navigate("${TripNoteScreenName.TRIP_NOTE_WRITE.name}/${scheduleTitle}/${scheduleDocId}")
+
+        tripApplication.navHostController.navigate(
+            "${TripNoteScreenName.TRIP_NOTE_WRITE.name}?scheduleDocId=$scheduleDocId"
+        ) {
+            launchSingleTop = true
+            popUpTo(BotNavScreenName.BOT_NAV_SCREEN_HOME.name) {
+                inclusive = false
+            }
+        }
     }
+
 
     // ✅ Timestamp -> "YYYY.MM.DD" 형식 변환 함수
     @RequiresApi(Build.VERSION_CODES.O)
@@ -89,6 +79,10 @@ class TripNoteScheduleViewModel @Inject constructor(
 
         val formatter = DateTimeFormatter.ofPattern("yyyy.MM.dd") // ✅ 년-월-일 포맷 적용
         return localDate.format(formatter)
+    }
+
+    init {
+        gettingTripNoteScheduleData()
     }
 
 }

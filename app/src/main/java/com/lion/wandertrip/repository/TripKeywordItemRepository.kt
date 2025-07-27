@@ -12,7 +12,7 @@ class TripKeywordItemRepository(private val api: TripKeywordItemInterface) {
 
     // 키워드로 tripItem 가져오기
     suspend fun gettingTripItemByKeyword(keyword: String): TripItemModel? {
-        Log.d("TripKeywordItemRepository", "gettingTripItemByKeyword - keyword: $keyword")
+   //     Log.d("TripKeywordItemRepository", "gettingTripItemByKeyword - keyword: $keyword")
         return try {
             val response = api.getKeywordTripItem(
                 numOfRows = 20,
@@ -76,7 +76,7 @@ class TripKeywordItemRepository(private val api: TripKeywordItemInterface) {
 
     // 키워드로 tripItem 가져오기
     suspend fun gettingTripItemAllByKeyword(keyword: String): List<TripItemModel> {
-        Log.d("TripKeywordItemRepository", "gettingTripItemByKeyword - keyword: $keyword")
+       // Log.d("TripKeywordItemRepository", "gettingTripItemByKeyword - keyword: $keyword")
         return try {
             val response = api.getKeywordTripItem(
                 numOfRows = 1000,

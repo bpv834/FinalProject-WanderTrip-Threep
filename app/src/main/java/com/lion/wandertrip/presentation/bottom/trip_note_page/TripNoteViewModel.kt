@@ -48,9 +48,10 @@ class TripNoteViewModel @Inject constructor(
 
     // + 버튼(fab 버튼)을 눌렀을 때
     fun addButtonOnClick(){
-        val scheduleTitle = "" // 기본값 설정
+        val docId = ""
         // 여행기 추가하는 화면으로 이동
-        tripApplication.navHostController.navigate("${TripNoteScreenName.TRIP_NOTE_WRITE.name}/$scheduleTitle/")
+        // 수정 (✅ 쿼리 파라미터 - 정상 동작)
+        tripApplication.navHostController.navigate("${TripNoteScreenName.TRIP_NOTE_WRITE.name}?scheduleDocId=$docId")
     }
 
     // 각 항목을 눌렀을 때

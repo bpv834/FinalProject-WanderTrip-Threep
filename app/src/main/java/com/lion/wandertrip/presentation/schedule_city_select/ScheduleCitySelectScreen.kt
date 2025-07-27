@@ -1,37 +1,24 @@
 package com.lion.wandertrip.presentation.schedule_city_select
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalFocusManager
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.google.firebase.Timestamp
-import com.lion.a02_boardcloneproject.component.CustomTopAppBar
-import com.lion.wandertrip.R
+import com.lion.wandertrip.component.HomeSearchBar
 import com.lion.wandertrip.component.LottieLoadingIndicator
+import com.lion.wandertrip.presentation.schedule_city_select.component.CityRouletteButton
 import com.lion.wandertrip.presentation.schedule_city_select.component.ScheduleCitySelectList
-import com.lion.wandertrip.ui.theme.NanumSquareRoundRegular
 
 @Composable
 fun ScheduleCitySelectScreen(
@@ -48,20 +35,18 @@ fun ScheduleCitySelectScreen(
 
     val isLoading by remember { viewModel.isLoading }
 
-    Box(modifier = Modifier.fillMaxSize()) {
-        Scaffold(
-            containerColor = Color.White,
-            topBar = {
-                CustomTopAppBar(
-                    title = "지역 선택",
-                    navigationIconImage = Icons.Filled.ArrowBack,
-                    navigationIconOnClick = { viewModel.backScreen() },
-                )
-            },
+    val searchQuery by viewModel.searchQuery.collectAsState()
+    val filterList by viewModel.filterList.collectAsState()
+
+
+    Scaffold() { paddingValues ->
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
         ) {
             Column(
                 modifier = Modifier
-                    .padding(it)
                     .fillMaxSize()
                     .pointerInput(Unit) { // 터치 이벤트 감지 바깥쪽 클릭 시 포커스 해제
                         detectTapGestures(
@@ -69,55 +54,63 @@ fun ScheduleCitySelectScreen(
                         )
                     },
             ) {
-                // 한반도 돌리기 @@@@@
-                Button(
-                    onClick = {
-                        // 도시 룰렛 화면 으로 이동
-                        viewModel.moveToRotateMapScreen(scheduleTitle, scheduleStartDate, scheduleEndDate)
-                    },
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = Color.White, // ✅ 버튼 배경색: 흰색
-                        contentColor = Color(0xFF435C8F) // ✅ 버튼 텍스트 색상: 파란색 (변경 가능)
-                    ),
-                    shape = RectangleShape // ✅ 버튼을 사각형으로 변경
-                ) {
-                    Image(
-                        painter = painterResource(id = R.drawable.roulette_picture), // ✅ drawable 리소스 추가
-                        contentDescription = "룰렛 이미지",
-                        modifier = Modifier.size(70.dp).padding(end = 16.dp) // ✅ 아이콘 크기 조정 가능
+                HomeSearchBar(
+                    query = searchQuery,
+                    onSearchQueryChanged = { viewModel.updateQuery(it) },
+                    onSearchClicked = {},
+                    onClearQuery = { viewModel.updateQuery("") },
+                    onBackClicked = { viewModel.backScreen() }
+                )
+                if (searchQuery.isNotBlank()) {
+                    ScheduleCitySelectList(
+                        dataList = filterList,
+                        scheduleTitle = viewModel.scheduleTitle.value,
+                        scheduleStartDate = viewModel.scheduleStartDate.value,
+                        scheduleEndDate = viewModel.scheduleEndDate.value,
+                        onSelectedCity = { areaName ->
+                            // 일정 제목 날짜 아이디 저장 후 일정 상세로 넘어 간다
+                            viewModel.addTripSchedule(
+                                scheduleTitle = scheduleTitle,
+                                scheduleStartDate = scheduleStartDate,
+                                scheduleEndDate = scheduleEndDate,
+                                areaName = areaName
+                            )
+                        }
                     )
-                    Text(
-                        text = "한반도 돌리기",
-                        fontFamily = NanumSquareRoundRegular,
-                        fontSize = 35.sp,
-                        color = Color.Black
-                    )
-                }
-                // 도시 목록
-                ScheduleCitySelectList(
-                    dataList = viewModel.initCities,
-                    scheduleTitle = viewModel.scheduleTitle.value,
-                    scheduleStartDate = viewModel.scheduleStartDate.value,
-                    scheduleEndDate = viewModel.scheduleEndDate.value,
-                    onSelectedCity = {areaName ->
-                        // 일정 제목 날짜 아이디 저장 후 일정 상세로 넘어 간다
-                        viewModel.addTripSchedule(
-                            scheduleTitle = scheduleTitle,
-                            scheduleStartDate = scheduleStartDate,
-                            scheduleEndDate = scheduleEndDate,
-                            areaName = areaName
+                } else
+                    Column {
+                        // 한반도 돌리기 버튼1
+                        CityRouletteButton(
+                            viewModel, scheduleTitle,
+                            scheduleStartDate,
+                            scheduleEndDate
+                        )
+                        // 도시 목록
+                        ScheduleCitySelectList(
+                            dataList = viewModel.initCities,
+                            scheduleTitle = viewModel.scheduleTitle.value,
+                            scheduleStartDate = viewModel.scheduleStartDate.value,
+                            scheduleEndDate = viewModel.scheduleEndDate.value,
+                            onSelectedCity = { areaName ->
+                                // 일정 제목 날짜 아이디 저장 후 일정 상세로 넘어 간다
+                                viewModel.addTripSchedule(
+                                    scheduleTitle = scheduleTitle,
+                                    scheduleStartDate = scheduleStartDate,
+                                    scheduleEndDate = scheduleEndDate,
+                                    areaName = areaName
+                                )
+                            }
                         )
                     }
-                )
 
+            }
+
+            // ✅ 로딩 화면 추가 (투명 오버레이)
+            if (isLoading) {
+                LottieLoadingIndicator() // ✅ 로딩 애니메이션
             }
         }
 
-        // ✅ 로딩 화면 추가 (투명 오버레이)
-        if (isLoading) {
-            LottieLoadingIndicator() // ✅ 로딩 애니메이션
-        }
     }
 
 }

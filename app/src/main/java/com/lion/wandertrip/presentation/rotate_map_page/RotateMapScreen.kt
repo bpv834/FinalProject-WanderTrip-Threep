@@ -40,6 +40,7 @@ import com.lion.wandertrip.presentation.rotate_map_page.components.TravelConfirm
 import com.lion.wandertrip.util.Tools
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+
 @Composable
 fun RotateMapScreen(
     scheduleTitle: String,
@@ -121,7 +122,8 @@ fun RotateMapScreen(
                                 viewModel.stopSpinning()
 
                                 val current = animRotation.value % 360f //  (예: 725도 → 5도).
-                                val target = animRotation.value + (360f - current) + 360f // (예: 5도면 → 355도) 나머지 회전후 정위치에서 멈추는 각도
+                                val target =
+                                    animRotation.value + (360f - current) + 360f // (예: 5도면 → 355도) 나머지 회전후 정위치에서 멈추는 각도
                                 viewModel.setTargetRotation(target)
 
                                 viewModel.onRotationFinished(lat.toString(), lon.toString())
@@ -158,16 +160,15 @@ fun RotateMapScreen(
                     }
                 }
             }
-
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp),
-                horizontalArrangement = Arrangement.SpaceEvenly
-            ) {
-                Button(
-                    onClick = {
-                        if (!isSpinning) {
+            if (!isSpinning)
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    horizontalArrangement = Arrangement.SpaceEvenly
+                ) {
+                    Button(
+                        onClick = {
                             viewModel.startSpinning()
                             relativeClick = null
                             wanderTripCount += 1
@@ -179,44 +180,46 @@ fun RotateMapScreen(
                                 }
                             }
                         }
+                    ) {
+                        Text("돌리기")
                     }
-                ) {
-                    Text("돌리기")
                 }
-            }
 
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Text("wanderTrip 횟수: $wanderTripCount", fontSize = 18.sp)
-                Text("retry: $retryCount", fontSize = 18.sp)
-            }
+            /* Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                 Text("wanderTrip 횟수: $wanderTripCount", fontSize = 18.sp)
+                 Text("retry: $retryCount", fontSize = 18.sp)
+             }*/
         }
     }
     // 다이얼로그는 스케폴드 바깥에 배치
     if (showAttractionDialog) {
-        val regionName = Tools.getSimpleRegionName(
-            viewModel.tripApplication,
-            viewModel.initLat.toDouble(),
-            viewModel.initLng.toDouble()
-        )
         TravelConfirmDialog(
             onYesClick = {
                 viewModel.addTripSchedule(
                     scheduleTitle,
                     scheduleStartDate,
                     scheduleEndDate,
-                    regionName ?: "region",
                     viewModel.initLat.toDouble(),
                     viewModel.initLng.toDouble()
                 )
             },
             onRetryClick = { viewModel.hideAttractionDialog() },
+            area = "???",
             onDismiss = { viewModel.hideAttractionDialog() }
         )
     }
 
     if (showNoAttractionDialog) {
         NoAttractionDialog(
-            onYesClick = { viewModel.hideNoAttractionDialog() },
+            onYesClick = {
+                viewModel.addTripSchedule(
+                    scheduleTitle,
+                    scheduleStartDate,
+                    scheduleEndDate,
+                    viewModel.initLat.toDouble(),
+                    viewModel.initLng.toDouble()
+                )
+            },
             onNoClick = { viewModel.hideNoAttractionDialog() },
             onDismiss = { viewModel.hideNoAttractionDialog() }
         )

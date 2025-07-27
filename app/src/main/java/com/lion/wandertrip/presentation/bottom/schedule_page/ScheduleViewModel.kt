@@ -136,7 +136,7 @@ class ScheduleViewModel @Inject constructor(
         viewModelScope.launch {
             val result = tripScheduleService.gettingMyTripSchedules(application.loginUserModel.userNickName)
             _userSchedules.value = result
-                .filter { it.scheduleStartDate > Timestamp.now() } // 다가오는 일정
+                .filter { it.scheduleStartDate > Timestamp.now() }.sortedBy { it.scheduleStartDate } // 다가오는 일정
         }
     }
 

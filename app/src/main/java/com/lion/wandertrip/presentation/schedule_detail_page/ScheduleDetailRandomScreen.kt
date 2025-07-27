@@ -1,4 +1,4 @@
-package com.lion.wandertrip.presentation.schedule_detail_random_page
+package com.lion.wandertrip.presentation.schedule_detail_page
 
 
 import androidx.compose.foundation.layout.Box
@@ -25,7 +25,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.lion.wandertrip.component.LottieLoadingIndicator
-import com.lion.wandertrip.presentation.schedule_detail_random_page.components.ScheduleDetailRandomDateList
+import com.lion.wandertrip.presentation.schedule_detail_page.components.ScheduleDetailRandomDateList
 import com.lion.wandertrip.ui.theme.NanumSquareRound
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -60,14 +60,15 @@ fun ScheduleDetailRandomScreen(
                         }
                     },
                     actions = {
-                        IconButton(onClick = {
+                        //Todo 친구초대 기능 재구현해야함
+            /*            IconButton(onClick = {
                             viewModel.moveToScheduleDetailFriendsScreen()
                         }) {
                             Icon(
                                 imageVector = Icons.Filled.People,
                                 contentDescription = "함께 하는 사람 목록"
                             )
-                        }
+                        }*/
                     },
                 )
             }

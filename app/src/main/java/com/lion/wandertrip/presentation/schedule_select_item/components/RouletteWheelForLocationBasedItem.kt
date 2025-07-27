@@ -1,4 +1,4 @@
-package com.lion.wandertrip.presentation.schedule_detail_random_page.schedule_random_select_item.components
+package com.lion.wandertrip.presentation.schedule_select_item.components
 
 
 import android.graphics.Paint
@@ -15,7 +15,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.platform.LocalDensity
-import com.lion.wandertrip.presentation.schedule_detail_random_page.schedule_random_select_item.ScheduleRandomSelectItemViewModel
+import com.lion.wandertrip.presentation.schedule_select_item.ScheduleRandomSelectItemViewModel
 import kotlin.math.cos
 import kotlin.math.sin
 

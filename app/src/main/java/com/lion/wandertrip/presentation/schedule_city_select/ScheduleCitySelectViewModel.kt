@@ -21,12 +21,15 @@ import com.lion.wandertrip.util.RotateMapScreenName
 import com.lion.wandertrip.util.RouletteScreenName
 import com.lion.wandertrip.util.ScheduleScreenName
 import com.lion.wandertrip.util.Tools
+import com.lion.wandertrip.util.Tools.Companion.getLatLng
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
@@ -39,6 +42,24 @@ class ScheduleCitySelectViewModel @Inject constructor(
     private val tripScheduleService: TripScheduleService,
     private val userService: UserService,
 ) : ViewModel() {
+    // 내부에서만 수정 가능한 MutableStateFlow
+    private val _searchQuery = MutableStateFlow("")
+    // 외부에는 읽기 전용 StateFlow로 노출
+    val searchQuery: StateFlow<String> = _searchQuery
+
+    private val _filterList = MutableStateFlow<List<String>>(emptyList())
+    val filterList :StateFlow<List<String>> = _filterList
+
+    // 🔄 쿼리 변경 함수
+    fun updateQuery(newQuery: String) {
+        _searchQuery.value = newQuery
+       _filterList.value =  Tools.searchRegionNames(_searchQuery.value)
+    }
+
+    // ✅ 검색 수행 시 처리
+    fun onClickToResult(query: String) {
+        // TODO: 검색 로직 실행
+    }
 
     val application = context as TripApplication
 
@@ -160,7 +181,7 @@ class ScheduleCitySelectViewModel @Inject constructor(
 
             // 위도경도 구해서 넣는 메서드 실행
             withContext(Dispatchers.IO) {
-                val getLatLng = getLatLng(areaName)
+                val getLatLng = getLatLng(areaName,application)
                 tripScheduleModel.lat = getLatLng?.first ?: 0.0
                 tripScheduleModel.lng = getLatLng?.second ?: 0.0
             }
@@ -187,49 +208,5 @@ class ScheduleCitySelectViewModel @Inject constructor(
         }
     }
 
-    suspend fun getLatLng(areaName: String): Pair<Double, Double>? {
-        val data = mapOf("regionName" to areaName)
 
-        val functionsInstance = application.firebaseFunctions
-        try {
-            // 이제 Firebase Functions 호출
-            val result = functionsInstance
-                .getHttpsCallable("getCoordinatesByRegionName")
-                .call(data)
-                .await()
-
-            @Suppress("UNCHECKED_CAST")
-            val responseData = result.getData() as? Map<String, Any>
-
-            if (responseData != null) {
-                val latitude = (responseData["latitude"] as? String)?.toDoubleOrNull()
-                    ?: (responseData["latitude"] as? Double)
-                val longitude = (responseData["longitude"] as? String)?.toDoubleOrNull()
-                    ?: (responseData["longitude"] as? Double)
-                val addressName = responseData["address_name"] as? String
-
-                if (latitude != null && longitude != null && addressName != null) {
-                    Log.d(
-                        "FirebaseFunctions",
-                        "Latitude: $latitude, Longitude: $longitude, Address: $addressName"
-                    )
-                    return Pair(latitude, longitude)
-                } else {
-                    Log.e("FirebaseFunctions", "Invalid response data: $responseData")
-                }
-            } else {
-                Log.e("FirebaseFunctions", "Function response data is null or not a Map.")
-            }
-
-        } catch (e: Exception) {
-            Log.e("FirebaseFunctions", "Error calling function: ${e.message}", e)
-            if (e is com.google.firebase.functions.FirebaseFunctionsException) {
-                Log.e(
-                    "FirebaseFunctions",
-                    "Callable error code: ${e.code}, message: ${e.message}, details: ${e.details}"
-                )
-            }
-        }
-        return null
-    }
 }

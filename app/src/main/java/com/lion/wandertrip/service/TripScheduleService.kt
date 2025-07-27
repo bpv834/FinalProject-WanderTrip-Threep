@@ -143,7 +143,7 @@ class TripScheduleService(val tripScheduleRepository: TripScheduleRepository) {
     // hj
     // 내 스케줄 가져오기
     suspend fun gettingMyTripSchedules(userNickName:String) :MutableList<TripScheduleModel>{
-        Log.d("test100","service -> gettingMyTripSchedules")
+     //   Log.d("test100","service -> gettingMyTripSchedules")
 
         val voList = tripScheduleRepository.gettingMyTripSchedules(userNickName)
         val result = mutableListOf<TripScheduleModel>()
@@ -151,7 +151,7 @@ class TripScheduleService(val tripScheduleRepository: TripScheduleRepository) {
             result.add(it.toTripScheduleModel())
         }
         result.forEach {
-            Log.d("test100","service -> result : ${it.scheduleTitle}")
+         //   Log.d("test100","service -> result : ${it.scheduleTitle}")
         }
 
 

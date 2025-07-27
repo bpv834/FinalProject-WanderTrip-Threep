@@ -11,6 +11,7 @@ import com.lion.wandertrip.model.TripNoteModel
 import com.lion.wandertrip.service.TripAreaBaseItem2Service
 import com.lion.wandertrip.service.TripKeywordItemService
 import com.lion.wandertrip.service.TripNoteService
+import com.lion.wandertrip.util.BotNavScreenName
 import com.lion.wandertrip.util.ContentTypeId
 import com.lion.wandertrip.util.MainScreenName
 import com.lion.wandertrip.util.Tools
@@ -82,7 +83,7 @@ class SearchResultViewModel @Inject constructor(
             }
             _searchResults.value =work1.await()?: emptyList()
 
-            _searchNoteResults.value = work2.await()
+            _searchNoteResults.value = work2.await().filter { it.location.contains(keyword) ||it.tripNoteTitle.contains(keyword) } // 일단 다가져와서 필터링 (수정해야함)
 
             _categorizedResults.value = _searchResults.value.groupBy { getCategoryName(it.contentTypeId) }
 
@@ -100,12 +101,13 @@ class SearchResultViewModel @Inject constructor(
 
     fun onNavigateBackToSearchScreen() {
         tripApplication.navHostController.popBackStack(
-            route = MainScreenName.MAIN_SCREEN_SEARCH.name, // ✅ 검색창 화면으로 이동
+            route = BotNavScreenName.BOT_NAV_SCREEN_HOME.name, // ✅ 홈으로 이동
             inclusive = false // ✅ 기존 검색창을 새로 생성하도록 설정
         )
     }
 
     init {
+        if(initQuery!="")
         searchTrip(initQuery)
     }
 }
