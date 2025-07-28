@@ -64,7 +64,6 @@ class StartViewModel @Inject constructor(
                     userService.selectUserDataByLoginToken(loginToken)
                 }
                 val loginUserModel = work1.await()
-                Log.d("startViewModel","loginUserModel = ${loginUserModel!!.userId}")
                 // 가져온 사용자 데이터가 있다면
                 if (loginUserModel != null) {
                     tripApplication.loginUserModel = loginUserModel
