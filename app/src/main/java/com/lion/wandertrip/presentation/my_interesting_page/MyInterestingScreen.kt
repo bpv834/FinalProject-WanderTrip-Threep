@@ -14,12 +14,15 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.lion.a02_boardcloneproject.component.CustomTopAppBar
 import com.lion.wandertrip.R
 import com.lion.wandertrip.component.LottieLoadingIndicator
@@ -30,43 +33,40 @@ import com.lion.wandertrip.presentation.my_interesting_page.components.VerticalU
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MyInterestingScreen(myInterestingViewModel: MyInterestingViewModel = hiltViewModel()) {
-    Log.d("test","MyInterestingScreen")
-    // Scroll 상태를 기억하기 위한 rememberScrollState 사용
+fun MyInterestingScreen(
+    myInterestingViewModel: MyInterestingViewModel = hiltViewModel()
+) {
+   // Log.d("test", "MyInterestingScreen")
+
     val scrollState = rememberScrollState()
 
-    //  최초 실행 시 데이터 불러오기 (한 번만 실행)
-    // 매개변수 Unit 전달 시 최초 1회만 생성
+    // StateFlow 수신
+    val isLoading by myInterestingViewModel.isLoading.collectAsStateWithLifecycle()
+    val isSheetOpen by myInterestingViewModel.isSheetOpen.collectAsStateWithLifecycle()
+    val filteredCityName by myInterestingViewModel.filteredCityName.collectAsStateWithLifecycle()
+    val isCheckAttraction by myInterestingViewModel.isCheckAttraction.collectAsStateWithLifecycle()
+    val isCheckRestaurant by myInterestingViewModel.isCheckRestaurant.collectAsStateWithLifecycle()
+    val isCheckAccommodation by myInterestingViewModel.isCheckAccommodation.collectAsStateWithLifecycle()
+    val filteredList by myInterestingViewModel.interestingListFiltered.collectAsStateWithLifecycle()
+
+    // 최초 1회만 실행
     LaunchedEffect(Unit) {
-        Log.d("asd","LaunchedEffect")
-        myInterestingViewModel.interestingListAll.clear()
-        if(myInterestingViewModel.isLoading.value== false){
-            myInterestingViewModel.getInterestingList()
-
-        }
+        myInterestingViewModel.getInterestingList()
     }
 
-    //  filteredCityName이 변경될 때만 실행 (무한 루프 방지)
-    // 매개변수가 Any 타입이면 변수가 변경될때만 실행, composable이 재구성 되더라도 실행되지 않음
-    LaunchedEffect(myInterestingViewModel.filteredCityName.value) {
-        myInterestingViewModel.getInterestingFilter(myInterestingViewModel.filteredCityName.value)
-    }
-
-    if(myInterestingViewModel.isLoading.value){
-        Log.d("test","로딩중")
+    if (isLoading) {
+        Log.d("test", "로딩중")
         LottieLoadingIndicator()
-    }else{
-        Log.d("test","로딩중아님")
+    } else {
+        Log.d("test", "로딩중아님")
         Scaffold(
             topBar = {
                 CustomTopAppBar(
-                    navigationIconOnClick = {
-                        myInterestingViewModel.onClickNavIconBack()
-                    },
+                    navigationIconOnClick = { myInterestingViewModel.onClickNavIconBack() },
                     navigationIconImage = ImageVector.vectorResource(R.drawable.ic_arrow_back_24px),
-                    title = "내 저장",
+                    title = "내 저장"
                 )
-            },
+            }
         ) { paddingValues ->
             Column(
                 modifier = Modifier
@@ -82,27 +82,30 @@ fun MyInterestingScreen(myInterestingViewModel: MyInterestingViewModel = hiltVie
                     horizontalArrangement = Arrangement.SpaceAround
                 ) {
                     CityDropdownButton(myInterestingViewModel) {
-                        myInterestingViewModel.isSheetOpen.value = true
+                        myInterestingViewModel.onClickCityDropdown()
                     }
                     CustomChipButton("관광지", {
                         myInterestingViewModel.onClickButtonAttraction()
-                    }, myInterestingViewModel.isCheckAttraction)
+                    }, isCheckAttraction)
                     CustomChipButton("식당", {
                         myInterestingViewModel.onClickButtonRestaurant()
-                    }, myInterestingViewModel.isCheckRestaurant)
+                    }, isCheckRestaurant)
                     CustomChipButton("숙소", {
                         myInterestingViewModel.onClickButtonAccommodation()
-                    }, myInterestingViewModel.isCheckAccommodation)
+                    }, isCheckAccommodation)
                 }
 
-                VerticalUserInterestingList(myInterestingViewModel,myInterestingViewModel.interestingListFilterByCity)
+                val likeMap by myInterestingViewModel.likeMap.collectAsStateWithLifecycle()
+                VerticalUserInterestingList(
+                    viewModel = myInterestingViewModel,
+                    items = filteredList,
+                    likeMap = likeMap
+                )
             }
 
-            // BottomSheet가 표시될 때의 설정
-            if (myInterestingViewModel.isSheetOpen.value) {
-               BottomSheetAreaFilter(myInterestingViewModel)
+            if (isSheetOpen) {
+                BottomSheetAreaFilter(myInterestingViewModel)
             }
         }
     }
-
 }

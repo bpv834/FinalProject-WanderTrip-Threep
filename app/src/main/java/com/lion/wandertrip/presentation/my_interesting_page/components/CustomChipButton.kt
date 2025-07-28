@@ -28,7 +28,7 @@ import androidx.compose.ui.unit.sp
 import com.lion.wandertrip.R
 
 @Composable
-fun CustomChipButton(text: String, onClick: () -> Unit,isClick : MutableState<Boolean>) {
+fun CustomChipButton(text: String, onClick: () -> Unit,isClick : Boolean) {
     Button(
         onClick = onClick,
         shape = RoundedCornerShape(16.dp), // 둥근 모서리 설정
@@ -44,7 +44,7 @@ fun CustomChipButton(text: String, onClick: () -> Unit,isClick : MutableState<Bo
         ) {
             Text(text = text, fontSize = 15.sp, color = Color.Black) // 텍스트 표시
             Spacer(modifier = Modifier.width(4.dp)) // 텍스트와 아이콘 간격
-            if(isClick.value)
+            if(isClick)
             Icon(
                 imageVector = ImageVector.vectorResource(R.drawable.ic_check_24px), // 체크 아이콘
                 contentDescription = "Chip Icon",
