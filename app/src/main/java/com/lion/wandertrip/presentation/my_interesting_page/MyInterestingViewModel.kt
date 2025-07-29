@@ -34,9 +34,6 @@ class MyInterestingViewModel @Inject constructor(
     private val contentsService: ContentsService,
     private val savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
-    // 관심목록에 변화가 생겼는지 신호를 받는 상태변수
-// 기본값 false 로 Flow 생성, 초기값은 아무것도 안들어옴 composable(MainScreenName.MAIN_SCREEN_MY_INTERESTING.name) { MyInterestingScreen() }
-    private val refreshNeededFlow = savedStateHandle.getStateFlow("refresh_needed", false)
     val tripApplication = context as TripApplication
     // 로딩 상태변수
     private val _isLoading = MutableStateFlow(false)
@@ -205,22 +202,7 @@ class MyInterestingViewModel @Inject constructor(
     }
 
     init {
-        Log.d("init","init 시작")
-        // 최초 1회 데이터 로드
         getInterestingList()
-
-        viewModelScope.launch {
-            refreshNeededFlow
-                .onEach { Log.d("refreshNeededFlow", "값 감지됨: $it") }
-                .distinctUntilChanged()
-                .collect { needRefresh ->
-                    Log.d("refreshNeededFlow", "collect 실행됨: $needRefresh")
-                    if (needRefresh) {
-                        getInterestingList()
-                        savedStateHandle.set("refresh_needed", false)
-                    }
-                }
-        }
     }
 
 }
