@@ -44,11 +44,17 @@ class PopularCityViewModel @Inject constructor(
     private val savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
+    // hilt를 사용해 arg에서 받은 savedStateHandle 에서 사용할 변수 설정
+    private var initialLat: String = savedStateHandle.get<String>("lat") ?: ""
+    private var initialLng: String = savedStateHandle.get<String>("lng") ?: ""
+    private var initialRadius: String = savedStateHandle.get<String>("radius") ?: ""
+    private var initialCityName: String = savedStateHandle.get<String>("cityName") ?: ""
+
     // context
     val tripApplication = context as TripApplication
-
     // mutableStateList 타입 ->SnapshotStateList 여행기
     private val _tripNoteList = mutableStateListOf<TripNoteModel>()
+
     val tripNoteList: SnapshotStateList<TripNoteModel> get() = _tripNoteList
 
     // 여행기 도시 이름으로 가져오기
@@ -63,17 +69,10 @@ class PopularCityViewModel @Inject constructor(
     }
 
     // ViewModel 내부에 작성
-
     // 데이터 개수 저장
     val totalAttractionCount = mutableStateOf(0)
     val totalRestaurantCount = mutableStateOf(0)
     val totalAccommodationCount = mutableStateOf(0)
-
-    // hilt를 사용해 arg에서 받은 savedStateHandle 에서 사용할 변수 설정
-    private var initialLat: String = savedStateHandle.get<String>("lat") ?: ""
-    private var initialLng: String = savedStateHandle.get<String>("lng") ?: ""
-    private var initialRadius: String = savedStateHandle.get<String>("radius") ?: ""
-    private var initialCityName: String = savedStateHandle.get<String>("cityName") ?: ""
 
     // 좋아요 목록 상태 저장 변수
     // screen 에서 AsCollect로 구독

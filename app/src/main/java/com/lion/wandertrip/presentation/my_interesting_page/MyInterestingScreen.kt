@@ -43,16 +43,11 @@ fun MyInterestingScreen(
     // StateFlow 수신
     val isLoading by myInterestingViewModel.isLoading.collectAsStateWithLifecycle()
     val isSheetOpen by myInterestingViewModel.isSheetOpen.collectAsStateWithLifecycle()
-    val filteredCityName by myInterestingViewModel.filteredCityName.collectAsStateWithLifecycle()
     val isCheckAttraction by myInterestingViewModel.isCheckAttraction.collectAsStateWithLifecycle()
     val isCheckRestaurant by myInterestingViewModel.isCheckRestaurant.collectAsStateWithLifecycle()
     val isCheckAccommodation by myInterestingViewModel.isCheckAccommodation.collectAsStateWithLifecycle()
     val filteredList by myInterestingViewModel.interestingListFiltered.collectAsStateWithLifecycle()
 
-    // 최초 1회만 실행
-    LaunchedEffect(Unit) {
-        myInterestingViewModel.getInterestingList()
-    }
 
     if (isLoading) {
         Log.d("test", "로딩중")
@@ -85,13 +80,13 @@ fun MyInterestingScreen(
                         myInterestingViewModel.onClickCityDropdown()
                     }
                     CustomChipButton("관광지", {
-                        myInterestingViewModel.onClickButtonAttraction()
+                        myInterestingViewModel.toggleAttraction()
                     }, isCheckAttraction)
                     CustomChipButton("식당", {
-                        myInterestingViewModel.onClickButtonRestaurant()
+                        myInterestingViewModel.toggleRestaurant()
                     }, isCheckRestaurant)
                     CustomChipButton("숙소", {
-                        myInterestingViewModel.onClickButtonAccommodation()
+                        myInterestingViewModel.toggleAccommodation()
                     }, isCheckAccommodation)
                 }
 

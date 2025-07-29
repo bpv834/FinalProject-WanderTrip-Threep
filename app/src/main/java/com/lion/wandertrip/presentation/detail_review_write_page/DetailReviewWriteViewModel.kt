@@ -51,7 +51,7 @@ class DetailReviewWriteViewModel @Inject constructor(
         tripApplication.navHostController.popBackStack()
     }
 
-    // 리뷰 올리는 메서드
+    // 리뷰 작성 메서드
     fun addContentsReview(contentId: String, title: String) {
         Log.d("addContentsReview", "▶ 리뷰 작성 시작 - contentId: $contentId, title: $title")
 

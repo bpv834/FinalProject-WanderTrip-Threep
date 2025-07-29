@@ -457,6 +457,7 @@ fun MyApp() {
                 MainScreenName.MAIN_SCREEN_POPULAR_CITY
                     .name
             }/{lat}/{lng}/{cityName}/{radius}",
+            // 화면 이동 시 NavArguments → SavedStateHandle 자동 저장
             arguments = listOf(
                 navArgument("lat") { type = NavType.StringType },
                 navArgument("lng") { type = NavType.StringType },

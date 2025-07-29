@@ -528,5 +528,21 @@ class UserRepository {
             listenerRegistration.remove()
         }
     }
+    // 유저 좋아요 목록 가져오기
+    suspend fun getUserLikeListOnce(userDocId: String): List<String> {
+        val firestore = FirebaseFirestore.getInstance()
+        val collectionReference = firestore
+            .collection("UserData")
+            .document(userDocId)
+            .collection("UserLikeList")
+
+        return try {
+            val snapshot = collectionReference.get().await() // kotlinx-coroutines-play-services 필요
+            snapshot.documents.mapNotNull { it.getString("contentId") }
+        } catch (e: Exception) {
+            Log.e("getUserLikeListOnce", "에러 발생", e)
+            emptyList()
+        }
+    }
 }
 
