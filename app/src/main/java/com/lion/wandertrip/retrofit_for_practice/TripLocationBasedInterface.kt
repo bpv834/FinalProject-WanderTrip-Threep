@@ -5,7 +5,7 @@ import retrofit2.http.GET
 import retrofit2.http.Query
 
 interface TripLocationBasedInterface {
-    @GET("locationBasedList1")
+    @GET("locationBasedList2")
     suspend fun getLocationBasedList(
         @Query("numOfRows") numOfRows: Int?,
         @Query("pageNo") pageNo: Int?,

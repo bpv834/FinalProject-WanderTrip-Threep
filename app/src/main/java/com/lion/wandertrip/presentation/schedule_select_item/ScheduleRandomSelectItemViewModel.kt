@@ -223,7 +223,7 @@ class ScheduleRandomSelectItemViewModel @Inject constructor(
                     lng = lng,
                     contentTypeId = contentTypeId,
                     page = page,
-                    radius = "8",
+                    radius = "20",
                     numOfRows = 1000
                 )
 

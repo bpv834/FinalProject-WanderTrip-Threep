@@ -5,7 +5,7 @@ import retrofit2.http.GET
 import retrofit2.http.Query
 
 interface TripAreaBaseItemInterface {
-    @GET("areaBasedList1")
+    @GET("areaBasedList2")
     suspend fun getAreaBaseTripItem(
         @Query("serviceKey") serviceKey: String,
         @Query("MobileOS") mobileOS: String,

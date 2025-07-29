@@ -57,7 +57,7 @@ class TripAreaBaseItemRepository(private val api: TripAreaBaseItemInterface) {
     }
 */
 
-    suspend fun gettingAllItem(): List<TripItemModel>? {
+   /* suspend fun gettingAllItem(): List<TripItemModel>? {
         return try {
             val response = api.getAreaBaseTripItem(
                 serviceKey = myKey,
@@ -100,5 +100,5 @@ class TripAreaBaseItemRepository(private val api: TripAreaBaseItemInterface) {
             Log.e("API_ERROR", "Error occurred while fetching tour items", e)
             null
         }
-    }
+    }*/
 }

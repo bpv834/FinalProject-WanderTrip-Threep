@@ -37,22 +37,22 @@ object NetworkModule {
 
     @Provides
     @Singleton
-    fun provideTripCommonItemApi(@RetrofitV1 retrofit: Retrofit): TripCommonItemInterface =
+    fun provideTripCommonItemApi(@RetrofitV2 retrofit: Retrofit): TripCommonItemInterface =
         retrofit.create(TripCommonItemInterface::class.java)
 
     @Provides
     @Singleton
-    fun provideTripAreaBaseItemApi(@RetrofitV1 retrofit: Retrofit): TripAreaBaseItemInterface =
+    fun provideTripAreaBaseItemApi(@RetrofitV2 retrofit: Retrofit): TripAreaBaseItemInterface =
         retrofit.create(TripAreaBaseItemInterface::class.java)
 
     @Provides
     @Singleton
-    fun provideTripKeywordItemApi(@RetrofitV1 retrofit: Retrofit): TripKeywordItemInterface =
+    fun provideTripKeywordItemApi(@RetrofitV2 retrofit: Retrofit): TripKeywordItemInterface =
         retrofit.create(TripKeywordItemInterface::class.java)
 
     @Provides
     @Singleton
-    fun provideTripLocationBasedApi(@RetrofitV1 retrofit: Retrofit): TripLocationBasedInterface =
+    fun provideTripLocationBasedApi(@RetrofitV2 retrofit: Retrofit): TripLocationBasedInterface =
         retrofit.create(TripLocationBasedInterface::class.java)
 
     @Provides

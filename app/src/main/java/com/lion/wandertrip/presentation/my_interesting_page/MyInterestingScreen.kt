@@ -1,6 +1,5 @@
 package com.lion.wandertrip.presentation.my_interesting_page
 
-import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
@@ -14,7 +13,6 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Modifier
@@ -41,11 +39,15 @@ fun MyInterestingScreen(
    // Log.d("test", "MyInterestingScreen")
 
     val scrollState = rememberScrollState()
-
-    val currentBackStackEntry = myInterestingViewModel.tripApplication.navHostController.currentBackStackEntryAsState().value
+ /*   LaunchedEffect (Unit){
+        myInterestingViewModel.getInterestingList()
+    }*/
+    // navController.currentBackStackEntry ->  그냥 현재 백스택 정보를 한번 가져오는 용도, 화면이 바뀌거나 파라미터가 바뀌어도 UI는 리컴포지션되지 않음
+    val currentBackStackEntry = myInterestingViewModel.tripApplication.navHostController.currentBackStackEntryAsState().value // 화면 전환, 파라미터 변화 등으로 entry가 바뀌면 리컴포지션 유발
+    // 역할은 NavBackStackEntry의 savedStateHandle에 저장된 Boolean 값(refresh_needed)을 Compose에서 observe할 수 있도록 상태로 변환
     val refresh = currentBackStackEntry?.savedStateHandle
         ?.getLiveData<Boolean>("refresh_needed")
-        ?.observeAsState()
+        ?.observeAsState() // LiveData → Compose의 State로 변환
 
     LaunchedEffect(refresh?.value) {
         if (refresh?.value == true) {
@@ -53,7 +55,6 @@ fun MyInterestingScreen(
             currentBackStackEntry.savedStateHandle["refresh_needed"] = false
         }
     }
-
     // StateFlow 수신
     val isLoading by myInterestingViewModel.isLoading.collectAsStateWithLifecycle()
     val isSheetOpen by myInterestingViewModel.isSheetOpen.collectAsStateWithLifecycle()
@@ -64,10 +65,10 @@ fun MyInterestingScreen(
 
 
     if (isLoading) {
-        Log.d("test", "로딩중")
+    //    Log.d("test", "로딩중")
         LottieLoadingIndicator()
     } else {
-        Log.d("test", "로딩중아님")
+    //    Log.d("test", "로딩중아님")
         Scaffold(
             topBar = {
                 CustomTopAppBar(

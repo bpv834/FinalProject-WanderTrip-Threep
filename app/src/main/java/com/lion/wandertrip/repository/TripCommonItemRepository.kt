@@ -21,14 +21,6 @@ class TripCommonItemRepository(private val api: TripCommonItemInterface) {
                 mobileApp = "com.lion.wandertrip",
                 type = "json",
                 contentId = contentId,
-                contentTypeId = contentTypeId ?: "",
-                defaultYN = "Y",
-                firstImageYN = "Y",
-                areacodeYN = "Y",
-                catcodeYN = "Y",
-                addrinfoYN = "Y",
-                mapinfoYN = "Y",
-                overviewYN = "Y",
                 numOfRows = 10,
                 pageNo = 1
             )
@@ -74,7 +66,6 @@ class TripCommonItemRepository(private val api: TripCommonItemInterface) {
     // 사용자의 관심 콘텐츠 리스트를 기반으로 여행 아이템 정보를 가져오는 함수
     suspend fun gettingTripItemCommonInteresting(
         contentIdList: MutableList<String>, // 관심 있는 콘텐츠 ID 리스트
-        contentTypeId: String? // 콘텐츠 타입 ID (선택적)
     ): MutableList<UserInterestingModel> {
         return try {
 
@@ -89,14 +80,6 @@ class TripCommonItemRepository(private val api: TripCommonItemInterface) {
                     mobileApp = "com.lion.wandertrip",
                     type = "json",
                     contentId = contentId,
-                    contentTypeId = contentTypeId ?: "",
-                    defaultYN = "Y",
-                    firstImageYN = "Y",
-                    areacodeYN = "Y",
-                    catcodeYN = "Y",
-                    addrinfoYN = "Y",
-                    mapinfoYN = "Y",
-                    overviewYN = "Y",
                     numOfRows = 10,
                     pageNo = 1,
 

@@ -19,7 +19,7 @@ class TripAreaBaseItemService(private val repository: TripAreaBaseItemRepository
         }
     }*/
 
-    suspend fun getTripAllItem(): List<TripItemModel>? {
+/*    suspend fun getTripAllItem(): List<TripItemModel>? {
         return try {
             val tripItem = repository.gettingAllItem()
             // 데이터를 반환
@@ -29,5 +29,5 @@ class TripAreaBaseItemService(private val repository: TripAreaBaseItemRepository
             Log.e("TripCommonItemService", "Error occurred while getting trip common item", e)
             null
         }
-    }
+    }*/
 }

@@ -1,10 +1,12 @@
 package com.lion.wandertrip.repository
 
 import android.util.Log
-import com.lion.wandertrip.model.TripCommonItem
 import com.lion.wandertrip.model.TripItemModel
 import com.lion.wandertrip.retrofit_for_practice.TripKeywordItemInterface
 import com.lion.wandertrip.util.ContentTypeId
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import java.net.URLEncoder
 
 class TripKeywordItemRepository(private val api: TripKeywordItemInterface) {
     private val myKey =
@@ -14,6 +16,8 @@ class TripKeywordItemRepository(private val api: TripKeywordItemInterface) {
     suspend fun gettingTripItemByKeyword(keyword: String): TripItemModel? {
    //     Log.d("TripKeywordItemRepository", "gettingTripItemByKeyword - keyword: $keyword")
         return try {
+            Log.d("TripKeywordItemRepository","1 : gettingTripItemByKeyword")
+
             val response = api.getKeywordTripItem(
                 numOfRows = 20,
                 pageNo = 1,
@@ -21,11 +25,11 @@ class TripKeywordItemRepository(private val api: TripKeywordItemInterface) {
                 mobileApp = "WanderTrip",
                 type = "json",
                 arrange = "O",
-                listYN = "Y",
                 keyword = keyword,
                 serviceKey = myKey
             )
-
+            Log.d("TripRepo", "raw response: ${response.body()}")
+            Log.d("TripRepo", "error body: ${response.errorBody()?.string()}")
             if (response.isSuccessful) {
                 val responseBody = response.body()
                 if (responseBody == null) {
@@ -77,7 +81,10 @@ class TripKeywordItemRepository(private val api: TripKeywordItemInterface) {
     // 키워드로 tripItem 가져오기
     suspend fun gettingTripItemAllByKeyword(keyword: String): List<TripItemModel> {
        // Log.d("TripKeywordItemRepository", "gettingTripItemByKeyword - keyword: $keyword")
+        Log.d("TripKeywordItemRepository","2 : gettingTripItemAllByKeyword")
+
         return try {
+
             val response = api.getKeywordTripItem(
                 numOfRows = 1000,
                 pageNo = 1,
@@ -85,7 +92,6 @@ class TripKeywordItemRepository(private val api: TripKeywordItemInterface) {
                 mobileApp = "WanderTrip",
                 type = "json",
                 arrange = "O",
-                listYN = "Y",
                 keyword = keyword,
                 serviceKey = myKey,
             )

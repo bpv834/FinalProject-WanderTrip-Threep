@@ -381,12 +381,6 @@ class DetailViewModel @Inject constructor(
                 ?.savedStateHandle
                 ?.set("refresh_needed", true)
 
-            // ✅ 로그 확인용
-            val result = nav.previousBackStackEntry
-                ?.savedStateHandle
-                ?.get<Boolean>("refresh_needed")
-
-            Log.d("refresh_debug", "refresh_needed 저장된 값: $result")
         }
 
     }
