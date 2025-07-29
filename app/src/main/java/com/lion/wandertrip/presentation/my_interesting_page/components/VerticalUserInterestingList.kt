@@ -1,5 +1,6 @@
 package com.lion.wandertrip.presentation.my_interesting_page.components
 
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -92,7 +93,7 @@ fun UserInterestingItem(
                 .background(Color.LightGray),
         ) {
             GlideImage(
-                imageModel = { interestingItem.smallImagePath },
+                imageModel = interestingItem.smallImagePath,
                 contentScale = ContentScale.Crop,
                 modifier = Modifier.fillMaxSize(),
                 circularReveal = CircularReveal(duration = 300),
