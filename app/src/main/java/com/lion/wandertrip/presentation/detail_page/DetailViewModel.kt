@@ -347,6 +347,8 @@ class DetailViewModel @Inject constructor(
 
     // 좋아요 버튼 누를때 리스너 메서드
     fun onClickIconIsLikeContent(contentId: String) {
+        Log.d("init","좋아요 눌림")
+        val nav = tripApplication.navHostController
         viewModelScope.launch {
             // 좋아요상태를 변경한다.
             val work1 = async(Dispatchers.IO) {
@@ -373,6 +375,18 @@ class DetailViewModel @Inject constructor(
             work1.join()
             // 변경 상태를 화면에 반영한다
             isLikeContent(contentId)
+            // 이전 스택에 refresh_needed = true 를 저장
+            // 내관심 -> 아이템 디테일 일때 변경사항이 있다면 리스트를 리로드하기위한 로직
+            nav.previousBackStackEntry
+                ?.savedStateHandle
+                ?.set("refresh_needed", true)
+
+            // ✅ 로그 확인용
+            val result = nav.previousBackStackEntry
+                ?.savedStateHandle
+                ?.get<Boolean>("refresh_needed")
+
+            Log.d("refresh_debug", "refresh_needed 저장된 값: $result")
         }
 
     }

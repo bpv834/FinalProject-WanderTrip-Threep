@@ -16,6 +16,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -23,6 +24,7 @@ import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.navigation.compose.currentBackStackEntryAsState
 import com.lion.a02_boardcloneproject.component.CustomTopAppBar
 import com.lion.wandertrip.R
 import com.lion.wandertrip.component.LottieLoadingIndicator
@@ -40,19 +42,26 @@ fun MyInterestingScreen(
 
     val scrollState = rememberScrollState()
 
+    val currentBackStackEntry = myInterestingViewModel.tripApplication.navHostController.currentBackStackEntryAsState().value
+    val refresh = currentBackStackEntry?.savedStateHandle
+        ?.getLiveData<Boolean>("refresh_needed")
+        ?.observeAsState()
+
+    LaunchedEffect(refresh?.value) {
+        if (refresh?.value == true) {
+            myInterestingViewModel.getInterestingList()  // 리프레시 처리
+            currentBackStackEntry.savedStateHandle["refresh_needed"] = false
+        }
+    }
+
     // StateFlow 수신
     val isLoading by myInterestingViewModel.isLoading.collectAsStateWithLifecycle()
     val isSheetOpen by myInterestingViewModel.isSheetOpen.collectAsStateWithLifecycle()
-    val filteredCityName by myInterestingViewModel.filteredCityName.collectAsStateWithLifecycle()
     val isCheckAttraction by myInterestingViewModel.isCheckAttraction.collectAsStateWithLifecycle()
     val isCheckRestaurant by myInterestingViewModel.isCheckRestaurant.collectAsStateWithLifecycle()
     val isCheckAccommodation by myInterestingViewModel.isCheckAccommodation.collectAsStateWithLifecycle()
     val filteredList by myInterestingViewModel.interestingListFiltered.collectAsStateWithLifecycle()
 
-    // 최초 1회만 실행
-    LaunchedEffect(Unit) {
-        myInterestingViewModel.getInterestingList()
-    }
 
     if (isLoading) {
         Log.d("test", "로딩중")
@@ -85,13 +94,13 @@ fun MyInterestingScreen(
                         myInterestingViewModel.onClickCityDropdown()
                     }
                     CustomChipButton("관광지", {
-                        myInterestingViewModel.onClickButtonAttraction()
+                        myInterestingViewModel.toggleAttraction()
                     }, isCheckAttraction)
                     CustomChipButton("식당", {
-                        myInterestingViewModel.onClickButtonRestaurant()
+                        myInterestingViewModel.toggleRestaurant()
                     }, isCheckRestaurant)
                     CustomChipButton("숙소", {
-                        myInterestingViewModel.onClickButtonAccommodation()
+                        myInterestingViewModel.toggleAccommodation()
                     }, isCheckAccommodation)
                 }
 

@@ -46,9 +46,9 @@ import com.skydoves.landscapist.CircularReveal
 import com.skydoves.landscapist.glide.GlideImage
 @Composable
 fun VerticalUserInterestingList(
+    likeMap: Map<String, Boolean>,
     viewModel: MyInterestingViewModel,
-    items: List<UserInterestingModel>,
-    likeMap: Map<String, Boolean>
+    items: List<UserInterestingModel>
 ) {
     LazyColumn(
         modifier = Modifier

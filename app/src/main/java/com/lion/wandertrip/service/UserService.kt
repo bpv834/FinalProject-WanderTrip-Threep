@@ -219,4 +219,9 @@ class UserService (val userRepository: UserRepository) {
         return userRepository.getUserLikeListFlow(userDocId)
     }
 
+    // 유저 좋아요 목록 가져오기
+    suspend fun getUserLikeListOnce(userDocId: String): List<String> {
+        return userRepository.getUserLikeListOnce(userDocId)
+    }
+
 }

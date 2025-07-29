@@ -136,7 +136,7 @@ class ContentsRepository {
         try {
             val db = FirebaseFirestore.getInstance()
             val contentsRef = db.collection("ContentsData").document(contentsDocId)
-            val reviewsRef = contentsRef.collection("ContentsReview")
+            val reviewsRef = db.collection("ContentsReview")
 
             // Log.d("test100", "updateContentRating ->평점 업데이트 시작: $contentsDocId")
 
