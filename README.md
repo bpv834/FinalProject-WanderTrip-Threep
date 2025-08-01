@@ -41,14 +41,15 @@
 - **Coroutines / Flow / LiveData** 병행 사용
 
 ### ☁️ Firebase & Cloud
-- **Firebase Authentication**
-- **Firebase Functions Gen2**
-- **GCP Secret Manager** (API Key 등 보안 관리)
+- **Firebase Authentication**: 익명 로그인 및 사용자 인증
+- **Firebase Storage**: 이미지 업로드/관리
+- **Firebase Functions Gen2**: 외부 API 호출용 서버리스 함수 실행 (e.g. Kakao API 요청)
+- **GCP Secret Manager**: Kakao API Key 등 민감한 키를 보안 저장소에서 로드하여 Functions에서 사용
 
 ### 🌐 외부 연동
 - **Kakao Login**
 - **Kakao Local REST API** (여행지 검색 및 위치 기반 데이터 조회)
-- **Google Map + Marker**
+- **Google Map**
 - **Retrofit2** (네트워크 통신)
 - **Glide** (이미지 로딩)
 
