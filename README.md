@@ -81,7 +81,6 @@ com.lion.wandertrip
 | ✅ **SavedStateHandle 활용** | 상세화면에서 좋아요 상태가 변경되었는지 확인하기 위해 `likeChangedContentId`, `likeChangedState`를 `savedStateHandle`에 저장하고, 목록 복귀 시 `observeAsState()` + `LaunchedEffect`로 해당 항목만 상태 갱신 처리. 단순 refresh 플래그 방식에서 벗어나, 실제 변경된 상태만 리렌더링하도록 개선 |
 | ✅ **룰렛 애니메이션 구현** | `Animatable`, `graphicsLayer`, `LaunchedEffect`, `coroutineScope`를 조합해 Jetpack Compose에서 자연스러운 룰렛 회전 애니메이션 구현. 회전 속도 감속, 도착 지점 보정 등 물리 기반 회전을 정밀하게 표현 |
 | ✅ **지역 기반 외부 검색** | Kakao Local API + 지도 연동을 통해, 사용자가 선택한 지역(시/군/구) 기반으로 위도/경도를 가져오고 주변 장소(관광지, 식당, 숙소 등)를 실시간 검색하여 일정에 바로 추가 가능 |
-| ✅ **내부 데이터 검색 최적화** | `Map<String, List<Item>>` 구조를 활용해, 앱 내 정적 지역 데이터를 키워드로 빠르게 검색하고, 연관된 장소 아이템을 필터링하여 사용자에게 즉시 제공 |
 
 ---
 
